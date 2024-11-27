@@ -27,8 +27,10 @@ function mod:init()
 	require(self.scriptPath.."hooks")
 
 	--Regular weapons
-	--[[
-	require(self.scriptPath.."/weapons/fighter_strafe")
+	require(self.scriptPath.."/weapons/testWeapon")
+	require(self.scriptPath.."/weapons/debugMechs")
+	
+	--[[	
 	require(self.scriptPath.."/weapons/rotary_cannon")
 	require(self.scriptPath.."/weapons/musket")
 	]]

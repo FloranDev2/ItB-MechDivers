@@ -8,13 +8,13 @@ PrimeDiverMech = Pawn:new{
 	Class = "Prime",
 
 	Health = 1,
-	MoveSpeed = 3,
+	MoveSpeed = 15,
 	Massive = true,
 
 	Image = "MechPunch",
 	ImageOffset = mechDivers,
 	
-	SkillList = { "Prime_Punchmech", },
+	SkillList = { "truelch_TestWeapon", "truelch_DebugMechs" },
 
 	SoundLocation = "/mech/prime/punch_mech/",
 	ImpactMaterial = IMPACT_METAL,

@@ -8,13 +8,13 @@ RangedDiverMech = Pawn:new{
 	Class = "Ranged",
 
 	Health = 1,
-	MoveSpeed = 3,
+	MoveSpeed = 15,
 	Massive = true,
 
 	Image = "MechDStrike",
 	ImageOffset = mechDivers,
 	
-	SkillList = { "Ranged_Artillerymech", },
+	SkillList = { "truelch_TestWeapon", "truelch_DebugMechs" },
 
 	SoundLocation = "/mech/prime/punch_mech/",
 	ImpactMaterial = IMPACT_METAL,

@@ -74,7 +74,7 @@ end
 ----------------------------------------------- HOOKS -----------------------------------------------
 
 local function Test1()
-    
+
 end
 
 local function Test2()
@@ -91,20 +91,29 @@ local HOOK_onPawnKilled = function(mission, pawn)
         --TMP stuff
         --pawn:SetHealth()
 
+        --pawn:Retreat() --test
+        --pawn:Kill() --test
+
+        --Board:AddAlert(pawn:GetSpace(), "DEMOCRACY")
+        pawn:SetInvisible(true)
 
         Board:AddEffect(SpaceDamage(pawn:GetSpace(), -10))
         --Unpowered? And with upgrade, can be used right away
 
+        --[[
         local randPoint = GetRandomPoint()
         if randPoint ~= nil then
             pawn:SetSpace(randPoint)
         end
+        ]]
 
         --Test 2
+        --[[
         randPoint = GetRandomPoint()
         local Tank = PAWN_FACTORY:CreatePawn("TankMech")
-        Tank:SetMech()
+        --Tank:SetMech() --crashes the game!
         Board:SpawnPawn(Tank, randPoint)
+        ]]
                 
     end
 end

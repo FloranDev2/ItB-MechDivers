@@ -8,7 +8,7 @@ BruteDiverMech = Pawn:new{
 	Class = "Brute",
 
 	Health = 1,
-	MoveSpeed = 3,
+	MoveSpeed = 15,
 	Massive = true,
 
 	--Flying = true,
@@ -16,7 +16,7 @@ BruteDiverMech = Pawn:new{
 	Image = "MechLaser", --"MechLaser"
 	ImageOffset = mechDivers,
 	
-	SkillList = { "Brute_Tankmech", },
+	SkillList = { "truelch_TestWeapon", "truelch_DebugMechs" },
 
 	SoundLocation = "/mech/prime/punch_mech/",
 	ImpactMaterial = IMPACT_METAL,
