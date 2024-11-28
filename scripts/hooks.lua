@@ -1,44 +1,10 @@
 ----------------------------------------------- IMPORTS -----------------------------------------------
+
 local mod = modApi:getCurrentMod() --same, but better (thx Lemonymous!)
 local scriptPath = mod.scriptPath
 
 
 ----------------------------------------------- MISSION / GAME FUNCTIONS -----------------------------------------------
-local function isGame()
-    return true
-        and Game ~= nil
-        and GAME ~= nil
-end
-
-local function isMission()
-    local mission = GetCurrentMission()
-
-    return true
-        and isGame()
-        and mission ~= nil
-        and mission ~= Mission_Test
-end
-
-local function isMissionBoard()
-    return true
-        and isMission()
-        and Board ~= nil
-        and Board:IsTipImage() == false
-end
-
-local function isGameData()
-    return true
-        and GAME ~= nil
-        and GAME.truelch_MechDivers ~= nil
-end
-
-local function gameData()
-    if GAME.truelch_MechDivers == nil then
-        GAME.truelch_MechDivers = {}
-    end
-
-    return GAME.truelch_MechDivers
-end
 
 local function missionData()
     local mission = GetCurrentMission()
@@ -47,11 +13,16 @@ local function missionData()
         mission.truelch_MechDivers = {}
     end
 
+    if mission.truelch_MechDivers.DeadMechs == nil then
+        mission.truelch_MechDivers.DeadMechs = {}
+    end
+
     return mission.truelch_MechDivers
 end
 
 
 ----------------------------------------------- MISC -----------------------------------------------
+
 local function GetRandomPoint()
     local points = {}
 
@@ -134,27 +105,85 @@ local function TestFishFromChasm(pawn)
     Board:AddPawn(pawn, randPoint)
 end
 
+
+local function HOOK_onNextTurnHook()
+    if Game:GetTeamTurn() == TEAM_PLAYER and IsPassiveSkill("truelch_Reinforcements_Passive") then
+        --V1
+        --[[
+        LOG("Revive loop:")
+        for _, pawnType in pairs(missionData().DeadMechs) do
+            local randPoint = GetRandomPoint()
+            LOG("pawnType type: "..type(pawnType))
+            LOG("pawnType: "..pawnType)
+            local newMech = PAWN_FACTORY:CreatePawn(pawnType)
+            newMech:SetMech() --this doesn't seem to work here
+            Board:SpawnPawn(pawnType, randPoint)
+        end
+
+        --Clear dead mech list (simplest way)
+        missionData().DeadMechs = {}
+        ]]
+
+        --V2
+        --There must be a simpler way to look for Mechs
+        for j = 0, 7 do
+            for i = 0, 7 do
+                local pawn = Board:GetPawn()
+                --if pawn ~= nil and pawn:IsMech() and pawn:IsInvisible() then
+                if pawn ~= nil and pawn:IsMech() and pawn:GetSpace() == Point(-1, -1) then
+                    LOG(" ----------------- here")
+                    local randPoint = GetRandomPoint()
+                    pawn:SetSpace(randPoint)
+                end
+            end
+        end
+
+    end
+end
+
+
 --[[
 Unpowered? And with upgrade, can be used right away
 Ok so idk if I should move that to:
 - a passive (-> that sounds better, plus I can upgrade)
 - a trait for the other 2 mechs
+--local pawnType = _G[pawn:GetType()] --this?
+After 3 deaths or so, the Mechs no longer respawn.
 ]]
 local HOOK_onPawnKilled = function(mission, pawn)
-    if isMission() and pawn:IsMech() and IsPassiveSkill("truelch_Reinforcements_Passive") then
-        Board:RemovePawn(pawn)
-        local randPoint = GetRandomPoint()
-        --local pawnType = _G[self:GetType()]
-        local newMech = PAWN_FACTORY:CreatePawn("TankMech")
-        newMech:SetMech() --IT WORKS NOW, YEEEHAAA
-        Board:SpawnPawn(newMech, randPoint)
+    if isMission() and pawn:IsMech() then
+        if IsPassiveSkill("truelch_Reinforcements_Passive_A") or IsPassiveSkill("truelch_Reinforcements_Passive") then
+            Board:RemovePawn(pawn)
+            local randPoint = GetRandomPoint()
+            local pawnType = pawn:GetType() --or this? Edit: at least this works
+            local newMech = PAWN_FACTORY:CreatePawn(pawnType) --this works! And also have the correct palette (idk how, but that's great)
+            newMech:SetMech()
+            Board:SpawnPawn(newMech, randPoint)
+        elseif IsPassiveSkill("truelch_Reinforcements_Passive") then            
+            Board:RemovePawn(pawn)
+            --V1: Wait for next player turn
+            --Edit: the pawn spawned next turn failed to become a Mech
+            --table.insert(missionData().DeadMechs, pawn:GetType())
 
+            --V2: Create it now, but hide it until next turn (or move it to (-1, -1))
+            local pawnType = pawn:GetType()
+            local newMech = PAWN_FACTORY:CreatePawn(pawnType)
+            newMech:SetMech()
+            local id = Board:SpawnPawn(newMech, randPoint) --is the int returned the id of the spawned pawn?
+
+            LOG(" ----------- id: "..tostring(id))
+
+            local spawned = Board:GetPawn(id)
+            --spawned:SetInvisible(true)
+            spawned:SetSpace(-1, -1)
+        end
     end
 end
 
 ----------------------------------------------- HOOKS / EVENTS SUBSCRIPTION -----------------------------------------------
 
 local function EVENT_onModsLoaded()
+    modApi:addNextTurnHook(HOOK_onNextTurnHook)
     modapiext:addPawnKilledHook(HOOK_onPawnKilled)
 end
 

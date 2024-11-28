@@ -40,9 +40,12 @@ EagleMech = Pawn:new{
 	ImageOffset = mechDivers,
 	
 	--One FMWeapon that calls in various weapon and a Respawn passive
-	SkillList = { "truelch_TestWeapon", "truelch_Reinforcements_Passive" },
+	SkillList = { "truelch_Delivery", "truelch_Reinforcements_Passive" },
 
-	SoundLocation = "/mech/prime/punch_mech/",
+	--[[
+	"/mech/flying/jet_mech/"	
+	]]
+	SoundLocation = "/mech/flying/jet_mech/",
 	ImpactMaterial = IMPACT_METAL,
 	
 	DefaultTeam = TEAM_PLAYER,

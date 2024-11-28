@@ -21,10 +21,13 @@ function mod:init()
 	--Achievements
 	--require(self.scriptPath.."achievements")
 
+	--Libs
+	require(self.scriptPath.."libs/boardEvents")
+
 	--FMW
 	self.FMW_hotkeyConfigTitle = "Mode Selection Hotkey" -- title of hotkey config in mod config
 	self.FMW_hotkeyConfigDesc = "Hotkey used to open and close firing mode selection." -- description of hotkey config in mod config
-	require(self.scriptPath .. "fmw/FMW"):init()
+	require(self.scriptPath.."fmw/FMW"):init()
 
 	--Drop Env
 	require(self.scriptPath.."dropEnv")
@@ -37,25 +40,20 @@ function mod:init()
 	require(self.scriptPath.."mechs/emancipatorMech")
 	require(self.scriptPath.."mechs/eagleMech")
 
-
+	--Test
+	require(self.scriptPath.."/weapons/test/testWeapon")
+	require(self.scriptPath.."/weapons/test/debugMechs")
 
 	--Regular weapons
-	require(self.scriptPath.."/weapons/testWeapon")
-	require(self.scriptPath.."/weapons/debugMechs")
+	require(self.scriptPath.."/weapons/delivery")
+	--require(self.scriptPath.."/weapons/stratagems_drop") --old
 	require(self.scriptPath.."/weapons/passive_respawn")
 
 	--Replacing AI Pilot with Mech Diver recruit pilot
 	require(self.scriptPath.."pilots")
 
-	--Animations
-	--require(self.scriptPath .. "animations")
-
 	--Weapon deck
-	--[[
-	modApi:addWeaponDrop("truelch_FighterStrafe")
-	modApi:addWeaponDrop("truelch_RotaryCannon")
-	modApi:addWeaponDrop("truelch_Musket")
-	]]
+	modApi:addWeaponDrop("truelch_Reinforcements_Passive")
 
 	--Custom hangar
 	require(self.scriptPath.."modifiedHangar"):init(self)

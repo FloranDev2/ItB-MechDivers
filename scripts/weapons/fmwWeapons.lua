@@ -7,32 +7,28 @@ local fmw = require(scriptPath.."fmw/api")
 --local tips = require(scriptPath.."libs/tutorialTips")
 
 --Icons
-modApi:appendAsset("img/modes/icon_standard_shell.png", resources.."img/modes/icon_standard_shell.png")
-modApi:appendAsset("img/modes/icon_smoke_shell.png",    resources.."img/modes/icon_smoke_shell.png")
 
---Effects
-modApi:appendAsset("img/effects/shot_m22_push_R.png",  resources .. "img/effects/shot_m22_push_R.png")
-modApi:appendAsset("img/effects/shot_m22_push_U.png",  resources .. "img/effects/shot_m22_push_U.png")
-modApi:appendAsset("img/effects/shot_m22_smoke_R.png", resources .. "img/effects/shot_m22_smoke_R.png")
-modApi:appendAsset("img/effects/shot_m22_smoke_U.png", resources .. "img/effects/shot_m22_smoke_U.png")
-	
-truelch_ShellStd = {
-	aFM_name = "Push Shell",							-- required
-	aFM_desc = "Projectile that pushes its target.",	-- required
-	aFM_icon = "img/shells/icon_standard_shell.png",	-- required (if you don't have an image an empty string will work)
-	--Custom
-	Push = 1,
-	Smoke = 0,
+--Just debug modes icons
+for i = 1, 10 do
+	modApi:appendAsset("img/modes/icon_1.png", resources.."img/modes/icon_1.png")
+end
+
+truelch_Mode1 = {
+	aFM_name = "Mode1",
+	aFM_desc = "Projectile that pushes its target.",
+	aFM_icon = "img/shells/icon_standard_shell.png",
+
+	aFM_limited = 2,
+
 	--Art
 	impactsound = "/impact/generic/explosion_large",
 	Explo = "explopush1_",
 	ProjectileArt = "effects/shot_m22_push", --ProjectileArt = "effects/shot_mechtank",
 }
 
-CreateClass(truelch_ShellStd)
+CreateClass(truelch_Mode1)
 
--- these functions, "targeting" and "fire," are arbitrary
-function truelch_ShellStd:targeting(point)
+function truelch_Mode1:targeting(point)
 	local points = {}
 	
 	for dir = 0, 3 do
