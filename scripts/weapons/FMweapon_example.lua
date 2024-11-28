@@ -1,6 +1,7 @@
 local this = {}
 local path = mod_loader.mods[modApi.currentMod].scriptPath
 local resources = mod_loader.mods[modApi.currentMod].resourcePath
+
 --local fmw = require(path.."fmw/api") 
 
 modApi:appendAsset("img/mortar_temp_icon.png", resources.."img/mortar_temp_icon.png")
@@ -13,55 +14,46 @@ modApi:appendAsset("img/effects/shotup_standardshell_missile.png", resources.."i
 modApi:appendAsset("img/effects/shotup_napalmshell_missile.png", resources.."img//effects/shotup_napalmshell_missile.png")
 modApi:appendAsset("img/effects/shotup_acidshell_missile.png", resources.."img/effects/shotup_acidshell_missile.png")
 modApi:appendAsset("img/effects/shotup_smokeshell_missile.png", resources.."img/effects/shotup_smokeshell_missile.png")
-
--------------------- SPRITES --------------------
-local mod = mod_loader.mods[modApi.currentMod]
-local scriptPath = mod.scriptPath
-local resourcePath = mod.resourcePath
-modApi:appendAsset("img/modes/icon_resupply.png", resourcePath.."img/modes/icon_resupply.png")
-modApi:appendAsset("img/modes/icon_strafe.png",   resourcePath.."img/modes/icon_strafe.png")
-
-
--------------------- MODE 1: Strafe run --------------------
 	
-truelch_DeliveryMode1 = {
-	aFM_name = "Strafing run",						 -- required
-	aFM_desc = "Leap over a tile and bombard it.",	 -- required
-	aFM_icon = "img/shells/icon_standard_shell.png", -- required (if you don't have an image an empty string will work) 
-	-- aFM_limited = 2, 							 -- optional (FMW will automatically handle uses for weapons)
-	-- aFM_handleLimited = false 					 -- optional (FMW will no longer automatically handle uses for this mode if set)
+atlas_ShellStd = {
+	aFM_name = "Standard Shell",												 -- required
+	aFM_desc = "High-explosive shell that explodes upon impact.",				 -- required
+	aFM_icon = "img/shells/icon_standard_shell.png",	 						 -- required (if you don't have an image an empty string will work) 
+	-- aFM_limited = 2, 														 -- optional (FMW will automatically handle uses for weapons)
+	-- aFM_handleLimited = false 												 -- optional (FMW will no longer automatically handle uses for this mode if set) 
+	minrange = 2,
+	maxrange = 8,
+	innerDamage = 2,
+	innerEffect = nil, -- "Fire", "Smoke", "Acid", "Frozen" 
+	innerPush = false,
+	innerAnim = "ExploArt2",
+	innerBounce = 2, 
+	AOE = true, 
+	outerDamage = 1,
+	outerEffect = nil, -- "Fire", "Smoke", "Acid", "Frozen" 
+	outerPush = true,
+	outerAnim = "explopush1_",
+	outerBounce = 1,
+	impactsound = "/impact/generic/explosion_large",
+	image = "effects/shotup_standardshell_missile.png",
 }
 
-CreateClass(truelch_DeliveryMode1)
+CreateClass(atlas_ShellStd)
 
-function truelch_DeliveryMode1:targeting(point)
+-- these functions, "targeting" and "fire," are arbitrary
+function atlas_ShellStd:targeting(point)
 	local points = {}
-	for dir = DIR_START, DIR_END do
-		local curr = DIR_VECTORS[dir]*2 + point
-		if not Board:IsBlocked(curr, PATH_PROJECTILE) then
+
+	for dir = 0, 3 do
+		for i = self.minrange, self.maxrange do
+			local curr = point + DIR_VECTORS[dir]*i
 			points[#points+1] = curr
 		end
 	end
 	return points
 end
 
-function truelch_DeliveryMode1:fire(p1, p2, se)
-	local dir = GetDirection(p2 - p1)
-	
-	local move = PointList()
-	move:push_back(p1)
-	move:push_back(p2)
-	
-	local distance = p1:Manhattan(p2)
-	
-	se:AddBounce(p1,2)
-	if distance == 1 then
-		se:AddLeap(move, 0.5)--small delay between move and the damage, attempting to make the damage appear when jet is overhead
-	else
-		se:AddLeap(move, 0.25)
-	end
-
-	--[[
+function atlas_ShellStd:fire(p1, p2, se)
 	local direction = GetDirection(p2 - p1)
 
 	local damage = SpaceDamage(p2, self.innerDamage)
@@ -94,47 +86,50 @@ function truelch_DeliveryMode1:fire(p1, p2, se)
 			se:AddDamage(aoeD) 
 			se:AddBounce(p2 + DIR_VECTORS[dir], self.outerBounce) 
 		end	
-	end
-	]]
+	end	
 end
 
 
--------------------- MODE 2: Supply drop --------------------
-
-truelch_DeliveryMode2 = truelch_DeliveryMode1:new{
-	aFM_name = "Supply drop",
-	aFM_desc = "Drop a Supply Box that reloads weapons.",
+atlas_ShellFire = atlas_ShellStd:new{
+	aFM_name = "Napalm Shell",
+	aFM_desc = "Explosive shell that sets an area on fire.",
 	aFM_icon = "img/shells/icon_napalm_shell.png",
-	aFM_limited = 2,
-    aFM_twoClick = true,
+	aFM_limited = 2, 
+    aFM_twoClick = true, 
+    
+	innerDamage = 1, 
+	innerEffect = "Fire",
+	innerAnim = "ExploAir2",
+	outerDamage = 0,
+	outerEffect = "Fire",
+	outerAnim = "explopush2_",
+	image = "effects/shotup_napalmshell_missile.png",
 }
 
-function truelch_DeliveryMode2:second_targeting(p1, p2) 
+function atlas_ShellFire:second_targeting(p1, p2) 
     return Ranged_TC_BounceShot.GetSecondTargetArea(Ranged_TC_BounceShot, p1, p2)
 end
 
-function truelch_DeliveryMode2:second_fire(p1, p2, p3)
+function atlas_ShellFire:second_fire(p1, p2, p3)
     return Ranged_TC_BounceShot.GetFinalEffect(Ranged_TC_BounceShot, p1, p2, p3)
 end
 
-
--------------------- WEAPON --------------------
-
-truelch_Delivery = aFM_WeaponTemplate:new{
-	Name = "Delivery",
-	Description = "Drop various playloads.",
-	Class = "Science",
+atlas_Mortar = aFM_WeaponTemplate:new{
+	Name = "Mortar",
+	Description = "bloop",
+	Class = "Ranged",
     TwoClick = true, 
 	Icon = "mortar_temp_icon.png",
 	LaunchSound = "/weapons/back_shot",
-	aFM_ModeList = {"truelch_DeliveryMode1", "truelch_DeliveryMode2"},
+	aFM_ModeList = {"atlas_ShellStd", "atlas_ShellFire"},
 	aFM_ModeSwitchDesc = "Click to change Mortar shells.",
 	TipImage = {
 		Unit = Point(2,2) 
 	}
 }
 
-function truelch_Delivery:GetTargetArea(point)
+
+function atlas_Mortar:GetTargetArea(point)
 	local pl = PointList()
 	local currentShell = _G[self:FM_GetMode(point)]
     
@@ -149,23 +144,23 @@ function truelch_Delivery:GetTargetArea(point)
 	return pl
 end
 
-function truelch_Delivery:GetSkillEffect(p1, p2)
+function atlas_Mortar:GetSkillEffect(p1, p2)
 	local se = SkillEffect()
 	local currentShell = self:FM_GetMode(p1)
 	
 	if self:FM_CurrentModeReady(p1) then 
 		_G[currentShell]:fire(p1, p2, se)
-		--se:AddSound(_G[currentShell].impactsound)
+		se:AddSound(_G[currentShell].impactsound)
 	end
 
 	return se
 end
 
-function truelch_Delivery:IsTwoClickException(p1,p2)
+function atlas_Mortar:IsTwoClickException(p1,p2)
 	return not _G[self:FM_GetMode(p1)].aFM_twoClick 
 end
 
-function truelch_Delivery:GetSecondTargetArea(p1, p2)
+function atlas_Mortar:GetSecondTargetArea(p1, p2)
 	local currentShell = _G[self:FM_GetMode(p1)]
     local pl = PointList()
     
@@ -176,7 +171,7 @@ function truelch_Delivery:GetSecondTargetArea(p1, p2)
     return pl 
 end
 
-function truelch_Delivery:GetFinalEffect(p1, p2, p3) 
+function atlas_Mortar:GetFinalEffect(p1, p2, p3) 
     local se = SkillEffect()
 	local currentShell = _G[self:FM_GetMode(p1)]
 

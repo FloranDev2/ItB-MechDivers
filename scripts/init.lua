@@ -45,6 +45,7 @@ function mod:init()
 	require(self.scriptPath.."/weapons/test/debugMechs")
 
 	--Regular weapons
+	--require(self.scriptPath.."/weapons/FMweapon_example") --test
 	require(self.scriptPath.."/weapons/delivery")
 	--require(self.scriptPath.."/weapons/stratagems_drop") --old
 	require(self.scriptPath.."/weapons/passive_respawn")
