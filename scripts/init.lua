@@ -12,28 +12,40 @@ local mod = {
 }
 
 function mod:init()
+	--Assets
+	require(self.scriptPath.."assets")
+
 	--Palette
 	require(self.scriptPath.."palette")
 
 	--Achievements
 	--require(self.scriptPath.."achievements")
 
-	--Mechs
-	require(self.scriptPath.."mechs/primeDiver")
-	require(self.scriptPath.."mechs/bruteDiver")
-	require(self.scriptPath.."mechs/rangedDiver")
+	--FMW
+	self.FMW_hotkeyConfigTitle = "Mode Selection Hotkey" -- title of hotkey config in mod config
+	self.FMW_hotkeyConfigDesc = "Hotkey used to open and close firing mode selection." -- description of hotkey config in mod config
+	require(self.scriptPath .. "fmw/FMW"):init()
+
+	--Drop Env
+	require(self.scriptPath.."dropEnv")
 
 	--Hooks
 	require(self.scriptPath.."hooks")
 
+	--Mechs
+	require(self.scriptPath.."mechs/patriotMech")
+	require(self.scriptPath.."mechs/emancipatorMech")
+	require(self.scriptPath.."mechs/eagleMech")
+
+
+
 	--Regular weapons
 	require(self.scriptPath.."/weapons/testWeapon")
 	require(self.scriptPath.."/weapons/debugMechs")
-	
-	--[[	
-	require(self.scriptPath.."/weapons/rotary_cannon")
-	require(self.scriptPath.."/weapons/musket")
-	]]
+	require(self.scriptPath.."/weapons/passive_respawn")
+
+	--Replacing AI Pilot with Mech Diver recruit pilot
+	require(self.scriptPath.."pilots")
 
 	--Animations
 	--require(self.scriptPath .. "animations")
@@ -50,18 +62,22 @@ function mod:init()
 end
 
 function mod:load(options, version)
+	--FMW
+	require(self.scriptPath .. "fmw/FMW"):load()
+
 	modApi:addSquad(	
 		{
 			id = "truelch_MechDivers",
 			"Mech Divers",
-			"PrimeDiverMech",
-			"BruteDiverMech",
-			"RangedDiverMech",
+			"PatriotMech",
+			"EmancipatorMech",
+			"EagleMech",
 		},
 		"Mech Divers",
 		"A cup of Liber-Tea.\nLet's free Super Earth from these undemocratic Vek!",
 		self.resourcePath.."img/squad_icon.png"
 	)
+
 	require(self.scriptPath.."modifiedHangar"):load(self, options)
 end
 

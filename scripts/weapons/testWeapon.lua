@@ -14,7 +14,7 @@ truelch_TestWeapon = Skill:new{
 	--UpgradeCost = { 1, 2 },
 
 	--Gameplay
-	Damage = 2,
+	Damage = 3,
 
 	--Tip image
 	--[[
@@ -50,12 +50,15 @@ function truelch_TestWeapon:GetSkillEffect(p1, p2)
 	local ret = SkillEffect()
 
 	local damage = SpaceDamage(p2, self.Damage)
-	damage.iCrack = EFFECT_CREATE
+	--damage.iCrack = EFFECT_CREATE
 	ret:AddDamage(damage)
 
+	--[[
 	local damage = SpaceDamage(p2, self.Damage)
 	damage.iCrack = EFFECT_CREATE
 	ret:AddDamage(damage)
+	]]
+
 
 	return ret
 end

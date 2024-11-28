@@ -1,0 +1,49 @@
+local resourcePath = mod_loader.mods[modApi.currentMod].resourcePath
+local scriptPath = mod_loader.mods[modApi.currentMod].scriptPath
+local mechPath = resourcePath .."img/mechs/"
+local mod = modApi:getCurrentMod()
+local mechDivers = modApi:getPaletteImageOffset("truelch_MechDivers")
+
+local files = {
+	"eagleMech.png",
+	"eagleMech_a.png",
+	"eagleMech_w.png",
+	"eagleMech_w_broken.png",
+	"eagleMech_broken.png",
+	"eagleMech_ns.png",
+	"eagleMech_h.png"
+}
+
+for _, file in ipairs(files) do
+	modApi:appendAsset("img/units/player/"..file, mechPath..file)
+end
+
+local a = ANIMS
+a.eagleMech =         a.MechUnit:new{Image = "units/player/eagleMech.png",          PosX = -28, PosY =  -5 }
+a.eagleMecha =        a.MechUnit:new{Image = "units/player/eagleMech_a.png",        PosX = -28, PosY = -10, NumFrames = 4 }
+a.eagleMechw =        a.MechUnit:new{Image = "units/player/eagleMech_w.png",        PosX = -28, PosY =   4 }
+a.eagleMech_broken =  a.MechUnit:new{Image = "units/player/eagleMech_broken.png",   PosX = -28, PosY =  -5 }
+a.eagleMechw_broken = a.MechUnit:new{Image = "units/player/eagleMech_w_broken.png", PosX = -28, PosY =  -5 }
+a.eagleMech_ns =      a.MechIcon:new{Image = "units/player/eagleMech_ns.png" }
+
+EagleMech = Pawn:new{
+	Name = "Shuttle Mech", --Support Mech? (already used in WotP) / (Aerospace) Assault (Craft) Mech?
+	Class = "Science", --or Brute? But since it'll have a lot of support stuff + passive, makes more sense to make it Science, right?
+
+	Health = 3,
+	MoveSpeed = 3,
+	Massive = true,
+
+	Flying = true,
+
+	Image = "eagleMech",
+	ImageOffset = mechDivers,
+	
+	--One FMWeapon that calls in various weapon and a Respawn passive
+	SkillList = { "truelch_TestWeapon", "truelch_Reinforcements_Passive" },
+
+	SoundLocation = "/mech/prime/punch_mech/",
+	ImpactMaterial = IMPACT_METAL,
+	
+	DefaultTeam = TEAM_PLAYER,
+}
