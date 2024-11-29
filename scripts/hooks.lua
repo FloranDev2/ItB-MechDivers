@@ -1,10 +1,25 @@
 ----------------------------------------------- IMPORTS -----------------------------------------------
 
-local mod = modApi:getCurrentMod() --same, but better (thx Lemonymous!)
+local mod = modApi:getCurrentMod()
 local scriptPath = mod.scriptPath
 
 
 ----------------------------------------------- MISSION / GAME FUNCTIONS -----------------------------------------------
+
+local function isGame()
+    return true
+        and Game ~= nil
+        and GAME ~= nil
+end
+
+local function isMission()
+    local mission = GetCurrentMission()
+
+    return true
+        and isGame()
+        and mission ~= nil
+        and mission ~= Mission_Test
+end
 
 local function missionData()
     local mission = GetCurrentMission()
@@ -124,12 +139,14 @@ local function HOOK_onNextTurnHook()
         missionData().DeadMechs = {}
         ]]
 
-        --V2
+        --V2a
         --There must be a simpler way to look for Mechs
+        --[[
         for j = 0, 7 do
             for i = 0, 7 do
-                local pawn = Board:GetPawn()
+                local pawn = Board:GetPawn(Point(i, j))
                 --if pawn ~= nil and pawn:IsMech() and pawn:IsInvisible() then
+                --This is stupid, I can't access a point outside of the terrain with this
                 if pawn ~= nil and pawn:IsMech() and pawn:GetSpace() == Point(-1, -1) then
                     LOG(" ----------------- here")
                     local randPoint = GetRandomPoint()
@@ -137,7 +154,15 @@ local function HOOK_onNextTurnHook()
                 end
             end
         end
+        ]]
 
+        --V2b
+        for _, pawn in pairs(missionData().DeadMechs) do
+            local randPoint = GetRandomPoint()
+            pawn:SetSpace(randPoint) --this doesn't do a cool drop anim though
+            --drop anim: take a look at candy island's candy goos
+            --or lemon's geysers
+        end
     end
 end
 
@@ -151,31 +176,41 @@ Ok so idk if I should move that to:
 After 3 deaths or so, the Mechs no longer respawn.
 ]]
 local HOOK_onPawnKilled = function(mission, pawn)
+    LOG("------------ HOOK_onPawnKilled")
     if isMission() and pawn:IsMech() then
-        if IsPassiveSkill("truelch_Reinforcements_Passive_A") or IsPassiveSkill("truelch_Reinforcements_Passive") then
+        LOG("------------ here")
+        if IsPassiveSkill("truelch_Reinforcements_Passive_A") --[[or IsPassiveSkill("truelch_Reinforcements_Passive")]] then
+            LOG("------------ upgraded")
             Board:RemovePawn(pawn)
             local randPoint = GetRandomPoint()
             local pawnType = pawn:GetType() --or this? Edit: at least this works
             local newMech = PAWN_FACTORY:CreatePawn(pawnType) --this works! And also have the correct palette (idk how, but that's great)
             newMech:SetMech()
             Board:SpawnPawn(newMech, randPoint)
-        elseif IsPassiveSkill("truelch_Reinforcements_Passive") then            
+        elseif IsPassiveSkill("truelch_Reinforcements_Passive") then
+            LOG("------------ unupgaded")
             Board:RemovePawn(pawn)
             --V1: Wait for next player turn
             --Edit: the pawn spawned next turn failed to become a Mech
             --table.insert(missionData().DeadMechs, pawn:GetType())
 
             --V2: Create it now, but hide it until next turn (or move it to (-1, -1))
+            local randPoint = GetRandomPoint()
             local pawnType = pawn:GetType()
             local newMech = PAWN_FACTORY:CreatePawn(pawnType)
             newMech:SetMech()
-            local id = Board:SpawnPawn(newMech, randPoint) --is the int returned the id of the spawned pawn?
+            --LOG("------------------------ just before id")
+            --local id = Board:SpawnPawn(newMech, randPoint) --is the int returned the id of the spawned pawn?
+            --LOG(" ----------- id: "..tostring(id))
+            --local spawned = Board:GetPawn(id)
 
-            LOG(" ----------- id: "..tostring(id))
+            Board:SpawnPawn(newMech, randPoint)
+            local spawned = Board:GetPawn(randPoint)
+            LOG("------------ spawned: "..spawned:GetMechName())
+            table.insert(missionData().DeadMechs, spawned) --not really dead, but I understand myself
 
-            local spawned = Board:GetPawn(id)
-            --spawned:SetInvisible(true)
-            spawned:SetSpace(-1, -1)
+            --spawned:SetInvisible(true) --it's still there on the board though
+            spawned:SetSpace(Point(-1, -1))
         end
     end
 end
