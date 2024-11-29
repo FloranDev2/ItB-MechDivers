@@ -22,6 +22,7 @@ function mod:init()
 	--require(self.scriptPath.."achievements")
 
 	--Libs
+	require(self.scriptPath.."libs/artilleryArc")
 	require(self.scriptPath.."libs/boardEvents")
 
 	--FMW

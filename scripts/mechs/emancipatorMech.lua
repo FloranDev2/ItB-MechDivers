@@ -37,7 +37,7 @@ EmancipatorMech = Pawn:new{
 	Image = "emancipatorMech",
 	ImageOffset = mechDivers,
 	
-	SkillList = { "truelch_TestWeapon", "truelch_DebugMechs" },
+	SkillList = { "truelch_TestWeapon", "Support_Repair" },
 
 	SoundLocation = "/mech/prime/punch_mech/",
 	ImpactMaterial = IMPACT_METAL,

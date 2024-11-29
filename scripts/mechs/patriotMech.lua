@@ -37,7 +37,7 @@ PatriotMech = Pawn:new{
 	Image = "patriotMech",
 	ImageOffset = mechDivers,
 	
-	SkillList = { "truelch_TestWeapon", "truelch_DebugMechs" },
+	SkillList = { "truelch_TestWeapon", "Brute_Splitshot" },
 
 	SoundLocation = "/mech/prime/punch_mech/",
 	ImpactMaterial = IMPACT_METAL,
