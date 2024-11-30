@@ -4,6 +4,17 @@ local mechPath = resourcePath .."img/mechs/"
 local mod = modApi:getCurrentMod()
 local mechDivers = modApi:getPaletteImageOffset("truelch_MechDivers")
 
+--trait --->
+local trait = require(scriptPath.."/libs/trait") --unnecessary?
+trait:add{
+    pawnType = "EagleMech",
+    icon = "img/combat/icons/icon_protecc.png",
+    icon_offset = Point(0, 0),
+    desc_title = "Patriotism",
+    desc_text = "Any damage caused by a Mech Diver to a Building will be redirected to any Mech Diver in the area of effect."
+}
+-- <--- trait
+
 local files = {
 	"eagleMech.png",
 	"eagleMech_a.png",
@@ -40,7 +51,7 @@ EagleMech = Pawn:new{
 	ImageOffset = mechDivers,
 	
 	--One FMWeapon that calls in various weapon and a Respawn passive
-	SkillList = { "truelch_Delivery", "truelch_Reinforcements_Passive" },
+	SkillList = { "truelch_Delivery", "truelch_Reinforcements_Passive" }, --truelch_TestWeapon
 
 	--[[
 	"/mech/flying/jet_mech/"	

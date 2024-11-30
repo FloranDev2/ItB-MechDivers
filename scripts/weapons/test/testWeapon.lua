@@ -1,7 +1,7 @@
 truelch_TestWeapon = Skill:new{
 	--Infos
-	Name = "Test Weapon",
-	Description = "DEMOCRACY.",
+	Name = "NIK",
+	Description = "TAMER",
 	Class = "Any",
 	Icon = "weapons/brute_tankmech.png",
 
@@ -49,15 +49,24 @@ end
 function truelch_TestWeapon:GetSkillEffect(p1, p2)
 	local ret = SkillEffect()
 
+	--[[
 	local damage = SpaceDamage(p2, self.Damage)
-	--damage.iCrack = EFFECT_CREATE
+	damage.iCrack = EFFECT_CREATE
 	ret:AddDamage(damage)
+	]]
 
 	--[[
 	local damage = SpaceDamage(p2, self.Damage)
 	damage.iCrack = EFFECT_CREATE
 	ret:AddDamage(damage)
 	]]
+
+
+	local pawn = Board:GetPawn(p2)
+	if pawn ~= nil then
+		--pawn:RemoveWeapon(1)
+		pawn:AddWeapon("truelch_mg43MachineGun")
+	end
 
 
 	return ret

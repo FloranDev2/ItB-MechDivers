@@ -1,74 +1,9 @@
+-------------------- IMPORTS --------------------
+
 local this = {}
 local mod = mod_loader.mods[modApi.currentMod]
 local scriptPath = mod.scriptPath
 local resourcePath = mod.resourcePath
-
--------------------- MODES' ICONS --------------------
-
-modApi:appendAsset("img/modes/icon_resupply.png", resourcePath.."img/modes/icon_resupply.png")
-modApi:appendAsset("img/modes/icon_strafe.png",   resourcePath.."img/modes/icon_strafe.png")
-
--------------------- MISC FUNCTIONS --------------------
-
-local function attemptReload(pawn)
-	if not pawn:IsEnemy() then
-		--Reload
-		pawn:ResetUses()
-		Board:AddAlert(pawn:GetSpace(), "RELOADED!")
-		--[[
-		local weapons = pawn:GetPoweredWeapons()
-		for j = 1, 2 do
-		    if ??? then --is limited use weapon?
-
-		    end
-		end
-		]]
-	else
-		--Destroy
-		Board:AddAlert(pawn:GetSpace(), "DESTROYED")
-	end
-end
-
--------------------- ITEMS --------------------
-
---- Resupply Pod
-modApi:appendAsset("img/combat/item_truelch_supply_pod.png", resourcePath.."img/combat/item_truelch_supply_pod.png")
-	Location["combat/item_truelch_supply_pod.png"] = Point(-15, 10)
-
---Maybe I'll move it to a separate file, because I *might* also do item drops for the Patriot and Emancipator when they're out of ammo
-truelch_Item_ResupplyPod = {
-	Image = "combat/item_truelch_supply_pod.png",
-	Damage = SpaceDamage(0),
-	Tooltip = "Item_Truelch_ResupplyDrop_Text",
-	Icon = "combat/icons/icon_mine_glow.png",
-	UsedImage = ""
-}
-
-TILE_TOOLTIPS.Item_Truelch_ResupplyDrop_Text = {"Supply Pod", "Pick it up to reload your weapons."}
-
---- Weapon Pod
-
-
--------------------- BOARD EVENTS --------------------
-
-BoardEvents.onTerrainChanged:subscribe(function(p, terrain, terrain_prev)
-	local item = Board:GetItem(p)
-	if item == "truelch_Item_ResupplyPod" then
-		if terrain == TERRAIN_HOLE or terrain == TERRAIN_WATER then
-			Board:RemoveItem(p)
-		end
-	end
-end)
-
-BoardEvents.onItemRemoved:subscribe(function(loc, removed_item)
-	if removed_item == "truelch_Item_ResupplyPod"  then
-		local pawn = Board:GetPawn(loc)
-		if pawn then
-			attemptReload(pawn)
-		end
-	--elseif removed_item == "truelch_Item_ResupplyPod"  then
-	end
-end)
 
 
 -------------------- MODE 1: Strafe run --------------------
@@ -106,8 +41,6 @@ function truelch_DeliveryMode1:fire(p1, p2, se)
 	se:AddLeap(move, 0.25)
 
 	ret:AddDelay(0.5)
-
-
 end
 
 
@@ -148,12 +81,17 @@ function truelch_DeliveryMode2:fire(p1, p2, se)
 
 	if not Board:IsBlocked(middlePoint, PATH_PROJECTILE) then
 		local damage = SpaceDamage(middlePoint)
-		damage.sImageMark = "combat/icons/icon_mind_glow.png" --TMP
+		damage.sImageMark = "combat/icons/icon_resupply.png"
 		damage.sItem = "truelch_Item_ResupplyPod"
 		se:AddDamage(damage)
 	elseif pawn ~= nil then
-		--attemptReload(pawn)
-		--TODO: use AddScript stuff instead to avoid reload during preview!
+		local damage = SpaceDamage(middlePoint)
+		damage.sImageMark = "combat/icons/icon_resupply.png"
+		se:AddDamage(damage)
+		se:AddScript([[
+			Board:AddAlert(]]..middlePoint:GetString()..[[, "RELOADED")
+			pawn:ResetUses()
+		]])
 	end
 end
 
@@ -172,7 +110,7 @@ truelch_Delivery = aFM_WeaponTemplate:new{
 	LaunchSound = "/weapons/bomb_strafe",
 
 	aFM_ModeList = { "truelch_DeliveryMode1", "truelch_DeliveryMode2" },
-	aFM_ModeSwitchDesc = "Click to change Mortar shells.",
+	aFM_ModeSwitchDesc = "Click to change mode.",
 
 	TipImage = {
 		Unit = Point(2, 2)
@@ -181,10 +119,10 @@ truelch_Delivery = aFM_WeaponTemplate:new{
 
 function truelch_Delivery:GetTargetArea(point)
 	local pl = PointList()
-	local currentShell = _G[self:FM_GetMode(point)]
+	local currentMode = _G[self:FM_GetMode(point)]
     
-	if self:FM_CurrentModeReady(point) then 
-		local points = currentShell:targeting(point)
+	if self:FM_CurrentModeReady(point) then
+		local points = currentMode:targeting(point)
 		
 		for _, p in ipairs(points) do
 			pl:push_back(p)
@@ -196,11 +134,11 @@ end
 
 function truelch_Delivery:GetSkillEffect(p1, p2)
 	local se = SkillEffect()
-	local currentShell = self:FM_GetMode(p1)
+	local currentMode = self:FM_GetMode(p1)
 	
-	if self:FM_CurrentModeReady(p1) then 
-		_G[currentShell]:fire(p1, p2, se)
-		--se:AddSound(_G[currentShell].impactsound)
+	if self:FM_CurrentModeReady(p1) then
+		_G[currentMode]:fire(p1, p2, se)
+		--se:AddSound(_G[currentMode].impactsound)
 	end
 
 	return se

@@ -4,6 +4,17 @@ local mechPath = resourcePath .."img/mechs/"
 local mod = modApi:getCurrentMod()
 local mechDivers = modApi:getPaletteImageOffset("truelch_MechDivers")
 
+--trait --->
+local trait = require(scriptPath.."/libs/trait") --unnecessary?
+trait:add{
+    pawnType = "PatriotMech",
+    icon = "img/combat/icons/icon_protecc.png",
+    icon_offset = Point(0, 0),
+    desc_title = "Patriotism",
+    desc_text = "Any damage caused by a Mech Diver to a Building will be redirected to any Mech Diver in the area of effect."
+}
+-- <--- trait
+
 local files = {
 	"patriotMech.png",
 	"patriotMech_a.png",
@@ -37,7 +48,9 @@ PatriotMech = Pawn:new{
 	Image = "patriotMech",
 	ImageOffset = mechDivers,
 	
-	SkillList = { "truelch_TestWeapon", "Brute_Splitshot" },
+	SkillList = {},
+	--SkillList = { "truelch_Stratagem" },
+	--SkillList = { "truelch_PatriotWeapons", "truelch_Stratagem" },
 
 	SoundLocation = "/mech/prime/punch_mech/",
 	ImpactMaterial = IMPACT_METAL,
