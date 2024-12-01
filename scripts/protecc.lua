@@ -66,11 +66,11 @@ end
 
 
 local HOOK_onSkillBuild = function(mission, pawn, weaponId, p1, p2, skillEffect)
-    protecc(pawn, skillEffect)
+    --protecc(pawn, skillEffect)
 end
 
 local HOOK_onFinalEffectBuildHook = function(mission, pawn, weaponId, p1, p2, p3, skillEffect)
-    protecc(pawn, skillEffect)
+    --protecc(pawn, skillEffect)
 end
 
 

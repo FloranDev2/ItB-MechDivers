@@ -48,9 +48,8 @@ PatriotMech = Pawn:new{
 	Image = "patriotMech",
 	ImageOffset = mechDivers,
 	
-	SkillList = {},
-	--SkillList = { "truelch_Stratagem" },
-	--SkillList = { "truelch_PatriotWeapons", "truelch_Stratagem" },
+	--Might remove stratagem from him?
+	SkillList = { "truelch_PatriotWeapons", "truelch_Stratagem" },
 
 	SoundLocation = "/mech/prime/punch_mech/",
 	ImpactMaterial = IMPACT_METAL,

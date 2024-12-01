@@ -57,16 +57,17 @@ end
 
 
 function truelch_EmancipatorWeapons:AutocannonShot(ret, point, direction)
-	damage = 1
 	local projEnd = GetProjectileEnd(point, point + DIR_VECTORS[direction], PATH_PROJECTILE)
 
 	local dist = point:Manhattan(projEnd)
 
-	LOG("point: "..point:GetString()..", projEnd: "..projEnd:GetString().." -> dist: " ..tostring(dist))
+	local damage = self.ShortRangeDamage
+	if dist > self.RangeThreshold then
+		damage = self.LongRangeDamage
+	end
 
-	local spaceDamage = SpaceDamage(projEnd, damage--[[, direction]])
+	local spaceDamage = SpaceDamage(projEnd, damage, direction)
 	spaceDamage.sAnimation = self.Explosion..direction
-	spaceDamage.sImageMark = "combat/icons/icon_resupply.png"
 	ret:AddArtillery(spaceDamage, self.UpShot)
 end
 
@@ -78,11 +79,11 @@ function truelch_EmancipatorWeapons:GetSkillEffect(p1, p2)
 	ret:AddBounce(p1, 1)
 
 	--LEFT
-	local point = p2 - DIR_VECTORS[(direction + 1)% 4]
+	local point = p1 - DIR_VECTORS[(direction + 1)% 4]
 	self:AutocannonShot(ret, point, direction)
 
 	--RIGHT
-	local point = p2 + DIR_VECTORS[(direction + 1)% 4]
+	local point = p1 + DIR_VECTORS[(direction + 1)% 4]
 	self:AutocannonShot(ret, point, direction)
 	
 	return ret
