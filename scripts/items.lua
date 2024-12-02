@@ -5,6 +5,38 @@ local mod = mod_loader.mods[modApi.currentMod]
 local scriptPath = mod.scriptPath
 local resourcePath = mod.resourcePath
 
+----------------------------------------------- MISSION / GAME FUNCTIONS -----------------------------------------------
+
+local function isGame()
+    return true
+        and Game ~= nil
+        and GAME ~= nil
+end
+
+local function isMission()
+    local mission = GetCurrentMission()
+
+    return true
+        and isGame()
+        and mission ~= nil
+        and mission ~= Mission_Test
+end
+
+local function missionData()
+    local mission = GetCurrentMission()
+
+    if mission.truelch_MechDivers == nil then
+        mission.truelch_MechDivers = {}
+    end
+
+    if mission.truelch_MechDivers.WeaponItems == nil then
+        mission.truelch_MechDivers.WeaponItems = {}
+    end
+
+    return mission.truelch_MechDivers
+end
+
+
 
 -------------------- MISC FUNCTIONS --------------------
 
@@ -81,8 +113,8 @@ BoardEvents.onItemRemoved:subscribe(function(loc, removed_item)
 	elseif removed_item == "truelch_Item_WeaponPod" then
 		--TODO: store in mission data in what weapon is at each pod position
 		local pawn = Board:GetPawn(loc)
-
-		pawn:RemoveWeapon(2)
+		--pawn:RemoveWeapon(2)
 		pawn:AddWeapon("truelch_mg43MachineGun")
+		Board:AddAlert(loc, "Acquired a MG-43 Machine Gun!")
 	end
 end)

@@ -9,9 +9,10 @@ local resourcePath = mod.resourcePath
 -------------------- MODE 1: Strafe run --------------------
 	
 truelch_DeliveryMode1 = {
-	aFM_name = "Strafing run",					   -- required
-	aFM_desc = "Leap over a tile and bombard it.", -- required
-	aFM_icon = "img/modes/icon_strafe.png",        -- required (if you don't have an image an empty string will work) 
+	aFM_name = "Strafing run",
+	--aFM_desc = "Leap over a tile, shooting any toward any direction there's a unit (enemy AND ally!).",
+	aFM_desc = "Leap over a tile, shooting sideways if there's a unit (enemy or ally).",
+	aFM_icon = "img/modes/icon_strafe.png",
 }
 
 CreateClass(truelch_DeliveryMode1)
@@ -41,6 +42,12 @@ function truelch_DeliveryMode1:fire(p1, p2, se)
 	se:AddLeap(move, 0.25)
 
 	se:AddDelay(0.5)
+	
+	for dir = DIR_START, DIR_END do
+		local damage = SpaceDamage(p1)
+		local target = GetProjectileEnd(p1, p2)
+		
+	end
 end
 
 

@@ -40,7 +40,7 @@ function truelch_PatriotWeaponsMode1:targeting(point)
 end
 
 function truelch_PatriotWeaponsMode1:fire(p1, p2, se)
-	LOG("truelch_PatriotWeaponsMode1:fire(p1: "..p1:GetString()..", p2: "..p2:GetString()..")")
+	--LOG("truelch_PatriotWeaponsMode1:fire(p1: "..p1:GetString()..", p2: "..p2:GetString()..")")
 	local direction = GetDirection(p2 - p1)
 
 	local target = GetProjectileEnd(p1, p2, PATH_PROJECTILE)
@@ -277,7 +277,7 @@ function truelch_PatriotWeapons:GetTargetArea_TipImage(point)
 	end
 	]]
 
-	--Test.
+	--Test. Well it works. Too lazy to understand what's wrong with above code.
 	for j = 0, 7 do
 		for i = 0, 7 do
 			p = Point(i, j)

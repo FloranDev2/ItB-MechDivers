@@ -4,6 +4,39 @@ local mod = mod_loader.mods[modApi.currentMod]
 local scriptPath = mod.scriptPath
 weaponArmed = require(scriptPath.."libs/weaponArmed")
 
+
+----------------------------------------------- MISSION / GAME FUNCTIONS -----------------------------------------------
+
+local function isGame()
+    return true
+        and Game ~= nil
+        and GAME ~= nil
+end
+
+local function isMission()
+    local mission = GetCurrentMission()
+
+    return true
+        and isGame()
+        and mission ~= nil
+        and mission ~= Mission_Test
+end
+
+local function missionData()
+    local mission = GetCurrentMission()
+
+    if mission.truelch_MechDivers == nil then
+        mission.truelch_MechDivers = {}
+    end
+
+    if mission.truelch_MechDivers.WeaponItems == nil then
+        mission.truelch_MechDivers.WeaponItems = {}
+    end
+
+    return mission.truelch_MechDivers
+end
+
+
 ----------------------------------------------- CUSTOM FUNCTIONS -----------------------------------------------
 
 local function isStratagemWeapon(weapon)
@@ -15,6 +48,11 @@ end
 
 
 ----------------------------------------------- STRATAGEMS CODES -----------------------------------------------
+
+--[[
+As sad as it is, I'm gonna scrap that.
+I'll keep it there in case someone somewhere need it in the future.
+]]
 
 --[[
 Let's use the same convention as ItB for directions:
@@ -84,7 +122,7 @@ local currentString = ""
 local maxSize = 5
 
 local HANDLER_onKeyReleased = function(scancode) --scancode is an int, not a string
-    --LOGF("-------- Key with scancode %s is being released and processed", scancode)
+    LOGF("-------- Key with scancode %s is being released and processed", scancode)
     --LOG("-------- type: "..type(scancode))
 
     if isStratagemArmed then
@@ -98,7 +136,7 @@ local HANDLER_onKeyReleased = function(scancode) --scancode is an int, not a str
             currentString = currentString + "1"
         end
 
-        LOG("currentString: "..currentString)
+        --LOG("currentString: "..currentString)
 
         if #currentString > maxSize then
             LOG("Failed QTE!")
@@ -109,7 +147,8 @@ local HANDLER_onKeyReleased = function(scancode) --scancode is an int, not a str
 
 end
 
-modApi.events.onKeyReleased:subscribe(HANDLER_onKeyReleased)
+--Deactivate this logic
+--modApi.events.onKeyReleased:subscribe(HANDLER_onKeyReleased)
 
 
 ----------------------------------------------- WEAPON ARMED -----------------------------------------------
@@ -147,8 +186,10 @@ end)
 
 
 ----------------------------------------------- WEAPON -----------------------------------------------
+
+--I do that so I can modify it during the game
 local function getStratagemDescription()
-    return "Will this work?!"
+    return "Free action.\nRequest a supply pod for next turn to an empty tile. Any unit under the drop zone will die."
 end
 
 --[[
@@ -173,15 +214,13 @@ truelch_Stratagem = Skill:new{
     PowerCost = 0,
 
     --Upgrades
-    --Upgrades = 2,
-    --UpgradeCost = { 1, 2 },
+    Upgrades = 2,
+    UpgradeCost = { 1, 1 },
 
     --Gameplay
     Range = 2,
 
     --Tip image
-    --I think I'll need just a custom logic to display the possibilities
-    --CustomTipImage = "Support_Repair_Tooltip",
     TipImage = {
         Unit   = Point(2, 2),
         --Enemy  = Point(2, 1),
@@ -194,14 +233,30 @@ truelch_Stratagem = Skill:new{
     }
 }
 
+Weapon_Texts.truelch_Stratagem_Upgrade1 = "Veteran stratagems"
+Weapon_Texts.truelch_Stratagem_Upgrade2 = "+1 Stratagems"
+
+truelch_Stratagem_A = truelch_Stratagem:new{
+    UpgradeDescription = "Give access to more powerful stratagems.",
+}
+
+truelch_Stratagem_B = truelch_Stratagem:new{
+    UpgradeDescription = "Increase by 1 the max amount of stratagem and the stratagems acquired at the start of a mission.",
+}
+
+truelch_Stratagem_AB = truelch_Stratagem:new{
+    --Nothing? Can I remove it then?
+}
+
 
 ----------------------------------------------- TIP IMAGE -----------------------------------------------
 
 function truelch_Stratagem:GetTargetArea_TipImage(point)
     local ret = PointList()
 
-    for j = 0, 7 do
-        for i = 0, 7 do
+    local size = Board:GetSize()
+    for j = 0, size.y do
+        for i = 0, size.x do
             local curr = Point(i, j)
             ret:push_back(curr)
         end
@@ -267,7 +322,6 @@ customTipImageIndexMax = 1
 function truelch_Stratagem:GSE_TI0()
     local ret = SkillEffect()
 
-
     customTipImageIndex = 1
     return ret
 end
@@ -292,16 +346,65 @@ function truelch_Stratagem:GetSkillEffect_TipImage(p1, p2)
     end
 end
 
+--TODO: make it a free action
 function truelch_Stratagem:GetSkillEffect_Normal(p1, p2)
     local ret = SkillEffect()
 
     local damage = SpaceDamage(p2, 0)
-
+    damage.sItem = "truelch_Item_WeaponPod"
     ret:AddArtillery(damage, "effects/shotup_tribomb_missile.png")
 
+    --I think it's a vanilla reference to the Pawn firing the weapon
+    if Pawn ~= nil then
+        LOG("Pawn: "..Pawn:GetMechName())
+    end
 
+    -- --- Free action attempt --- --
+
+    --Seems to work?
     --ret:AddScript([[
+    --    Pawn:SetActive(true)
     --]])
+
+    --Don't want to give free movement
+    --Pawn:SetMovementSpent(false)
+
+
+    --Doesn't work?
+    --ret:AddScript([[
+    --    Board:Ping(point, GL_Color(255, 255, 255))
+    --    modApi:runLater(function()
+    --        Pawn:SetActive(true)
+    --    end)
+    --]])
+
+    --From tatu:
+    --ret:AddScript([[
+    --    local point = Point(]].. p2:GetString() .. [[)
+    --    local pawn = Board:GetPawn(point)
+    --    Board:Ping(point, GL_Color(0,255,0));
+    --    modApi:runLater(function()
+    --        pawn:SetActive(true)
+    --        pawn:SetMovementSpent(false)
+    --        pawn:SetBonusMove(0)
+    --        for i = 0,2 do
+    --            local mech = Board:GetPawn(i)
+    --            local dead = mech:IsDead()
+    --            if dead then mech:SetHealth(1) end
+    --            local bool = mech:IsActive()
+    --            local curr = mech:GetSpace()
+    --            modApi:runLater(function()
+    --                Board:RemovePawn(mech)
+    --                Board:AddPawn(mech,curr)
+    --                if not bool then mech:SetActive(false) end
+    --                if dead then mech:SetHealth(0) end
+    --            end)
+    --        end
+    --    end)
+    --]])
+
+
+
 
     return ret
 end
@@ -318,5 +421,5 @@ end
 
 --[[
 When a new mission starts, acquire a new stratagem!
-I'm considering
 ]]
+
