@@ -117,7 +117,8 @@ local function protecc(pawn, skillEffect)
 
                 if damageRedirected > 0 then
                     local redir = SpaceDamage(proteccPawn:GetSpace(), damageRedirected)
-                    redir.sImageMark = "combat/icons/icon_protecc.png"
+                    --redir.sImageMark = "combat/icons/icon_protecc.png"
+                    redir.sImageMark = "combat/icons/icon_guard_glow.png"
                     skillEffect:AddScript([[Board:AddAlert(]]..proteccPawn:GetSpace():GetString()..[[, "Patriotism")]])
                     skillEffect:AddDamage(redir)
                 end

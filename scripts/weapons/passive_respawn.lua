@@ -19,14 +19,16 @@ truelch_Reinforcements_Passive = PassiveSkill:new{
 	--Passive
 	Passive = "truelch_Reinforcements_Passive",
 
-	--[[
+	--Tip image
+	TipImageRespawns = { Point(0, 0), Point(2, 2) },
 	TipImage = {
-		Unit = Point(2,3),
-		CustomPawn = "PunchMech",
-		Target = Point(2,2),
-		Enemy = Point(2,2),
+		Unit = Point(2, 3),
+		CustomPawn = "truelch_EagleMech",
+		--Target = Point(2, 2), --useless?
+
+		Friendly_Damaged = Point(1, 1),
+		Friendly2_Damaged = Point(2, 1),
 	}
-	]]
 }
 
 Weapon_Texts.truelch_Reinforcements_Passive_Upgrade1 = "Faster respawn"
@@ -36,10 +38,35 @@ truelch_Reinforcements_Passive_A = truelch_Reinforcements_Passive:new{
 	Passive = "truelch_Reinforcements_Passive_A", --test
 }
 
---Useless?
---[[
-function truelch_Reinforcements_Passive:GetSkillEffect(p1, p2)
+function truelch_Reinforcements_Passive:GetSkillEffect_TipImage()
 	local ret = SkillEffect()
+
+	--[[
+	local board_size = Board:GetSize()
+	for j = 0, board_size.y - 1 do
+		for i = 0, board_size.x - 1 do		
+			local pawn = Board:GetPawn(Point(i, j))
+			if pawn:IsMech() then
+
+			end
+		end
+	end
+	]]
+
+	--Respawns
+    for _, respawn in pairs(self.TipImageRespawns) do
+    	--
+    end
+
 	return ret
 end
-]]
+
+--Useless?
+function truelch_Reinforcements_Passive:GetSkillEffect(p1, p2)
+	if Board:IsTipImage() then
+		return self:GetSkillEffect_TipImage()
+	else
+		local ret = SkillEffect()
+		return ret
+	end
+end

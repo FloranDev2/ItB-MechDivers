@@ -18,12 +18,14 @@ CreateClass(truelch_DeliveryMode1)
 
 function truelch_DeliveryMode1:targeting(point)
 	local points = {}
+
 	for dir = DIR_START, DIR_END do
 		local curr = DIR_VECTORS[dir]*2 + point
 		if not Board:IsBlocked(curr, PATH_PROJECTILE) then
 			points[#points+1] = curr
 		end
 	end
+
 	return points
 end
 
@@ -117,6 +119,9 @@ truelch_Delivery = aFM_WeaponTemplate:new{
 	}
 }
 
+
+-------------------- GET TARGET AREA --------------------
+
 function truelch_Delivery:GetTargetArea(point)
 	local pl = PointList()
 	local currentMode = _G[self:FM_GetMode(point)]
@@ -132,7 +137,37 @@ function truelch_Delivery:GetTargetArea(point)
 	return pl
 end
 
-function truelch_Delivery:GetSkillEffect(p1, p2)
+-------------------- TIP IMAGE --------------------
+
+--custom tip image index
+local tipIndex = 0
+
+function truelch_Delivery:GIE_TI0(p1, p2)
+	local ret = SkillEffect()
+
+	tipIndex = 1
+	return ret
+end
+
+function truelch_Delivery:GIE_TI1(p1, p2)
+	local ret = SkillEffect()
+
+	tipIndex = 0 --tmp
+	return ret
+end
+
+function truelch_Delivery:GetSkillEffect_TipImage(p1, p2)
+	if tipIndex == 0 then
+		return self:GIE_TI0(p1, p2)
+	elseif tipIndex == 1 then
+		return self:GIE_TI1(p1, p2)
+	else
+		--tipIndex == 0 --for safety
+		return self:GIE_TI0(p1, p2)
+	end
+end
+
+function truelch_Delivery:GetSkillEffect_Normal(p1, p2)
 	local se = SkillEffect()
 	local currentMode = self:FM_GetMode(p1)
 	
@@ -144,8 +179,12 @@ function truelch_Delivery:GetSkillEffect(p1, p2)
 	return se
 end
 
--------------------- TIP IMAGE CUSTOM --------------------
-
-
+function truelch_Delivery:GetSkillEffect(p1, p2)
+	if not Board:IsTipImage() then
+		return self:GetSkillEffect_Normal(p1, p2)
+	else
+		return self:GetSkillEffect_TipImage(p1, p2)
+	end
+end
 
 return this

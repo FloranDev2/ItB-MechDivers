@@ -44,7 +44,7 @@ local function GetRandomPoint()
     for j = 0, 7 do
         for i = 0, 7 do
             local curr = Point(i, j)
-            if not Board:IsBlocked(curr, PATH_PROJECTILE) then
+            if not Board:IsBlocked(curr, PATH_PROJECTILE) and not Board:IsPod(curr) then
                 points[#points + 1] = curr
             end
         end
@@ -70,8 +70,8 @@ local function TestDisappearAppear(pawn)
 end
 
 local function TestKillAndRetreat(pawn)
-    --pawn:Retreat()
-    --pawn:Kill()
+    pawn:Retreat()
+    pawn:Kill()
 end
 
 local function TestInvisible(pawn)
@@ -176,11 +176,17 @@ Ok so idk if I should move that to:
 After 3 deaths or so, the Mechs no longer respawn.
 ]]
 local HOOK_onPawnKilled = function(mission, pawn)
-    LOG("------------ HOOK_onPawnKilled")
+    --LOG("------------ HOOK_onPawnKilled")
     if isMission() and pawn:IsMech() then
-        LOG("------------ here")
+        --LOG("------------ here")
         if IsPassiveSkill("truelch_Reinforcements_Passive_A") --[[or IsPassiveSkill("truelch_Reinforcements_Passive")]] then
-            LOG("------------ upgraded")
+            --LOG("------------ upgraded")
+
+            --TODO: play EXPLO anim
+            local anim = SpaceDamage(pawn:GetSpace(), 0)
+            anim.sAnimation = "img/effects/timetravel.png"
+            Board:AddEffect(anim)
+
             Board:RemovePawn(pawn)
             local randPoint = GetRandomPoint()
             local pawnType = pawn:GetType() --or this? Edit: at least this works
@@ -188,7 +194,14 @@ local HOOK_onPawnKilled = function(mission, pawn)
             newMech:SetMech()
             Board:SpawnPawn(newMech, randPoint)
         elseif IsPassiveSkill("truelch_Reinforcements_Passive") then
-            LOG("------------ unupgaded")
+            --LOG("------------ unupgaded")
+
+            --TODO: play EXPLO anim
+            local anim = SpaceDamage(pawn:GetSpace(), 0)
+            anim.sAnimation = "img/effects/timetravel.png"
+            Board:AddEffect(anim)
+
+            
             Board:RemovePawn(pawn)
             --V1: Wait for next player turn
             --Edit: the pawn spawned next turn failed to become a Mech
@@ -206,7 +219,7 @@ local HOOK_onPawnKilled = function(mission, pawn)
 
             Board:SpawnPawn(newMech, randPoint)
             local spawned = Board:GetPawn(randPoint)
-            LOG("------------ spawned: "..spawned:GetMechName())
+            --LOG("------------ spawned: "..spawned:GetMechName())
             table.insert(missionData().DeadMechs, spawned) --not really dead, but I understand myself
 
             --spawned:SetInvisible(true) --it's still there on the board though
