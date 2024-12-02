@@ -1,10 +1,9 @@
 
 --- MAIN YELLOW ---
---[[
 modApi:addPalette({
-		ID = "truelch_MechDivers",
-		Name = "Mech Divers' Black",
-		--Image = "img/units/player/gunship_ns.png",
+		ID = "truelch_MechDiversYellow",
+		Name = "Mech Divers' Yellow",
+		Image = "img/units/player/emancipatorMech_ns.png", --Emancipator
 		PlateHighlight = { 230, 230, 230 },	--lights
 		PlateLight     = { 240, 240,  10 },	--main highlight
 		PlateMid       = { 200, 150,   0 },	--main light
@@ -14,20 +13,20 @@ modApi:addPalette({
 		BodyColor      = {  30,  30,  30 },	--metal mid
 		BodyHighlight  = {  59,  59,  59 },	--metal light
 })
-]]
+modApi:getPaletteImageOffset("truelch_MechDiversYellow")
 
---- MAIN BLACK (TODO and TEST) ---
+--- MAIN BLACK ---
 modApi:addPalette({
-		ID = "truelch_MechDivers",
+		ID = "truelch_MechDiversBlack",
 		Name = "Mech Divers' Black",
-		--Image = "img/units/player/gunship_ns.png",
-		PlateHighlight = {   5,  15,  75 },	--lights
-		PlateLight     = { 150, 150, 150 }, --main highlight
-		PlateMid       = {  75,  75,  75 }, --main light
-		PlateDark      = {  30,  30,  30 },	--main mid
-		PlateOutline   = {  10,  10,  10 },	--main dark
-		PlateShadow    = {  125, 75,   0 },	--metal dark
-		BodyColor      = { 200, 150,   0 },	--metal mid
-		BodyHighlight  = { 240, 240,  10 },	--metal light
+		Image = "img/units/player/patriotMech_ns.png", --Patriot / Eagle
+		PlateHighlight = { 255, 255, 255 },	--lights
+		PlateLight     = {  91,  92,  93 }, --main highlight
+		PlateMid       = {  41,  42,  43 }, --main light
+		PlateDark      = {  34,  34,  32 },	--main mid
+		PlateOutline   = {  15,  15,  15 },	--main dark
+		PlateShadow    = { 125,  75,  50 },	--metal dark
+		BodyColor      = { 175, 100,  75 },	--metal mid
+		BodyHighlight  = { 255, 208,  75 },	--metal light
 })
-modApi:getPaletteImageOffset("truelch_MechDivers")
+modApi:getPaletteImageOffset("truelch_MechDiversBlack")

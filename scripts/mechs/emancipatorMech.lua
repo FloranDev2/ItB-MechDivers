@@ -2,7 +2,7 @@ local resourcePath = mod_loader.mods[modApi.currentMod].resourcePath
 local scriptPath = mod_loader.mods[modApi.currentMod].scriptPath
 local mechPath = resourcePath .."img/mechs/"
 local mod = modApi:getCurrentMod()
-local mechDivers = modApi:getPaletteImageOffset("truelch_MechDivers")
+local mechDiversYellow = modApi:getPaletteImageOffset("truelch_MechDiversYellow")
 
 --trait --->
 local trait = require(scriptPath.."/libs/trait") --unnecessary?
@@ -37,16 +37,16 @@ a.emancipatorMech_broken =  a.MechUnit:new{Image = "units/player/emancipatorMech
 a.emancipatorMechw_broken = a.MechUnit:new{Image = "units/player/emancipatorMech_w_broken.png", PosX = -28, PosY =  -5 }
 a.emancipatorMech_ns =      a.MechIcon:new{Image = "units/player/emancipatorMech_ns.png" }
 
-EmancipatorMech = Pawn:new{
+truelch_EmancipatorMech = Pawn:new{
 	Name = "Emancipator Mech",
 	Class = "Prime",
 
-	Health = 2,
+	Health = 3,
 	MoveSpeed = 3,
 	Massive = true,
 
-	Image = "emancipatorMech",
-	ImageOffset = mechDivers,
+	Image = "patriotMech", --Image = "emancipatorMech",
+	ImageOffset = mechDiversYellow,
 	
 	SkillList = { "truelch_EmancipatorWeapons", "truelch_Stratagem" },
 

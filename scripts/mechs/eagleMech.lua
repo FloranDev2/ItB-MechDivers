@@ -2,7 +2,7 @@ local resourcePath = mod_loader.mods[modApi.currentMod].resourcePath
 local scriptPath = mod_loader.mods[modApi.currentMod].scriptPath
 local mechPath = resourcePath .."img/mechs/"
 local mod = modApi:getCurrentMod()
-local mechDivers = modApi:getPaletteImageOffset("truelch_MechDivers")
+local mechDiversBlack = modApi:getPaletteImageOffset("truelch_MechDiversBlack")
 
 --trait --->
 local trait = require(scriptPath.."/libs/trait") --unnecessary?
@@ -37,7 +37,7 @@ a.eagleMech_broken =  a.MechUnit:new{Image = "units/player/eagleMech_broken.png"
 a.eagleMechw_broken = a.MechUnit:new{Image = "units/player/eagleMech_w_broken.png", PosX = -28, PosY =  -5 }
 a.eagleMech_ns =      a.MechIcon:new{Image = "units/player/eagleMech_ns.png" }
 
-EagleMech = Pawn:new{
+truelch_EagleMech = Pawn:new{
 	Name = "Shuttle Mech", --Support Mech? (already used in WotP) / (Aerospace) Assault (Craft) Mech?
 	Class = "Science", --or Brute? But since it'll have a lot of support stuff + passive, makes more sense to make it Science, right?
 
@@ -48,7 +48,7 @@ EagleMech = Pawn:new{
 	Flying = true,
 
 	Image = "eagleMech",
-	ImageOffset = mechDivers,
+	ImageOffset = mechDiversBlack,
 	
 	--One FMWeapon that calls in various weapon and a Respawn passive
 	SkillList = { "truelch_Delivery", "truelch_Reinforcements_Passive" }, --truelch_TestWeapon

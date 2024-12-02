@@ -12,8 +12,6 @@ truelch_DeliveryMode1 = {
 	aFM_name = "Strafing run",					   -- required
 	aFM_desc = "Leap over a tile and bombard it.", -- required
 	aFM_icon = "img/modes/icon_strafe.png",        -- required (if you don't have an image an empty string will work) 
-	-- aFM_limited = 2, 						   -- optional (FMW will automatically handle uses for weapons)
-	-- aFM_handleLimited = false 				   -- optional (FMW will no longer automatically handle uses for this mode if set)
 }
 
 CreateClass(truelch_DeliveryMode1)
@@ -40,7 +38,7 @@ function truelch_DeliveryMode1:fire(p1, p2, se)
 
 	se:AddLeap(move, 0.25)
 
-	ret:AddDelay(0.5)
+	se:AddDelay(0.5)
 end
 
 
@@ -113,7 +111,9 @@ truelch_Delivery = aFM_WeaponTemplate:new{
 	aFM_ModeSwitchDesc = "Click to change mode.",
 
 	TipImage = {
-		Unit = Point(2, 2)
+		Unit   = Point(1, 2),
+		Target = Point(3, 2),
+		CustomPawn = "truelch_EagleMech",
 	}
 }
 

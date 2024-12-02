@@ -2,7 +2,7 @@ local resourcePath = mod_loader.mods[modApi.currentMod].resourcePath
 local scriptPath = mod_loader.mods[modApi.currentMod].scriptPath
 local mechPath = resourcePath .."img/mechs/"
 local mod = modApi:getCurrentMod()
-local mechDivers = modApi:getPaletteImageOffset("truelch_MechDivers")
+local mechDiversBlack = modApi:getPaletteImageOffset("truelch_MechDiversBlack")
 
 --trait --->
 local trait = require(scriptPath.."/libs/trait") --unnecessary?
@@ -37,16 +37,16 @@ a.patriotMech_broken =  a.MechUnit:new{Image = "units/player/patriotMech_broken.
 a.patriotMechw_broken = a.MechUnit:new{Image = "units/player/patriotMech_w_broken.png", PosX = -28, PosY =  -5 }
 a.patriotMech_ns =      a.MechIcon:new{Image = "units/player/patriotMech_ns.png" }
 
-PatriotMech = Pawn:new{
+truelch_PatriotMech = Pawn:new{
 	Name = "Patriot Mech",
 	Class = "Prime",
 
-	Health = 2,
+	Health = 3,
 	MoveSpeed = 3,
 	Massive = true,
 
 	Image = "patriotMech",
-	ImageOffset = mechDivers,
+	ImageOffset = mechDiversBlack,
 	
 	--Might remove stratagem from him?
 	SkillList = { "truelch_PatriotWeapons", "truelch_Stratagem" },

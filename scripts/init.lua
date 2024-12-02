@@ -2,7 +2,7 @@ local mod = {
 	id = "truelch_MechDivers",
 	name = "Mech Divers",
 	icon = "img/mod_icon.png",
-	version = "0.0.0",
+	version = "0.1.0",
 	modApiVersion = "2.9.2",
 	--gameVersion = "1.2.88",
     dependencies = {
@@ -39,7 +39,8 @@ function mod:init()
 	require(self.scriptPath.."items")
 
 	--Drop Env
-	require(self.scriptPath.."dropEnv")
+	--I won't use custom event because I want the drop effect to happen AFTER enemies act, not before
+	--require(self.scriptPath.."dropEnv")
 
 	--Hooks
 	require(self.scriptPath.."hooks")   --> will be moved to the reinforcement passive
@@ -84,9 +85,9 @@ function mod:load(options, version)
 		{
 			id = "truelch_MechDivers",
 			"Mech Divers",
-			"PatriotMech",
-			"EmancipatorMech",
-			"EagleMech",
+			"truelch_PatriotMech",
+			"truelch_EmancipatorMech",
+			"truelch_EagleMech",
 		},
 		"Mech Divers",
 		"A cup of Liber-Tea.\nLet's free Super Earth from these undemocratic Vek!",

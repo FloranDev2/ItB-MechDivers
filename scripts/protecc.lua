@@ -3,6 +3,38 @@
 local mod = modApi:getCurrentMod()
 local scriptPath = mod.scriptPath
 
+--[[
+function SpaceDamage:ListFields()
+    return {
+        "bEvacuate",
+        "bHide",
+        "bHideIcon",
+        "bHidePath",
+        "bKO_Effect",
+        "bSimpleMark",
+        "fDelay",
+        "iAcid",
+        "iCrack",
+        "iDamage",
+        "iFire",
+        "iFrozen",
+        "iInjure",
+        "iPawnTeam",
+        "iPush",
+        "iShield",
+        "iSmoke",
+        "iTerrain",
+        "loc",
+        "sAnimation",
+        "sImageMark",
+        "sItem",
+        "sPawn",
+        "sScript",
+        "sSound"
+    }
+end
+]]
+
 
 ----------------------------------------------- MISSION / GAME FUNCTIONS -----------------------------------------------
 
@@ -37,6 +69,23 @@ local function missionData()
 end
 ]]
 
+----------------------------------------------- CUSTOM FUNCTIONS -----------------------------------------------
+
+--Should the Eagle Mech be a protecc pawn too or just the Emancipator and the Patriot Mechs?
+local proteccPawns = { "EagleMech", "EmancipatorMech", "PatriotMech" }
+
+local function isProteccPawn(pawn)
+    if pawn == nil then return false end
+
+    for _, proteccPawn in pairs(proteccPawns) do
+        if pawn:GetType() == proteccPawn then
+            return true
+        end
+    end
+
+    return false
+end
+
 
 ----------------------------------------------- HOOKS -----------------------------------------------
 
@@ -50,27 +99,41 @@ local function protecc(pawn, skillEffect)
 
     for i = 1, skillEffect.effect:size() do
         local spaceDamage = skillEffect.effect:index(i);
-        if spaceDamage.iDamage > 0 then
-            damageRedirected = damageRedirected + spaceDamage.iDamage
-            spaceDamage.iDamage = 0
+        --LOG("spaceDamage.loc: "..spaceDamage.loc:GetString())
+        if spaceDamage.iDamage > 0 and Board:IsBuilding(spaceDamage.loc) then
+            local proteccPawn = nil
+
+            for dir = DIR_START, DIR_END do
+                local curr = spaceDamage.loc + DIR_VECTORS[dir]
+                local pawn = Board:GetPawn(curr)
+                if Board:IsValid(curr) and pawn ~= nil and isProteccPawn(pawn) then
+                    proteccPawn = pawn
+                end
+            end
+
+            if proteccPawn ~= nil then
+                damageRedirected = damageRedirected + spaceDamage.iDamage
+                spaceDamage.iDamage = 0
+
+                if damageRedirected > 0 then
+                    local redir = SpaceDamage(proteccPawn:GetSpace(), damageRedirected)
+                    redir.sImageMark = "combat/icons/icon_protecc.png"
+                    skillEffect:AddScript([[Board:AddAlert(]]..proteccPawn:GetSpace():GetString()..[[, "Patriotism")]])
+                    skillEffect:AddDamage(redir)
+                end
+
+            end
         end
     end
-
-    --[[
-    if damageRedirected > 0 then
-        local redir = spaceDamage(pawn:GetSpace(), damageRedirected)
-        skillEffect:AddDamage(redir)
-    end
-    ]]
 end
 
 
 local HOOK_onSkillBuild = function(mission, pawn, weaponId, p1, p2, skillEffect)
-    --protecc(pawn, skillEffect)
+    protecc(pawn, skillEffect)
 end
 
 local HOOK_onFinalEffectBuildHook = function(mission, pawn, weaponId, p1, p2, p3, skillEffect)
-    --protecc(pawn, skillEffect)
+    protecc(pawn, skillEffect)
 end
 
 

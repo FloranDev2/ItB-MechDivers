@@ -157,7 +157,7 @@ truelch_Stratagem = Skill:new{
     Name = "Stratagem",
     Description = "Request a supply pod for next turn to an empty tile. Any unit under the drop zone will die.",
     Class = "Any",
-    Icon = "weapons/support_blizzard.png", --tmp
+    Icon = "weapons/truelch_stratagem.png", --tmp
 
     --Shop
     Rarity = 1,

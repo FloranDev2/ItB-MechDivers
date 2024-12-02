@@ -8,12 +8,12 @@ Each side would only have 2 ammo.
 truelch_EmancipatorWeapons = Skill:new{
 	--Infos
 	Name = "Dual autocannons",
-	Description = "Shoot 2 pushing projectiles from either sides. If the target is at a distance of 2 or less, the projectile deal 1 damage.",
+	Description = "Shoot 2 pushing projectiles from either sides. If the target is tiles away or less, the projectile deal 1 damage.",
 	Class = "Prime",
 	PowerCost = 0,
 
 	--Art
-	Icon = "weapons/brute_tankmech.png",
+	Icon = "weapons/truelch_dual_autocannon.png",
 	UpShot = "effects/shotup_ignite_fireball.png",
 	Explosion = "explopush2_",
 	Sound = "/general/combat/explode_small",
@@ -34,6 +34,7 @@ truelch_EmancipatorWeapons = Skill:new{
 		Target = Point(2, 2),
 		Enemy  = Point(1, 3),
 		Enemy2 = Point(3, 1),
+		CustomPawn = "truelch_EmancipatorMech",
 	}
 }
 
