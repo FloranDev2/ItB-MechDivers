@@ -69,7 +69,7 @@ stratagems = {}
 --Support Weapons (is free action!)
 table.insert(stratagems, { "03201", "truelch_mg43MachineGun",        false }) -- ▼ ◄ ▼ ▲ ► MG-43 Machine Gun: if immobile: more damage?
 table.insert(stratagems, { "03102", "truelch_apw1AntiMaterialRifle", false }) -- ▼ ◄ ► ▲ ▼ APW-1 Anti-Material Rifle: can't shoot melee and range 2
-table.insert(stratagems, { "03", "truelch_apw1AntiMaterialRifle",    false }) -- ▼ ◄ M-105 Stalwart
+table.insert(stratagems, { "03???", "truelch_apw1AntiMaterialRifle", false }) -- ▼ ◄ ? ? ? M-105 Stalwart
 
 --Orbital Strikes
 table.insert(stratagems, { "12300",  "truelch_orbitalGatlingBarrage", true }) -- ► ▼ ◄ ▲ ▲   Orbital Gatling Barrage
@@ -122,7 +122,7 @@ local currentString = ""
 local maxSize = 5
 
 local HANDLER_onKeyReleased = function(scancode) --scancode is an int, not a string
-    LOGF("-------- Key with scancode %s is being released and processed", scancode)
+    --LOGF("-------- Key with scancode %s is being released and processed", scancode)
     --LOG("-------- type: "..type(scancode))
 
     if isStratagemArmed then
@@ -153,15 +153,15 @@ end
 
 ----------------------------------------------- WEAPON ARMED -----------------------------------------------
 
+--Was only relevant for the QTE system that I'm scraping.
+--[[
 weaponArmed.events.onWeaponArmed:subscribe(function(skill, pawnId)
     local pawn = Game:GetPawn(pawnId)
 
-    --[[
     LOGF("Pawn %s armed weapon %s",
         tostring(pawn:GetMechName()),
         tostring(skill.__Id)
     )
-    ]]
 
     if isStratagemWeapon(skill) then
         LOG(" ---> is stratagem!")
@@ -174,15 +174,15 @@ weaponArmed.events.onWeaponUnarmed:subscribe(function(skill, pawnId)
     -- so pawn might not exist.
     local pawn = Game and Game:GetPawn(pawnId) or nil
 
-    --[[
     LOGF("Pawn %s unarmed weapon %s",
         tostring(pawn and pawn:GetMechName() or nil),
         tostring(skill.__Id)
     )
-    ]]
 
     isStratagemArmed = false
 end)
+
+]]
 
 
 ----------------------------------------------- WEAPON -----------------------------------------------
@@ -206,8 +206,11 @@ truelch_Stratagem = Skill:new{
     Name = "Stratagem",
     --Description = "Request a supply pod for next turn to an empty tile. Any unit under the drop zone will die.",
     Description = getStratagemDescription(), --it works! I can dynamically change the weapon's description during the game!
-    Class = "", --"Any"
-    Icon = "weapons/truelch_stratagem.png", --tmp
+    Class = "",
+
+    --Art
+    Icon = "weapons/truelch_stratagem.png",
+    UpShot = "effects/truelch_shotup_stratagem_ball.png",
 
     --Shop
     Rarity = 1,
@@ -222,14 +225,9 @@ truelch_Stratagem = Skill:new{
 
     --Tip image
     TipImage = {
-        Unit   = Point(2, 2),
-        --Enemy  = Point(2, 1),
+        Unit   = Point(2, 2),        
         Target = Point(2, 1),
         CustomPawn = "truelch_PatriotMech",
-
-        --Second_Origin = Point(2, 2),
-        --Second_Target = Point(3, 2),
-        Enemy3 = Point(3, 3),
     }
 }
 
@@ -347,7 +345,7 @@ function truelch_Stratagem:GetSkillEffect_Normal(p1, p2)
 
     local damage = SpaceDamage(p2, 0)
     damage.sItem = "truelch_Item_WeaponPod"
-    ret:AddArtillery(damage, "effects/shotup_tribomb_missile.png")
+    ret:AddArtillery(damage, self.UpShot)
 
     -- --- Free action attempt --- --
     --I could also use a hook
@@ -355,6 +353,7 @@ function truelch_Stratagem:GetSkillEffect_Normal(p1, p2)
     --Seems to work?
     ret:AddScript([[
         Pawn:SetActive(true)
+        Pawn:SetMovementSpent(false)
     ]])
 
     --Don't want to give free movement
@@ -410,4 +409,3 @@ end
 --[[
 When a new mission starts, acquire a new stratagem!
 ]]
-

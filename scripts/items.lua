@@ -62,13 +62,9 @@ end
 
 -------------------- ITEMS --------------------
 
---- Resupply Pod
-modApi:appendAsset("img/combat/item_truelch_supply_pod.png", resourcePath.."img/combat/item_truelch_supply_pod.png")
-	Location["combat/item_truelch_supply_pod.png"] = Point(-15, 10)
-
 --Maybe I'll move it to a separate file, because I *might* also do item drops for the Patriot and Emancipator when they're out of ammo
 truelch_Item_ResupplyPod = {
-	Image = "combat/item_truelch_supply_pod.png",
+	Image = "combat/blue_stratagem_grenade.png",
 	Damage = SpaceDamage(0),
 	Tooltip = "Item_Truelch_ResupplyDrop_Text",
 	Icon = "combat/icons/icon_mine_glow.png",
@@ -77,13 +73,9 @@ truelch_Item_ResupplyPod = {
 
 TILE_TOOLTIPS.Item_Truelch_ResupplyDrop_Text = {"Supply Pod", "Pick it up to reload your weapons."}
 
---- Weapon Pod
-modApi:appendAsset("img/combat/item_truelch_supply_pod.png", resourcePath.."img/combat/item_truelch_supply_pod.png")
-	Location["combat/item_truelch_supply_pod.png"] = Point(-15, 10)
-
 --Maybe I'll move it to a separate file, because I *might* also do item drops for the Patriot and Emancipator when they're out of ammo
 truelch_Item_WeaponPod = {
-	Image = "combat/item_truelch_supply_pod.png",
+	Image = "combat/blue_stratagem_grenade.png",
 	Damage = SpaceDamage(0),
 	Tooltip = "Item_Truelch_WeaponDrop_Text",
 	Icon = "combat/icons/icon_mine_glow.png",
@@ -113,8 +105,10 @@ BoardEvents.onItemRemoved:subscribe(function(loc, removed_item)
 	elseif removed_item == "truelch_Item_WeaponPod" then
 		--TODO: store in mission data in what weapon is at each pod position
 		local pawn = Board:GetPawn(loc)
-		--pawn:RemoveWeapon(2)
-		pawn:AddWeapon("truelch_mg43MachineGun")
-		Board:AddAlert(loc, "Acquired a MG-43 Machine Gun!")
+		if pawn ~= nil then
+			--pawn:RemoveWeapon(2)
+			pawn:AddWeapon("truelch_mg43MachineGun")
+			Board:AddAlert(loc, "Acquired a MG-43 Machine Gun!")
+		end
 	end
 end)

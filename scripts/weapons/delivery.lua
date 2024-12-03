@@ -45,9 +45,10 @@ function truelch_DeliveryMode1:fire(p1, p2, se)
 
 	se:AddDelay(0.5)
 	
-	for dir = DIR_START, DIR_END do
-		local damage = SpaceDamage(p1)
-		local target = GetProjectileEnd(p1, p2)
+	for aoeDir = DIR_START, DIR_END do
+		local curr = p1 + DIR_VECTORS[dir]
+		local damage = SpaceDamage(p1, 1, aoeDir)
+		local target = GetProjectileEnd(curr, curr + DIR_VECTORS[dir])
 		se:AddProjectile(damage, self.Projectile)
 	end
 end
@@ -122,8 +123,10 @@ truelch_Delivery = aFM_WeaponTemplate:new{
 	aFM_ModeSwitchDesc = "Click to change mode.",
 
 	TipImage = {
-		Unit   = Point(1, 2),
-		Target = Point(3, 2),
+		Unit       = Point(1, 2),
+		Enemy      = Point(2, 3),
+		Friendly   = Point(2, 1),
+		Target     = Point(3, 2),
 		CustomPawn = "truelch_EagleMech",
 	}
 }

@@ -44,7 +44,7 @@ function mod:init()
 
 	--Hooks
 	require(self.scriptPath.."hooks")   --> will be moved to the reinforcement passive
-	require(self.scriptPath.."protecc") --> will be moved to trait
+	require(self.scriptPath.."protecc") --> will be moved to trait (OR PILOT??!)
 
 	--Mechs
 	require(self.scriptPath.."mechs/patriotMech")
@@ -52,11 +52,11 @@ function mod:init()
 	require(self.scriptPath.."mechs/eagleMech")
 
 	--Test
-	require(self.scriptPath.."/weapons/test/testWeapon")
-	require(self.scriptPath.."/weapons/test/debugMechs")
+	--require(self.scriptPath.."/weapons/test/testWeapon")
+	--require(self.scriptPath.."/weapons/test/debugMechs")
 
 	--Regular weapons
-	require(self.scriptPath.."/weapons/emancipatorWeapons")
+	require(self.scriptPath.."/weapons/dualAutocannons")
 	require(self.scriptPath.."/weapons/patriotWeapons")
 	require(self.scriptPath.."/weapons/stratagem")
 	require(self.scriptPath.."/weapons/delivery")

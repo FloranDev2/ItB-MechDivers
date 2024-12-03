@@ -163,6 +163,8 @@ function truelch_mg43MachineGun:TipImmobile(p1, p2)
 end
 
 function truelch_mg43MachineGun:TipHalfMove(p1, p2)
+    local ret = SkillEffect()
+
     --Prepare enemy attack
 
     --Half move
@@ -170,9 +172,13 @@ function truelch_mg43MachineGun:TipHalfMove(p1, p2)
     --1st shot
 
     --2nd shot
+
+    return ret
 end
 
 function truelch_mg43MachineGun:TipFullMove(p1, p2)
+    local ret = SkillEffect()
+
     --Prepare enemy attack
 
     --Full move
@@ -180,6 +186,8 @@ function truelch_mg43MachineGun:TipFullMove(p1, p2)
     --1 shot
 
     --Enemy attack
+
+    return ret
 end
 
 function truelch_mg43MachineGun:GetSkillEffect_TipImage(p1, p2)
@@ -243,42 +251,6 @@ end
 ----------------------------------------------- ??? WEAPONS -----------------------------------------------
 
 
------------------------------------------------ TEST -----------------------------------------------
-
---[[
-truelch_testQueueWeapon = Skill:new{
-    --Infos
-    Name = "Test queue weapon",
-    Description = "Queue an attack lowl.",
-    PowerCost = 0,
-    --Art
-    Icon = "weapons/brute_tankmech.png",
-
-    --TipImage = StandardTips.Ranged,
-}
-
-function truelch_testQueueWeapon:GetTargetArea(point)
-    local ret = PointList()
-
-    for j = 0, 7 do
-        for i = 0, 7 do
-            local curr = Point(i, j)
-            ret:push_back(curr)
-        end
-    end
-
-    return ret
-end
-
-function truelch_testQueueWeapon:GetSkillEffect(p1, p2)
-    local ret = SkillEffect()
-    local dir = GetDirection(p2 - p1)
-    ret:AddQueuedArtillery(SpaceDamage(p2, 2), "effects/shotup_crab1.png")
-    return ret
-end
-]]
-
-
 ----------------------------------------------- HOOKS -----------------------------------------------
 
 local function HOOK_onNextTurnHook()
@@ -312,10 +284,8 @@ local HOOK_onSkillEnd = function(mission, pawn, weaponId, p1, p2)
     ]]
 end
 
-local HOOK_onMissionEnded = function(mission)
-    LOG("Mission end!")
-    --Destroy all stratagem weapons
-
+local function destroyAllStratagemWeapons()
+    LOG("destroyAllStratagemWeapons()")
     --Look through all Mechs. Remember, respawned Mechs aren't in 0 - 2 index range
     local size = Board:GetSize()
     for j = 0, size.y do
@@ -334,12 +304,44 @@ local HOOK_onMissionEnded = function(mission)
     end
 end
 
+--Maybe I need to keep this one
+local HOOK_onMissionEnded = function(mission)
+    LOG("HOOK_onMissionEnded")
+    destroyAllStratagemWeapons()
+end
+
+--This causes a null ref to Board!
+--[[
+local HOOK_onMissionTestEnded = function(mission)
+    LOG("HOOK_onMissionTestEnded")
+    destroyAllStratagemWeapons()
+end
+]]
+
+--Maybe it makes more sense to do that at mission start rather than mission end?
+local HOOK_onMissionStarted = function(mission)
+    LOG("HOOK_onMissionStarted")
+    destroyAllStratagemWeapons()
+end
+
+local HOOK_onMissionTestStarted = function(mission)
+    LOG("HOOK_onMissionTestStarted")
+    destroyAllStratagemWeapons()
+end
+
 ----------------------------------------------- HOOKS / EVENTS SUBSCRIPTION -----------------------------------------------
 
 local function EVENT_onModsLoaded()
+    --M43
     modApi:addNextTurnHook(HOOK_onNextTurnHook)
     modapiext:addSkillEndHook(HOOK_onSkillEnd)
+
+    --Destroy stratagem weapons
+    modApi:addMissionStartHook(HOOK_onMissionStarted)
+    modApi:addTestMechEnteredHook(HOOK_onMissionTestStarted)
+
     modApi:addMissionEndHook(HOOK_onMissionEnded)
+    --modApi:addTestMechExitedHook(HOOK_onMissionTestEnded)
 end
 
 modApi.events.onModsLoaded:subscribe(EVENT_onModsLoaded)

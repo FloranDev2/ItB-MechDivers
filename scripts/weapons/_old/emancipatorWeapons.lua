@@ -92,36 +92,21 @@ function truelch_EmancipatorWeapons:AutocannonShot(ret, point, direction)
 		damage = self.LongRangeDamage
 	end
 
+	--[[
 	local spaceDamage = SpaceDamage(target, damage, direction)
 	spaceDamage.sAnimation = self.Explosion..direction
 	ret:AddArtillery(spaceDamage, self.UpShot)
-
-	--Simple proj. Crap, it still crashes even after I comment ArtilleryHeight property
-	--[[
-    local spaceDamage = SpaceDamage(target, 1, direction)
-    ret:AddProjectile(spaceDamage, "effects/shot_mechtank")
-    ]]
-
-	--Regular projectile instead
-	--[[
-	if dist <= self.RangeThreshold then
-		--Short range shot
-		LOG("--------- Short range A")		
-		local damage = SpaceDamage(target, self.ShortRangeDamage, direction)
-		LOG("--------- Short range B")
-		ret:AddProjectile(damage, self.ShortRangeProjectileArt)
-		LOG("--------- Short range C")
-	else		
-		--Long range shot
-		LOG("--------- Long range A")
-		local damage = SpaceDamage(target, self.LongRangeDamage, direction)
-		LOG("--------- Long range B")
-		ret:AddProjectile(damage, self.LongRangeProjectileArt)
-		LOG("--------- Long range C")
-	end
 	]]
 
-	--LOG("--------- End") --We reach here even with projectile that makes the game crash
+	if dist <= self.RangeThreshold then
+		--Short range shot
+		local damage = SpaceDamage(target, self.ShortRangeDamage, direction)
+		ret:AddProjectile(damage, self.ShortRangeProjectileArt)
+	else		
+		--Long range shot
+		local damage = SpaceDamage(target, self.LongRangeDamage, direction)
+		ret:AddProjectile(damage, self.LongRangeProjectileArt)
+	end
 end
 
 --[[
