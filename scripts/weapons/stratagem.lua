@@ -316,32 +316,27 @@ end
 ----------------------------------------------- GET SKILL EFFECT -----------------------------------------------
 
 customTipImageIndex = 0
-customTipImageIndexMax = 1
 
 --Drop Weapon
 function truelch_Stratagem:GSE_TI0()
     local ret = SkillEffect()
-
-    customTipImageIndex = 1
+    
     return ret
 end
 
 function truelch_Stratagem:GSE_TI1()
     local ret = SkillEffect()
-
-
-    customTipImageIndex = 0 --tmp
+    
     return ret
 end
 
 
 function truelch_Stratagem:GetSkillEffect_TipImage(p1, p2)
-    if customTipImageIndex == 0 then
-        return self:GSE_TI0()
-    elseif customTipImageIndex == 1 then
+    if customTipImageIndex == 1 then
+        customTipImageIndex = 0
         return self:GSE_TI1()
-    --else customTipImageIndex = 0 end --safety
     else
+        customTipImageIndex = 1
         return self:GSE_TI0()
     end
 end
@@ -354,17 +349,13 @@ function truelch_Stratagem:GetSkillEffect_Normal(p1, p2)
     damage.sItem = "truelch_Item_WeaponPod"
     ret:AddArtillery(damage, "effects/shotup_tribomb_missile.png")
 
-    --I think it's a vanilla reference to the Pawn firing the weapon
-    if Pawn ~= nil then
-        LOG("Pawn: "..Pawn:GetMechName())
-    end
-
     -- --- Free action attempt --- --
+    --I could also use a hook
 
     --Seems to work?
-    --ret:AddScript([[
-    --    Pawn:SetActive(true)
-    --]])
+    ret:AddScript([[
+        Pawn:SetActive(true)
+    ]])
 
     --Don't want to give free movement
     --Pawn:SetMovementSpent(false)
@@ -402,9 +393,6 @@ function truelch_Stratagem:GetSkillEffect_Normal(p1, p2)
     --        end
     --    end)
     --]])
-
-
-
 
     return ret
 end

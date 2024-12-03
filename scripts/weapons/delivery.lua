@@ -13,6 +13,8 @@ truelch_DeliveryMode1 = {
 	--aFM_desc = "Leap over a tile, shooting any toward any direction there's a unit (enemy AND ally!).",
 	aFM_desc = "Leap over a tile, shooting sideways if there's a unit (enemy or ally).",
 	aFM_icon = "img/modes/icon_strafe.png",
+
+	Projectile = "effects/shot_mechtank",
 }
 
 CreateClass(truelch_DeliveryMode1)
@@ -46,7 +48,7 @@ function truelch_DeliveryMode1:fire(p1, p2, se)
 	for dir = DIR_START, DIR_END do
 		local damage = SpaceDamage(p1)
 		local target = GetProjectileEnd(p1, p2)
-		
+		se:AddProjectile(damage, self.Projectile)
 	end
 end
 

@@ -79,8 +79,13 @@ truelch_mg43MachineGun = Skill:new {
 	--Infos
 	Name = "MG-43 Machine Gun",
     Class = "", --test
-	Description = "Shoot a pushing projectile. Shoot again at the start of next turn if the Mech moved 1 tile or less.".. --or didn't use ALL its move?
-        "\nThis weapon will be removed at the end of the mission.",
+	--Description = "Shoot a pushing projectile. Shoot again at the start of next turn if the Mech moved 1 tile or less.".. --or didn't use ALL its move?
+    --    "\nThis weapon will be removed at the end of the mission.",
+    Description = "Shoot a pushing projectile dealing 1 damage."..
+        "\nShoot again just before the Vek act if the Mech moved less than half its move (rounded down)."..
+        "\nShoot a third projectile at the end of Vek turn if the Mech was immobile.".. --BRRRRRRT
+        "\n\nThis weapon will be removed at the end of the mission.",
+
 	PowerCost = 0, --Can I also remove this?
 
 	--Art
@@ -97,7 +102,22 @@ truelch_mg43MachineGun = Skill:new {
     QueuedDamage = 1,
     QueuedPush = 1,
 
-	TipImage = StandardTips.Ranged,
+    --Tip image
+    --Gonna do it reverse to show the full effect without having to wait one year...
+    --Step 1: immobile -> 3 projectiles. Step 2: half-move: ->
+    TipStage = 1,
+    TipImage = {
+        Unit   = Point(2, 4),
+        Target = Point(2, 2),
+
+        Enemy  = Point(2, 3),
+        Enemy2 = Point(2, 2),
+        Enemy3 = Point(2, 0),
+
+        Building = Point(0, 0),
+
+        CustomEnemy = "Scarab1",
+    }
 }
 
 
@@ -105,7 +125,77 @@ function truelch_mg43MachineGun:GetTargetArea(point)
     return Board:GetSimpleReachable(point, INT_MAX, false) --I guess
 end
 
-function truelch_mg43MachineGun:GetSkillEffect(p1, p2)
+
+function truelch_mg43MachineGun:TipImmobile(p1, p2)
+    --From confuse shot
+    --[[
+    local ret = SkillEffect()
+    ret.piOrigin = Point(2,3)
+    local damage = SpaceDamage(0)
+    damage.bHide = true
+    damage.sScript = "Board:GetPawn(Point(2,1)):FireWeapon(Point(2,2),1)"
+    ret:AddDamage(damage)
+    damage = SpaceDamage(0)
+    damage.bHide = true
+    damage.fDelay = 1.5
+    ret:AddDamage(damage)
+    local damage = SpaceDamage(p2,0,DIR_FLIP)
+    damage.bHide = true
+    damage.sAnimation = "ExploRepulse3"--"airpush_"..GetDirection(p2 - p1)
+    ret:AddProjectile(damage,"effects/shot_confuse")
+    return ret
+    ]]
+
+    local ret = SkillEffect()
+
+    --Prepare enemy attack
+
+    --(No move) -> nothing todo
+    --Board:AddAlert("")
+
+    --1st shot
+
+    --2nd shot
+
+    --3rd shot
+
+    return ret
+end
+
+function truelch_mg43MachineGun:TipHalfMove(p1, p2)
+    --Prepare enemy attack
+
+    --Half move
+
+    --1st shot
+
+    --2nd shot
+end
+
+function truelch_mg43MachineGun:TipFullMove(p1, p2)
+    --Prepare enemy attack
+
+    --Full move
+
+    --1 shot
+
+    --Enemy attack
+end
+
+function truelch_mg43MachineGun:GetSkillEffect_TipImage(p1, p2)
+    if self.TipStage == 1 then
+        self.TipStage = 2
+        return self:TipImmobile(p1, p2)
+    elseif self.TipStage == 2 then
+        self.TipStage = 3
+        return self:TipHalfMove(p1, p2)
+    else
+        self.TipStage = 1
+        self:TipHalfMove(p1, p2)
+    end
+end
+
+function truelch_mg43MachineGun:GetSkillEffect_Normal(p1, p2)
     --Some vars
     local ret = SkillEffect()
     local direction = GetDirection(p2 - p1)            
@@ -133,7 +223,22 @@ function truelch_mg43MachineGun:GetSkillEffect(p1, p2)
     return ret
 end
 
+function truelch_mg43MachineGun:GetSkillEffect(p1, p2)
+    if not Board:IsTipImage() then
+        self:GetSkillEffect_Normal(p1, p2)
+    else
+        self:GetSkillEffect_TipImage(p1, p2)
+    end
+end
 
+
+--Sniper: minimum range, PULL, (or confuse if at a certain range), or TC (p2 == p3 => confuse, otherwise pull?)
+--[[
+    Icon = "weapons/brute_sniper.png",
+    ProjectileArt = "effects/shot_sniper",
+    LaunchSound = "/weapons/raining_volley",
+    ImpactSound = "/impact/generic/explosion",
+]]
 
 ----------------------------------------------- ??? WEAPONS -----------------------------------------------
 
@@ -200,9 +305,11 @@ local HOOK_onSkillEnd = function(mission, pawn, weaponId, p1, p2)
     --better use the pawn move hook to track the distance
     --if weaponId == "Move" then
 
+    --[[
     if weaponId == "truelch_mg43MachineGun" then
 
     end
+    ]]
 end
 
 local HOOK_onMissionEnded = function(mission)
