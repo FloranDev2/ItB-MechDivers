@@ -52,12 +52,14 @@ function truelch_PatriotWeaponsMode1:fire(p1, p2, se)
 	end
 
 	local spaceDamage = SpaceDamage(target, damage)
-	--se:AddProjectile(spaceDamage, self.ProjectileArt)
 
 	if Board:IsDeadly(spaceDamage, Pawn) then
 		se:AddProjectile(spaceDamage, self.ProjectileArt)
 		local target2 = GetProjectileEnd(target, target + DIR_VECTORS[direction], PATH_PROJECTILE)
 		local excessDamage = damage
+
+		local debugStr = "[A] excessDamage: "..tostring(excessDamage)
+
 		local deadPawn = Board:GetPawn(target)
 		if deadPawn ~= nil then
 			--I hope I'm making a reliable damage calculator
@@ -70,10 +72,14 @@ function truelch_PatriotWeaponsMode1:fire(p1, p2, se)
 				excessDamage = damage - 1
 			end
 
+			debugStr = debugStr.."\n[B] excessDamage: "..tostring(excessDamage)
+
 			--Subtract health
 			excessDamage = excessDamage - deadPawn:GetHealth()
-			if excessDamage <= 0 then
+			if excessDamage < 0 then --equal 0 is fine since it creates a pushing projectile
 				LOG("--------- Shouldn't happen")
+				debugStr = debugStr.."\n[C] excessDamage: "..tostring(excessDamage)..", deadPawn:GetHealth(): "..tostring(deadPawn:GetHealth())
+				LOG(debugStr)
 				return
 			end
 

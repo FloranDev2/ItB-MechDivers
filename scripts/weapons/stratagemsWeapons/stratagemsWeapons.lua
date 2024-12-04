@@ -248,6 +248,10 @@ end
     ImpactSound = "/impact/generic/explosion",
 ]]
 
+--???: Channel a powerful attack for the next turn. Channeling still does a little effecf (push + fire?)
+
+
+
 ----------------------------------------------- ??? WEAPONS -----------------------------------------------
 
 
