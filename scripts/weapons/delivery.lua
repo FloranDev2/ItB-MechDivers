@@ -111,7 +111,6 @@ function truelch_DeliveryMode1:fire(p1, p2, se)
 	end
 
 	--Apply damage
-	--LOG("--- APPLY DAMAGE ---")
 	local prevLoc
 	for _, point in ipairs(list) do
 		local spaceDamage = SpaceDamage(point, dmg)
@@ -122,7 +121,6 @@ function truelch_DeliveryMode1:fire(p1, p2, se)
 
 		--dir == 1 or 3: x move / dir == 0 or 2: y move
 		if prevLoc ~= nil and ((dir%2 == 1 and prevLoc.x ~= point.x) or (dir%2 == 0 and prevLoc.y ~= point.y)) then
-			--LOG("Changed row!")
 			se:AddDelay(0.2)
 		end
 

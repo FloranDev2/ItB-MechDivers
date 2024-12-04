@@ -96,7 +96,7 @@ local function TestBackUpStuff(pawn)
 end
 
 local function TestEnv(pawn)
-    --Env test (doesn' work yet)
+    --Env test (doesn't work yet)
     local randPoint = GetRandomPoint()
     Board:AddAlert(randPoint, "Env here")
     ---Board:MarkSpaceImage(randPoint, "combat/tile_icon/tile_truelch_drop.png", GL_Color(255, 226, 88, 0.75))
@@ -227,6 +227,7 @@ local HOOK_onPawnKilled = function(mission, pawn)
         end
     end
 end
+
 
 ----------------------------------------------- HOOKS / EVENTS SUBSCRIPTION -----------------------------------------------
 

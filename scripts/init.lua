@@ -58,7 +58,8 @@ function mod:init()
 	--Regular weapons
 	require(self.scriptPath.."/weapons/dualAutocannons")
 	require(self.scriptPath.."/weapons/patriotWeapons")
-	require(self.scriptPath.."/weapons/stratagem")
+	--require(self.scriptPath.."/weapons/stratagem")
+	require(self.scriptPath.."/weapons/stratagemFMW")
 	require(self.scriptPath.."/weapons/delivery")
 	require(self.scriptPath.."/weapons/passive_respawn")
 

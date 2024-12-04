@@ -189,7 +189,11 @@ end)
 
 --I do that so I can modify it during the game
 local function getStratagemDescription()
-    return "Free action.\nRequest a supply pod for next turn to an empty tile. Any unit under the drop zone will die."
+    local description = "Free action."..
+        "\nRequest a supply pod for next turn to an empty tile. Any unit under the drop zone will die."..
+        "\n\nNote: for technical reasons, you need to unselect and select again the unit to use a newly acquired weapon."
+
+    return description
 end
 
 --[[
@@ -343,6 +347,8 @@ end
 function truelch_Stratagem:GetSkillEffect_Normal(p1, p2)
     local ret = SkillEffect()
 
+    --Can I intercept this skill with a hook while this skill doesn't use the Mech's action?
+
     local damage = SpaceDamage(p2, 0)
     damage.sItem = "truelch_Item_WeaponPod"
     ret:AddArtillery(damage, self.UpShot)
@@ -353,14 +359,11 @@ function truelch_Stratagem:GetSkillEffect_Normal(p1, p2)
     --Seems to work?
     ret:AddScript([[
         Pawn:SetActive(true)
-        Pawn:SetMovementSpent(false)
     ]])
 
     --Don't want to give free movement
     --Pawn:SetMovementSpent(false)
 
-
-    --Doesn't work?
     --ret:AddScript([[
     --    Board:Ping(point, GL_Color(255, 255, 255))
     --    modApi:runLater(function()
@@ -404,8 +407,40 @@ function truelch_Stratagem:GetSkillEffect(p1, p2)
     end
 end
 
------------------------------------------------ HOOKS -----------------------------------------------
+----------------------------------------------- HOOKS / EVENTS SUBSCRIPTION -----------------------------------------------
 
 --[[
 When a new mission starts, acquire a new stratagem!
+]]
+
+
+--Detect if the stratagem was used: doesn't work with an empty SkillEffect, except for Skill Build, which SPAMS the hook.
+--[[
+local HOOK_onSkillStarted = function(mission, pawn, weaponId, p1, p2)
+    LOG(string.format("%s is using %s at %s!", pawn:GetMechName(), weaponId, p2:GetString()))
+end
+
+local HOOK_onSkillEnded = function(mission, pawn, weaponId, p1, p2)
+    LOG(string.format("%s has finished using %s at %s!", pawn:GetMechName(), weaponId, p2:GetString()))
+end
+
+local HOOK_onSkillBuilt = function(mission, pawn, weaponId, p1, p2, skillEffect)
+    LOG("HOOK_onSkillBuilt(weaponId: "..weaponId..")")
+end
+]]
+
+
+----------------------------------------------- HOOKS / EVENTS SUBSCRIPTION -----------------------------------------------
+
+--TODO: add stratagems at the start of a mission (except test mission!)
+
+--[[
+local function EVENT_onModsLoaded()
+    --Not sure if I should use skill start, skill end or skill build here
+    modapiext:addSkillStartHook(HOOK_onSkillStarted)
+    modapiext:addSkillEndHook(HOOK_onSkillEnded)
+    modapiext:addSkillBuildHook(HOOK_onSkillBuilt)
+end
+
+modApi.events.onModsLoaded:subscribe(EVENT_onModsLoaded)
 ]]
