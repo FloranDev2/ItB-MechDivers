@@ -2,6 +2,8 @@ local mod = mod_loader.mods[modApi.currentMod]
 local resourcePath = mod.resourcePath
 
 --FMW modes icons (TODO)
+
+--TMP
 for i = 1, 8 do
 	modApi:appendAsset("img/modes/icon_mode"..tostring(i)..".png", resourcePath.."img/modes/icon_mode"..tostring(i)..".png")
 end
@@ -9,8 +11,13 @@ end
 modApi:appendAsset("img/modes/icon_resupply.png", resourcePath.."img/modes/icon_resupply.png")
 modApi:appendAsset("img/modes/icon_strafe.png",   resourcePath.."img/modes/icon_strafe.png")
 
-modApi:appendAsset("img/modes/icon_minigun.png", resourcePath.."img/modes/icon_minigun.png")
-modApi:appendAsset("img/modes/icon_rocket_pod.png",   resourcePath.."img/modes/icon_rocket_pod.png")
+modApi:appendAsset("img/modes/icon_minigun.png",    resourcePath.."img/modes/icon_minigun.png")
+modApi:appendAsset("img/modes/icon_rocket_pod.png", resourcePath.."img/modes/icon_rocket_pod.png")
+
+--Stratagem FMWs icons
+modApi:appendAsset("img/modes/icon_mg43.png", resourcePath.."img/modes/icon_mg43.png")
+modApi:appendAsset("img/modes/icon_apw1.png", resourcePath.."img/modes/icon_apw1.png")
+modApi:appendAsset("img/modes/icon_flam40.png", resourcePath.."img/modes/icon_flam40.png")
 
 --Items
 --TMP

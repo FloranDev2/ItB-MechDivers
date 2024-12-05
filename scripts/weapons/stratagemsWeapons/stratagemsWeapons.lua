@@ -52,6 +52,8 @@ end
 
 local stratagemWeapons = {
     "truelch_mg43MachineGun",
+    "truelch_apw1AntiMaterielRifle",
+    "truelch_flam40Flamethrower",
 }
 
 local function isStratagemWeapon(weaponId)
@@ -71,22 +73,15 @@ end
 
 ----------------------------------------------- SUPPORT WEAPONS -----------------------------------------------
 
---Description = "A machine gun designed for stationary use. Trades higher power for increased recoil and reduced accuracy.",
---Class = "Any", --Actually need to not specify a class so that I can AddWeapon
-
---Can we have upgraded drop weapons?
-truelch_mg43MachineGun = Skill:new {
+--"A machine gun designed for stationary use. Trades higher power for increased recoil and reduced accuracy.",
+truelch_mg43MachineGun = Skill:new{
 	--Infos
 	Name = "MG-43 Machine Gun",
-    Class = "", --test
-	--Description = "Shoot a pushing projectile. Shoot again at the start of next turn if the Mech moved 1 tile or less.".. --or didn't use ALL its move?
-    --    "\nThis weapon will be removed at the end of the mission.",
+    Class = "",
     Description = "Shoot a pushing projectile dealing 1 damage."..
         "\nShoot again just before the Vek act if the Mech moved less than half its move (rounded down)."..
         "\nShoot a third projectile at the end of Vek turn if the Mech was immobile.".. --BRRRRRRT
         "\n\nThis weapon will be removed at the end of the mission.",
-
-	PowerCost = 0, --Can I also remove this?
 
 	--Art
 	Icon = "weapons/brute_tankmech.png",
@@ -97,6 +92,7 @@ truelch_mg43MachineGun = Skill:new {
     Explosion = "",
 
 	--Gameplay
+    Limited = 2,
 	Damage = 1,
     Push = 1,
     QueuedDamage = 1,
@@ -199,7 +195,7 @@ function truelch_mg43MachineGun:GetSkillEffect_TipImage(p1, p2)
         return self:TipHalfMove(p1, p2)
     else
         self.TipStage = 1
-        self:TipHalfMove(p1, p2)
+        return self:TipHalfMove(p1, p2)
     end
 end
 
@@ -216,7 +212,7 @@ function truelch_mg43MachineGun:GetSkillEffect_Normal(p1, p2)
     else
         damage = SpaceDamage(target, self.Damage)
     end
-    ret:AddProjectile(damage, self.Projectile)
+    ret:AddProjectile(p1, damage, self.Projectile, NO_DELAY)
 
     --Additional queued shot (OR add to mission data to shoot AFTER enemy turn)
     local queuedDamage = nil
@@ -232,15 +228,16 @@ function truelch_mg43MachineGun:GetSkillEffect_Normal(p1, p2)
 end
 
 function truelch_mg43MachineGun:GetSkillEffect(p1, p2)
+    --LOG("truelch_mg43MachineGun:GetSkillEffect")
     if not Board:IsTipImage() then
-        self:GetSkillEffect_Normal(p1, p2)
+        return self:GetSkillEffect_Normal(p1, p2)
     else
-        self:GetSkillEffect_TipImage(p1, p2)
+        return self:GetSkillEffect_TipImage(p1, p2)
     end
 end
 
 
---Sniper: minimum range, PULL, (or confuse if at a certain range), or TC (p2 == p3 => confuse, otherwise pull?)
+
 --[[
     Icon = "weapons/brute_sniper.png",
     ProjectileArt = "effects/shot_sniper",
@@ -248,9 +245,143 @@ end
     ImpactSound = "/impact/generic/explosion",
 ]]
 
---???: Channel a powerful attack for the next turn. Channeling still does a little effecf (push + fire?)
+--A high-caliber sniper rifle effective over long distances against light vehicle armor. This rifle must be aimed downscope.
+--Sniper: minimum range, PULL, (or confuse if at a certain range), or TC (p2 == p3 => confuse, otherwise pull?)
+truelch_apw1AntiMaterielRifle = Skill:new{
+    --Infos
+    Name = "APW-1 Anti-Materiel Rifle",
+    Class = "",
+    Description = "Shoot a powerful projectile at long range that pulls."..
+        "\nMinimum range: 2.",
 
+    --Art
+    Icon = "weapons/brute_sniper.png", --TMP
+    Sound = "/general/combat/explode_small",
+    LaunchSound = "/weapons/raining_volley",
+    ImpactSound = "/impact/generic/explosion",
+    Projectile = "effects/shot_sniper",
+    Explosion = "",
 
+    --Gameplay
+    Limited = 2,
+    MinRange = 2,
+    Damage = 2,
+
+    --Tip image
+    TipImage = {
+        Unit   = Point(2, 4),
+        Target = Point(2, 1),
+        Enemy  = Point(2, 1),
+    }
+}
+
+function truelch_apw1AntiMaterielRifle:GetTargetArea(point)
+    local ret = PointList()
+    for dir = DIR_START, DIR_END do
+        for i = self.MinRange, 7 do
+            local curr = Point(point + DIR_VECTORS[dir] * i)
+            if Board:IsValid(curr) then
+                ret:push_back(curr)
+            else
+                break
+            end
+        end
+    end
+    return ret
+end
+
+function truelch_apw1AntiMaterielRifle:GetSkillEffect(p1, p2)
+    local ret = SkillEffect()
+    local pullDir = GetDirection(p1 - p2)
+    local target = GetProjectileEnd(p1, p2)
+    local damage = SpaceDamage(target, self.Damage, pullDir)
+    ret:AddProjectile(damage, self.Projectile)
+    return ret
+end
+
+--Flam-40: ignite a tile and pull inward lateral tiles?
+truelch_flam40Flamethrower = Skill:new{
+    --Infos
+    Name = "FLAM-40 Flamethrower",
+    Class = "",
+    Description = "Ignite a target and pull inward an adjacent tile."..
+        "\nRange: 2 - 4.",
+
+    --Art
+    Icon = "weapons/prime_flamethrower.png",
+    --Sound = "/general/combat/explode_small",
+    LaunchSound = "/weapons/artillery_volley",
+    ImpactSound = "/impact/generic/explosion",
+    UpShot = "effects/shotup_ignite_fireball.png",
+
+    --Artillery Arc
+    ArtilleryHeight = 0,
+
+    --Gameplay
+    TwoClick = true,
+    Limited = 2,
+    MinRange = 2,
+    MaxRange = 4,
+
+    --Tip image
+    TipImage = {
+        Unit   = Point(2, 4),
+        Enemy  = Point(3, 2),
+        Target = Point(2, 2),
+        Second_Click = Point(3, 2),
+    }
+}
+
+function truelch_flam40Flamethrower:GetTargetArea(point)
+    local ret = PointList()
+    for dir = DIR_START, DIR_END do
+        for i = self.MinRange, self.MaxRange do
+            local curr = Point(point + DIR_VECTORS[dir] * i)
+            if Board:IsValid(curr) then
+                ret:push_back(curr)
+            else
+                break
+            end
+        end
+    end
+    return ret
+end
+
+function truelch_flam40Flamethrower:GetSkillEffect(p1, p2)
+    local ret = SkillEffect()
+
+    local damage = SpaceDamage(p2, 0)
+    damage.sAnimation = "ExploArt2" --tmp?
+    damage.iFire = 1
+    ret:AddArtillery(damage, self.UpShot)
+
+    return ret
+end
+
+function truelch_flam40Flamethrower:GetSecondTargetArea(p1, p2)
+    local ret = PointList()
+
+    for dir = DIR_START, DIR_END do
+        local curr = p2 + DIR_VECTORS[dir]
+        if Board:IsValid(curr) then
+            ret:push_back(curr)
+        end
+    end
+
+    return ret
+end
+
+function truelch_flam40Flamethrower:GetFinalEffect(p1, p2, p3)
+    local ret = self:GetSkillEffect(p1, p2)
+    local direction = GetDirection(p2 - p3)
+    local damage = SpaceDamage(p3, 0)
+    damage.iPush = direction
+    damage.sAnimation = "airpush_"..direction
+    ret:AddDamage(damage)
+    return ret
+end
+
+--???: Channel a powerful attack for the next turn. Channeling still does a little effect (push + fire?)
 
 ----------------------------------------------- ??? WEAPONS -----------------------------------------------
 
@@ -291,6 +422,9 @@ end
 local function destroyAllStratagemWeapons()
     LOG("destroyAllStratagemWeapons()")
     --Look through all Mechs. Remember, respawned Mechs aren't in 0 - 2 index range
+    --Need to try this:
+    --for _, p in pairs(extract_table(Board:GetPawns(TEAM_MECH))) do
+    --Will it work for newly spawned pawns?
     local size = Board:GetSize()
     for j = 0, size.y do
         for i = 0, size.x do

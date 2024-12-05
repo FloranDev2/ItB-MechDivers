@@ -18,59 +18,98 @@ local function isStratagemWeapon(weapon)
     return string.find(weapon, "truelch_Stratagem") ~= nil
 end
 
+---------------------------------------------------------
+-------------------- SUPPORT WEAPONS --------------------
+---------------------------------------------------------
 
--------------------- MODE 1 --------------------
+-------------------- MODE 1: MG-43 Machine Gun --------------------
 
 truelch_StratagemMode1 = {
-	aFM_name = "Mode 1",
-	aFM_desc = "Mode 1 desc.",
-	aFM_icon = "img/modes/icon_mode1.png",
-	--Test Inactive
-	--aFM_active = true,
+	aFM_name = "Call-in Machine Gun",
+	aFM_desc = "Free action."..
+		"\nCall-in a pod containing a MG-43 Machine Gun that shoot a pushing projectile that deal 1 damage."..
+		"\nShoot a second pushing projectile just before the enemies act if the Mech used half movement."..
+		"\nShoot a third projectile after enemies actions if the Mech stayed immobile.",
+	aFM_icon = "img/modes/icon_mg43.png",
+
+	UpShot = "effects/truelch_shotup_stratagem_ball.png",
+	Range = 2,
+	Item = "truelch_Item_WeaponPod_Flam40", --in the end, I need to not spawn this directly
 }
 
 CreateClass(truelch_StratagemMode1)
 
 function truelch_StratagemMode1:targeting(point)
 	local points = {}
-	for j = 0, 7 do
-		for i = 0, 7 do
-			points[#points+1] = Point(i, j)
-		end
-	end
+
+    for j = -self.Range, self.Range do
+        for i = -self.Range, self.Range do
+            local curr = point + Point(i, j)
+            local isItem = Board:GetItem(curr) == nil
+            if curr ~= point and Board:IsValid(curr) and not Board:IsBlocked(curr, PATH_PROJECTILE) and
+                not Board:IsPod(curr) and isItem == false then
+                points[#points+1] = curr
+            end
+        end
+    end
+
 	return points
 end
 
 function truelch_StratagemMode1:fire(p1, p2, se)
+    local damage = SpaceDamage(p2, 0)
+    damage.sItem = self.Item
+    se:AddArtillery(damage, self.UpShot)
+
+    --Free action
+    se:AddScript([[
+        Pawn:SetActive(true)
+    ]])
+
+    --I do need to add stuff in mission data, at least for the pseudo "ENV" effect
+    --se:AddScript([[
+    --    Pawn:SetActive(true)
+    --]])
 end
 
 
--------------------- MODE 2 --------------------
+-------------------- MODE 2: APW-1 Anti-Materiel Rifle --------------------
 
 truelch_StratagemMode2 = truelch_StratagemMode1:new{
-	aFM_name = "Mode 2",
-	aFM_desc = "Mode 2 desc.",
-	aFM_icon = "img/modes/icon_mode2.png",
+	aFM_name = "Call-in a Sniper Rifle",
+	aFM_desc = "Free action."..
+		"\nCall-in a pod containing a APW-1 Anti-Materiel Rifle."..
+		"It shoots projectiles with a minimum range of 2 that deals heavy damage and pull.",
+	aFM_icon = "img/modes/icon_apw1.png",
 }
 
 
--------------------- MODE 3 --------------------
+-------------------- MODE 3: FLAM-40 Flamethrower --------------------
 
 truelch_StratagemMode3 = truelch_StratagemMode1:new{
-	aFM_name = "Mode 3",
-	aFM_desc = "Mode 3 desc.",
-	aFM_icon = "img/modes/icon_mode3.png",
+	aFM_name = "Call-in a Flamethrower",
+	aFM_desc = "Free action."..
+		"\nCall-in a pod containing a FLAM-40 Flamethrower."..
+		"Ignite the target tile and pull inward an adjacent tile.",
+	aFM_icon = "img/modes/icon_flam40.png",
 }
 
 
--------------------- MODE 4 --------------------
+-------------------- MODE 4: RS-422 Railgun --------------------
 
 truelch_StratagemMode4 = truelch_StratagemMode1:new{
-	aFM_name = "Mode 4",
-	aFM_desc = "Mode 4 desc.",
+	aFM_name = "Call-in a RS-422 Railgun",
+	aFM_desc = "Free action."..
+		"\nCall-in a pod containing a RS-422 Railgun."..
+		"\nIt channels a powerful attack that can be released next turn."..
+		"\nThe channeling does a push effect.",
 	aFM_icon = "img/modes/icon_mode4.png",
 }
 
+
+-----------------------------------------------------
+-------------------- AIR STRIKES --------------------
+-----------------------------------------------------
 
 -------------------- MODE 5 --------------------
 
@@ -94,8 +133,12 @@ truelch_StratagemMode6 = truelch_StratagemMode1:new{
 truelch_StratagemFMW = aFM_WeaponTemplate:new{
 	--Infos
 	Name = "Stratagems",
-	Description = "DESCRIPTION",
-	Class = "", --Changed from Prime to Any
+	Description = "Calls-in pods, airstrikes or deployables."..
+		"\nA random stratagem is added at the start of a mission."..
+		"\nWeapons acquired by stratagems are removed at the end of the mission."..
+		"\nSome stratagems are free actions (generally the calls for weapons)."..
+		"\nIf you have a Shuttle Mech in range, the call-in can be instant. (airstrikes and weapons drops)",
+	Class = "",
 	Rarity = 1,
 	PowerCost = 1,
 
@@ -105,14 +148,39 @@ truelch_StratagemFMW = aFM_WeaponTemplate:new{
 
     --FMW
 	aFM_ModeList = {
-		"truelch_StratagemMode1", 
-		"truelch_StratagemMode2",
-		"truelch_StratagemMode3",
-		"truelch_StratagemMode4",
+		--Weapons
+		"truelch_StratagemMode1", --Call-in MG-43 Machine Gun
+		"truelch_StratagemMode2", --Call-in a APW-1 Anti-Materiel Rifle (Sniper)
+		"truelch_StratagemMode3", --Call-in a FLAM-40 Flamethrower
+		"truelch_StratagemMode4", --Call-in a ??? (channeling weapon)
+		--Air strikes
 		"truelch_StratagemMode5",
-		"truelch_StratagemMode6"
+		"truelch_StratagemMode6",
+		--Orbital strikes
+		--Turrets
+		--Drones
+		--Misc
 	},
 	aFM_ModeSwitchDesc = "Click to change mode.",
+
+	--Upgrades
+	Upgrades = 2,
+	UpgradeCost = { 1, 1 },
+}
+
+Weapon_Texts.truelch_StratagemFMW_Upgrade1 = "Veteran stratagems"
+Weapon_Texts.truelch_StratagemFMW_Upgrade2 = "+1 Stratagems"
+
+truelch_StratagemFMW_A = truelch_StratagemFMW:new{
+    UpgradeDescription = "Give access to more powerful stratagems.",
+}
+
+truelch_StratagemFMW_B = truelch_StratagemFMW:new{
+    UpgradeDescription = "Increase by 1 the max amount of stratagem and the stratagems acquired at the start of a mission.",
+}
+
+truelch_StratagemFMW_AB = truelch_StratagemFMW:new{
+    --Nothing? Can I remove it then?
 }
 
 function truelch_StratagemFMW:GetTargetArea(point)
@@ -174,10 +242,16 @@ local HOOK_onNextTurn = function(mission)
 
 						if type(weapon) == 'table' then
 							weapon = weapon.__Id
-						end --if type(weapon) == 'table' then
+						end
 
 						if isStratagemWeapon(weapon) then
+							--TODO: set mode to the first available stratagem mode
+							--[[
+							fmw:FM_SetActive(p, "truelch_StratagemMode1", false)
 							fmw:FM_SetActive(p, "truelch_StratagemMode3", false)
+							fmw:FM_SetActive(p, "truelch_StratagemMode5", false)
+							fmw:FM_SetActive(p, "truelch_StratagemMode6", false)
+							]]
 						end
 					end
 				end
@@ -194,5 +268,3 @@ end
 modApi.events.onModsLoaded:subscribe(EVENT_onModsLoaded)
 
 return this
-
-

@@ -73,14 +73,8 @@ function this:closeModePanel()
 	end
 end
 
---Truelch
-function this:isActiveMode(mode)
-	--function aFM_WeaponTemplate:FM_IsActive(p, mode)
-	return _G[mode].aFM_name ~= "Mode 3"
-end
-
 function this:openModePanel()
-	LOG("=== fm_ui - openModePanel() ===")
+	--LOG("=== fm_ui - openModePanel() ===")
 	local root = sdlext.getUiRoot()
 	-- returns skill object, skill index, and owner (pawn object)
 	local weapon, _, owner = api:GetActiveSkill()
@@ -123,29 +117,28 @@ function this:openModePanel()
 		clip(Ui2, uiself, screen)
 	end
 
-	LOG("--- A")
+	--LOG("--- A")
 	--Test: create a new mode list
 	local afmActiveModeList = {}
-	LOG("weapon: "..tostring(weapon))
-	LOG("weapon.aFM_ModeList: "..tostring(weapon.aFM_ModeList))
+	--LOG("weapon: "..tostring(weapon))
+	--LOG("weapon.aFM_ModeList: "..tostring(weapon.aFM_ModeList))
 	for _, mode in ipairs(weapon.aFM_ModeList) do
-		LOG("- loop iteration")
-		LOG("mode: "..mode)
-		--if this:isActiveMode(mode) then
+		--LOG("- loop iteration")
+		--LOG("mode: "..mode)
 		if weapon:FM_IsActive(owner:GetId(), mode) then
-			LOG("added mode!")
+			--LOG("added mode!")
 			afmActiveModeList[#afmActiveModeList+1] = mode
 		end
 	end
 
-	LOG("--- B")
+	--LOG("--- B")
 
-	LOG("weapon.aFM_ModeList count: "..tostring(#weapon.aFM_ModeList))
-	LOG("afmActiveModeList count: "..tostring(#afmActiveModeList))
+	--LOG("weapon.aFM_ModeList count: "..tostring(#weapon.aFM_ModeList))
+	--LOG("afmActiveModeList count: "..tostring(#afmActiveModeList))
 
 	LOG("openModePanel - loop")
 	for i, mode in ipairs(afmActiveModeList) do
-		LOG("-> mode: "..tostring(_G[mode].aFM_name)..", i: "..tostring(i)..", i2: "..tostring(i2))
+		--LOG("-> mode: "..tostring(_G[mode].aFM_name)..", i: "..tostring(i))
 
 		local tt = string.format("%s\n\n%s", _G[mode].aFM_name, _G[mode].aFM_desc)
 		local icon = sdlext.surface(_G[mode].aFM_icon)
@@ -211,7 +204,6 @@ function this:openModePanel()
 end
 
 function this:closeModeSwitchButton()
-	--LOG("=== fm_ui - closeModeSwitchButton() ===")
 	if this.modeSwitchButton then
 		this.modeSwitchButton:detach()
 
@@ -224,7 +216,6 @@ function this:closeModeSwitchButton()
 end
 
 function this:openModeSwitchButton()
-	--LOG("=== fm_ui - openModeSwitchButton() ===")
 	local root = sdlext.getUiRoot()
 	local weapon, _, owner = api:GetActiveSkill()
 
