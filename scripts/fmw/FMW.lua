@@ -5,7 +5,7 @@
 atlas_FiringModeWeaponFramework = atlas_FiringModeWeaponFramework or {vers, hkRegistry = {}, repair = {}, move = {}}
 local aFMWF = atlas_FiringModeWeaponFramework
 
-local this = {vers = "8.4.1"}
+local this = {vers = "8.5.0"} --local this = {vers = "8.4.1"} --truelch
 local mod = mod_loader.mods[modApi.currentMod]
 local path = mod.scriptPath
 local resources = mod.resourcePath
@@ -38,6 +38,8 @@ local function initializeFMStates(m)
 			m.atlas_FMW.Curr[pId] = {}
 			m.atlas_FMW.Limited[pId] = {{}, {}, [50] = {}, [0] = {}}
 			m.atlas_FMW.Disabled[pId] = {false, false, [50] = false, [0] = false}
+			--m.atlas_FMW.IsActive[pId] = {true, true, [50] = true, [0] = true} --truelch
+			m.atlas_FMW.IsActive[pId] = {{}, {}, [50] = {}, [0] = {}} --truelch
 
 			for _, i in pairs({1, 2, 50, 0}) do
 				local weapon = api:GetSkill(pId, i)
@@ -49,6 +51,8 @@ local function initializeFMStates(m)
 					for j = 1, #weapon.aFM_ModeList do
 						local mode = weapon.aFM_ModeList[j]
 						m.atlas_FMW.Limited[pId][i][mode] = _G[mode].aFM_limited or -1
+						--m.atlas_FMW.IsActive[pId][i][mode] = _G[mode].aFM_isActive and true --ideal but less safe and I might not need it
+						m.atlas_FMW.IsActive[pId][i][mode] = true
 					end
 				end
 			end
@@ -89,19 +93,22 @@ function this:load()
 		fm_hotkey:load()
 
 		modApi:addMissionNextPhaseCreatedHook(function(prevM, nextM)
-			nextM.atlas_FMW = {Curr = {}, Limited = {}, Disabled = {}}
+			--nextM.atlas_FMW = {Curr = {}, Limited = {}, Disabled = {}}
+			nextM.atlas_FMW = {Curr = {}, Limited = {}, Disabled = {}, IsActive = {}} --truelch
 			fm_ui:closeModePanel()
 			fm_ui:closeModeSwitchButton()
             modApi:runLater(function() initializeFMStates(nextM) end)
 		end)
 
 		modApi:addMissionStartHook(function(m)
-			m.atlas_FMW = {Curr = {}, Limited = {}, Disabled = {}}
+			--m.atlas_FMW = {Curr = {}, Limited = {}, Disabled = {}}
+			m.atlas_FMW = {Curr = {}, Limited = {}, Disabled = {}, IsActive = {}} --truelch
 			modApi:runLater(function() initializeFMStates(m) end)
 		end)
 
 		modApi:addTestMechEnteredHook(function(m)
-			m.atlas_FMW = {Curr = {}, Limited = {}, Disabled = {}}
+			--m.atlas_FMW = {Curr = {}, Limited = {}, Disabled = {}}
+			m.atlas_FMW = {Curr = {}, Limited = {}, Disabled = {}, IsActive = {}} --truelch
 			modApi:runLater(function() initializeFMStates(m) end)
 		end)
 

@@ -316,4 +316,79 @@ function aFM_WeaponTemplate:FM_CurrentModeReady(p)
 	return currentMode and self:FM_GetUses(p, currentMode) ~= 0
 end
 
+-- CUSTOM FUNCTION WRITTEN BY TRUELCH
+-- p: pawn space or id
+-- mode: mode id (string)
+-- isActive: true: will show the mode (default) / false: will hide the mode's icon.
+function aFM_WeaponTemplate:FM_SetActive(p, mode, isActive)
+	local m = GetCurrentMission()
+	local weaponIdx = this:GetSkillIdx(p, self)
+	local pId = Board:GetPawn(p):GetId()
+
+	if not m or not modapiext.pawn:getSavedataTable(pId) then
+		return
+	end
+
+	--m.atlas_FMW.Limited[pId][weaponIdx][mode] = i
+	m.atlas_FMW.IsActive[pId][weaponIdx][mode] = isActive
+end
+
+-- CUSTOM FUNCTION WRITTEN BY TRUELCH
+-- returns # of uses specified mode has left
+-- p: pawn space or id
+-- mode: mode id (string)
+function aFM_WeaponTemplate:FM_IsActive(p, mode)
+	--LOG("aFM_WeaponTemplate:FM_IsActive(p: "..Board:GetPawn(p):GetMechName()..", mode: "..mode..")")
+
+	local m = GetCurrentMission()
+	local pId = Board:GetPawn(p):GetId()
+
+	if not m or not modapiext.pawn:getSavedataTable(pId) then
+		return -1
+	end
+
+	local weaponIdx = this:GetSkillIdx(p, self)
+
+	--LOG("weaponIdx: "..tostring(weaponIdx))
+
+	if m ~= nil then
+		--LOG(" -> m is ok")
+		if m.atlas_FMW ~= nil then
+			--LOG(" -> m.atlas_FMW is ok")
+			--LOG(" -> pId: "..tostring(pId))
+			if m.atlas_FMW.IsActive ~= nil then
+				--LOG(" -> m.atlas_FMW.IsActive is ok -> type: "..type(m.atlas_FMW.IsActive ))
+				if m.atlas_FMW.IsActive[pId] ~= nil then
+					--LOG("m.atlas_FMW.IsActive[pId] is ok -> type: "..type(m.atlas_FMW.IsActive[pId]))
+					if (m.atlas_FMW.IsActive[pId][weaponIdx]) ~= nil then
+						--LOG("m.atlas_FMW.IsActive[pId][weaponIdx] is ok -> type: "..type(m.atlas_FMW.IsActive[pId][weaponIdx]))
+						if m.atlas_FMW.IsActive[pId][weaponIdx][mode] ~= nil then
+							--LOG("m.atlas_FMW.IsActive[pId][weaponIdx][mode] is ok -> type: "..type(m.atlas_FMW.IsActive[pId][weaponIdx][mode]))
+						else
+							--LOG("m.atlas_FMW.IsActive[pId][weaponIdx][mode] is nil!")
+						end
+					else
+						--LOG("m.atlas_FMW.IsActive[pId][weaponIdx] is nil!")
+					end
+				else
+					--LOG("m.atlas_FMW.IsActive[pId] is nil!")
+				end
+			else
+				--LOG(" -> m.atlas_FMW.IsActive is nil!")
+			end
+		else
+			--LOG(" -> m.atlas_FMW is nil!")
+		end
+	else
+		--LOG("m is nil!")
+	end
+
+	--LOG(" ---> is active type: "..type(m.atlas_FMW.IsActive[pId][weaponIdx][mode]))
+	--LOG(" ---> is active: "..tostring(m.atlas_FMW.IsActive[pId][weaponIdx][mode]))
+
+	--return m.atlas_FMW.Limited[pId][weaponIdx][mode]
+	LOG("aFM_WeaponTemplate:FM_IsActive(p: "..Board:GetPawn(p):GetMechName()..", mode: "..mode..") -> "..tostring(m.atlas_FMW.IsActive[pId][weaponIdx][mode]))
+	return m.atlas_FMW.IsActive[pId][weaponIdx][mode]
+end
+
 return this

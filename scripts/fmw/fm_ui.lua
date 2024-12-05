@@ -25,12 +25,14 @@ this.modeSwitchButton = nil
 this.modeSwitchPanel = nil
 
 local function modeSelectionHKChar(p, weapon)
+	--LOG("---------------- fm_ui - modeSelectionHKChar")
 	local hk = aFMWF.hkRegistry[api:GetSkillId(p, weapon)]
 
 	return modeButtonHotkeys[hk]
 end
 
 local function createHotkeyUi(parent, x, y, hk)
+	--LOG("---------------- fm_ui - createHotkeyUi")
 	if not hk then return end
 
 	parent.hk = Ui2()
@@ -71,13 +73,30 @@ function this:closeModePanel()
 	end
 end
 
+--Truelch
+function this:isActiveMode(mode)
+	--function aFM_WeaponTemplate:FM_IsActive(p, mode)
+	return _G[mode].aFM_name ~= "Mode 3"
+end
+
 function this:openModePanel()
+	LOG("=== fm_ui - openModePanel() ===")
 	local root = sdlext.getUiRoot()
+	-- returns skill object, skill index, and owner (pawn object)
 	local weapon, _, owner = api:GetActiveSkill()
 
-	local ownerSpace = owner:GetSpace()
+	local ownerSpace = owner:GetSpace()	
 
-	local width = (50 * #weapon.aFM_ModeList) + 20
+	--Compute with
+	local activeAmount = 0
+	for i, mode in ipairs(weapon.aFM_ModeList) do
+		--if this:isActiveMode(mode) then
+		if weapon:FM_IsActive(owner:GetId(), mode) then	
+			activeAmount = activeAmount + 1
+		end
+	end
+	local width = (50 * activeAmount) + 20
+	--local width = (50 * #weapon.aFM_ModeList) + 20
 
 	Game:TriggerSound("/ui/general/button_confirm")
 
@@ -104,7 +123,30 @@ function this:openModePanel()
 		clip(Ui2, uiself, screen)
 	end
 
-	for i, mode in ipairs(weapon.aFM_ModeList) do
+	LOG("--- A")
+	--Test: create a new mode list
+	local afmActiveModeList = {}
+	LOG("weapon: "..tostring(weapon))
+	LOG("weapon.aFM_ModeList: "..tostring(weapon.aFM_ModeList))
+	for _, mode in ipairs(weapon.aFM_ModeList) do
+		LOG("- loop iteration")
+		LOG("mode: "..mode)
+		--if this:isActiveMode(mode) then
+		if weapon:FM_IsActive(owner:GetId(), mode) then
+			LOG("added mode!")
+			afmActiveModeList[#afmActiveModeList+1] = mode
+		end
+	end
+
+	LOG("--- B")
+
+	LOG("weapon.aFM_ModeList count: "..tostring(#weapon.aFM_ModeList))
+	LOG("afmActiveModeList count: "..tostring(#afmActiveModeList))
+
+	LOG("openModePanel - loop")
+	for i, mode in ipairs(afmActiveModeList) do
+		LOG("-> mode: "..tostring(_G[mode].aFM_name)..", i: "..tostring(i)..", i2: "..tostring(i2))
+
 		local tt = string.format("%s\n\n%s", _G[mode].aFM_name, _G[mode].aFM_desc)
 		local icon = sdlext.surface(_G[mode].aFM_icon)
 
@@ -122,6 +164,7 @@ function this:openModePanel()
 
 		modeBtn.id = mode
 		modeBtn.mdisabled = false
+
 		modeBtn.hotkey = modeSelectHotkeys[i] or nil
 
 		modeBtn.draw = function(uiself, screen)
@@ -163,11 +206,12 @@ function this:openModePanel()
 
 		modeBtn.decorations[1] = DecoButton(buttonColour, borderColour)
 
-		table.insert(this.modeBtns, modeBtn)
+		table.insert(this.modeBtns, modeBtn)	
 	end
 end
 
 function this:closeModeSwitchButton()
+	--LOG("=== fm_ui - closeModeSwitchButton() ===")
 	if this.modeSwitchButton then
 		this.modeSwitchButton:detach()
 
@@ -180,6 +224,7 @@ function this:closeModeSwitchButton()
 end
 
 function this:openModeSwitchButton()
+	--LOG("=== fm_ui - openModeSwitchButton() ===")
 	local root = sdlext.getUiRoot()
 	local weapon, _, owner = api:GetActiveSkill()
 

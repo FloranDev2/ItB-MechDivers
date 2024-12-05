@@ -11,6 +11,17 @@ local truelch_divers_fmwApi = require(scriptPath.."fmw/api") --that's what I nee
 
 -------------------- TEST --------------------
 
+--[[
+description = "???"
+local function getStratagemFMWDescription()
+	return description
+end
+
+local function getStratagemFMWIcon()
+    return "weapons/truelch_stratagem.png"
+end
+]]
+
 local function isStratagemWeapon(weapon)
     if type(weapon) == 'table' then
         weapon = weapon.__Id
@@ -24,9 +35,7 @@ end
 truelch_StratagemMode1 = {
 	aFM_name = "Mode 1",
 	aFM_desc = "Mode 1 desc.",
-	aFM_icon = "img/modes/icon_mode1.png",
-	--Test Inactive
-	--aFM_active = true,
+	aFM_icon = "img/modes/icon_minigun.png",
 }
 
 CreateClass(truelch_StratagemMode1)
@@ -50,7 +59,7 @@ end
 truelch_StratagemMode2 = truelch_StratagemMode1:new{
 	aFM_name = "Mode 2",
 	aFM_desc = "Mode 2 desc.",
-	aFM_icon = "img/modes/icon_mode2.png",
+	aFM_icon = "img/modes/icon_rocket_pod.png",
 }
 
 
@@ -59,7 +68,7 @@ truelch_StratagemMode2 = truelch_StratagemMode1:new{
 truelch_StratagemMode3 = truelch_StratagemMode1:new{
 	aFM_name = "Mode 3",
 	aFM_desc = "Mode 3 desc.",
-	aFM_icon = "img/modes/icon_mode3.png",
+	aFM_icon = "img/modes/icon_rocket_pod.png",
 }
 
 
@@ -68,7 +77,7 @@ truelch_StratagemMode3 = truelch_StratagemMode1:new{
 truelch_StratagemMode4 = truelch_StratagemMode1:new{
 	aFM_name = "Mode 4",
 	aFM_desc = "Mode 4 desc.",
-	aFM_icon = "img/modes/icon_mode4.png",
+	aFM_icon = "img/modes/icon_rocket_pod.png",
 }
 
 
@@ -77,7 +86,7 @@ truelch_StratagemMode4 = truelch_StratagemMode1:new{
 truelch_StratagemMode5 = truelch_StratagemMode1:new{
 	aFM_name = "Mode 5",
 	aFM_desc = "Mode 5 desc.",
-	aFM_icon = "img/modes/icon_mode5.png",
+	aFM_icon = "img/modes/icon_rocket_pod.png",
 }
 
 -------------------- MODE 6 --------------------
@@ -85,11 +94,18 @@ truelch_StratagemMode5 = truelch_StratagemMode1:new{
 truelch_StratagemMode6 = truelch_StratagemMode1:new{
 	aFM_name = "Mode 6",
 	aFM_desc = "Mode 6 desc.",
-	aFM_icon = "img/modes/icon_mode6.png",
+	aFM_icon = "img/modes/icon_rocket_pod.png",
 }
 
 
 -------------------- WEAPON --------------------
+--[[
+    local description = "Free action."..
+        "\nRequest a supply pod for next turn to an empty tile. Any unit under the drop zone will die."..
+        "\n\nNote: for technical reasons, you need to unselect and select again the unit to use a newly acquired weapon."
+]]
+
+
 
 truelch_StratagemFMW = aFM_WeaponTemplate:new{
 	--Infos
@@ -137,6 +153,8 @@ function truelch_StratagemFMW:GetSkillEffect(p1, p2)
 		_G[currentMode]:fire(p1, p2, se)
 	end
 
+	LOG("truelch_StratagemFMW:GetSkillEffect - description: "..description)
+
 	return se
 end
 
@@ -152,6 +170,8 @@ local HOOK_onMissionStarted = function(mission)
 end
 
 local HOOK_onNextTurn = function(mission)
+	--LOG("HOOK_onNextTurn - Currently it is turn of team: " .. Game:GetTeamTurn())
+
 	if Game:GetTeamTurn() ~= TEAM_PLAYER or truelch_stratagem_flag == false then
 		return
 	end
@@ -160,31 +180,45 @@ local HOOK_onNextTurn = function(mission)
 
 	LOG("---------> Computing Stratagems...")
 
+	--local fmw = truelch_divers_fmwApi:GetSkill(p, weaponIdx, false)
+
 	local size = Board:GetSize()
 	for j = 0, size.y do
 		for i = 0, size.x do
+			--LOG(debug.traceback())
+			--LOG(" ------> "..Point(i, j):GetString())
 			local pawn = Board:GetPawn(Point(i, j))
 			if pawn ~= nil and pawn:IsMech() then
+				LOG("pawn: "..pawn:GetMechName())
 				local weapons = pawn:GetPoweredWeapons()
 				local p = pawn:GetId()
+				--LOG("p: "..tostring(p))
 				for weaponIdx = 0, 2 do
+					LOG(" -> weaponIdx: "..tostring(weaponIdx))
 					local fmw = truelch_divers_fmwApi:GetSkill(p, weaponIdx, false)
+					--LOG(" -> fmw: "..tostring(fmw))
 					if fmw ~= nil then
+						LOG("fmw!")
 						local weapon = weapons[weaponIdx]
 
 						if type(weapon) == 'table' then
 							weapon = weapon.__Id
 						end --if type(weapon) == 'table' then
 
+						LOG("here! -> weapon: "..weapon)
+
 						if isStratagemWeapon(weapon) then
-							fmw:FM_SetActive(p, "truelch_StratagemMode3", false)
+							LOG(" ---> attempting disable mode 3")
+							--Test disabling mode 3
+							fmw:FM_DisableMode(p, "truelch_StratagemMode3") --doesn't work
+							LOG(" ---> after mode 3 disabled")
 						end
-					end
-				end
-			end
-		end
-	end
-end
+					end --if fmw ~= nil then
+				end --weaponIdx = 0, 2 do
+			end --if pawn ~= nil and pawn:IsMech() then
+		end --for i = 0, size.x do
+	end --for j = 0, size.y do
+end --local HOOK_onNextTurn = function(mission)
 
 local function EVENT_onModsLoaded()
     modApi:addMissionStartHook(HOOK_onMissionStarted)
