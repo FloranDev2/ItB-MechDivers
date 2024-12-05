@@ -1,9 +1,8 @@
-truelch_dualAutocannons = Skill:new{
+truelch_DualAutocannons = Skill:new{
     --Infos
 	Name = "Dual Autocannons",
     Class = "Prime",
-    Description = "Canons shooting from either sides."..
-        "\nYou can decide which canon you want to shoot (or even shoot both)."..
+    Description = "Cannons that can shoot a pushing projectile from the left or from the right."..
         "\nIf the target is 2 tiles away or less, the projectile deal 1 damage.",
 	PowerCost = 1,
 
@@ -16,15 +15,34 @@ truelch_dualAutocannons = Skill:new{
     LongRangeProjectileArt = "effects/shot_mechtank", --harmless
 
     --Gameplay
+    Dual = false,
     ShortRangeDamage = 1,
     LongRangeDamage = 0,
     RangeThreshold = 2,
 
     --Upgrades
-    --Upgrades = 2,
-    --UpgradeCost = { 1, 3 },
+    Upgrades = 2,
+    UpgradeCost = { 2, 2 },
 
     --Tip image
+    TipImage = {
+        Unit = Point(2, 3),
+        Friendly = Point(1, 3),
+        Target = Point(1, 1),
+        Second_Target = Point(3, 1),
+        Second_Origin = Point(2, 3),
+        Enemy = Point(1, 2),
+        Enemy2 = Point(3, 0),
+        CustomPawn = "truelch_EmancipatorMech",
+    }
+}
+
+Weapon_Texts.truelch_DualAutocannons_Upgrade1 = "Dual Shot"
+Weapon_Texts.truelch_DualAutocannons_Upgrade2 = "+2 Damage"
+
+truelch_DualAutocannons_A = truelch_DualAutocannons:new{
+    UpgradeDescription = "Can shoot from both cannons.\nYou need to target the middle line to shoot both.",
+    Dual = true,
     TipImage = {
         Unit     = Point(2, 3),
         Friendly = Point(1, 3),
@@ -35,17 +53,38 @@ truelch_dualAutocannons = Skill:new{
     }
 }
 
-function truelch_dualAutocannons:GetTargetArea(point)
+truelch_DualAutocannons_B = truelch_DualAutocannons:new{
+    UpgradeDescription = "Increases short range damage by 2.",
+    ShortRangeDamage = 3,
+}
+
+truelch_DualAutocannons_AB = truelch_DualAutocannons:new{
+    Dual = true,
+    ShortRangeDamage = 3,
+    TipImage = {
+        Unit     = Point(2, 3),
+        Friendly = Point(1, 3),
+        Target   = Point(2, 2),
+        Enemy    = Point(1, 2),
+        Enemy2   = Point(3, 0),
+        CustomPawn = "truelch_EmancipatorMech",
+    }
+}
+
+function truelch_DualAutocannons:GetTargetArea(point)
     local ret = PointList()
     for dir = DIR_START, DIR_END do
         for i = 1, 7 do
             local curr = Point(point + DIR_VECTORS[dir] * i)
-            if Board:IsValid(curr) then
-                ret:push_back(curr)
-            else
-                break
+
+            if self.Dual then
+                if Board:IsValid(curr) then
+                    ret:push_back(curr)
+                end
             end
 
+            --yeah... not ideal (cannot shoot only from one side when shooting toward a nearby border tile)
+            --if i > 1 or not self.Dual then --> doesn't work because the points still superpose
             if i > 1 then
                 --LEFT
                 local left = curr - DIR_VECTORS[(dir + 1)% 4]
@@ -65,7 +104,7 @@ function truelch_dualAutocannons:GetTargetArea(point)
 end
 
 --Add pull to the start?
-function truelch_dualAutocannons:Shot(ret, start, dir)
+function truelch_DualAutocannons:Shot(ret, start, dir)
     --Pull (Super Recoil Blast)
     local pullDir = (dir + 2)% 4
     local pullD = SpaceDamage(start, 0, pullDir)
@@ -86,7 +125,7 @@ function truelch_dualAutocannons:Shot(ret, start, dir)
     end
 end
 
-function truelch_dualAutocannons:GetSkillEffect(p1, p2)
+function truelch_DualAutocannons:GetSkillEffect(p1, p2)
     local ret = SkillEffect()
     local direction = GetDirection(p2 - p1)
 
