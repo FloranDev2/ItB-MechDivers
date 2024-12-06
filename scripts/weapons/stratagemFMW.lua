@@ -119,19 +119,26 @@ function truelch_StratagemMode1:fire(p1, p2, se)
 	    	LOG(" -> missionData() is nil!")
 	    end
 
-	    --missionData().hellPods[#missionData().hellPods+1] = { p2:GetString(), self.Item } --this causes an error
-	    table.insert(missionData().hellPods, { p2:GetString(), self.Item })
+	    --missionData().hellPods[#missionData().hellPods+1] = { p2, self.Item } --this causes an error
+	    table.insert(missionData().hellPods, { p2, self.Item })
 
 	    --V2: real thing (but not working yet)
 	    --se:AddScript([[
 	    --    missionData().hellPods[]]..tostring(#missionData().hellPods+1)..[[] = {]]..p2:GetString()..[[,]]..self.Item..[[}
 	    --]])
 
-	    LOG("------------- After:")
+	    --se:AddScript([[
+	    --    table.insert(missionData().hellPods, { ]]..p2:GetString()..[[,]]..self.Item..[[ } )
+	    --]])
+
+	    LOG("------------- After -> loop:")
         for _, hellPod in pairs(missionData().hellPods) do
+        	LOG("-> elem")
 	        local loc = hellPod[1]
+	        LOG("A")
 	        local item = hellPod[2]
-	        LOG(" -> loc: "..loc:GetString()..", item: "..item)
+	        LOG("B")
+	        LOG(" ---> loc: "..loc:GetString()..", item: "..item)
     	end
 	end
 end

@@ -54,12 +54,20 @@ local function HOOK_onNextTurnHook()
         LOG(" -> loc: "..loc:GetString()..", item: "..item)
 
         --Play anim
-        local dropAnim = SpaceDamage(loc, DAMAGE_DEATH)
-        dropAnim.
+        --local dropAnim = SpaceDamage(loc, DAMAGE_DEATH)
+        local dropAnim = SpaceDamage(loc, 0)
+
+        LOG(" -> A")
+
+        --dropAnim.sAnimation = "" --TODO: Hell Pod drop animation
         effect:AddDamage(dropAnim)
+
+        LOG(" -> B")
 
         --Delay
         effect:AddDelay(0.5) --enough?
+
+        LOG(" -> C")
 
         --[[
         https://gist.github.com/Tarmean/bf415d920eecb4b2bbdd32de2ba75924
@@ -72,24 +80,43 @@ local function HOOK_onNextTurnHook()
         sfx.sSound = "/ui/battle/mech_drop" --that should be it
         effect:AddDamage(sfx)
 
+        LOG(" -> D")
+
         --Dust
         for dir = DIR_START, DIR_END do
             local curr = loc + DIR_VECTORS[dir]
             local dust = SpaceDamage(curr, 0)
             dust.sAnimation = "airpush_"..dir --is it the one use for Mechs' deployment?
+            effect:AddDamage(dust)
         end
+
+        LOG(" -> E")
 
         --Kill damage (regardless of what's under)
         local killSd = SpaceDamage(loc, DAMAGE_DEATH)
+
+        LOG(" -> F")
+
         effect:AddDamage(killSd)
+
+        LOG(" -> G")
 
         --Lil' delay (idk if it'd destroy the item otherwise)
         effect:AddDelay(0.1)
 
+        LOG(" -> H")
+
         --Add item
         local spawnItem = SpaceDamage(loc, 0)
+        LOG(" -> I")
         spawnItem.sItem = item
-        effect.AddDamage(spawnItem)
+        LOG(" -> J")
+        effect:AddDamage(spawnItem)
+        LOG(" -> K")
+
+        --Add effect to the board
+        Board:AddEffect(effect)
+        LOG(" -> L")
     end
 
     --Clear
