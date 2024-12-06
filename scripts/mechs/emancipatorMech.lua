@@ -45,7 +45,7 @@ truelch_EmancipatorMech = Pawn:new{
 	MoveSpeed = 3,
 	Massive = true,
 
-	Image = "patriotMech", --Image = "emancipatorMech",
+	Image = "emancipatorMech",
 	ImageOffset = mechDiversYellow,
 	
 	SkillList = { "truelch_DualAutocannons", "truelch_StratagemFMW" },

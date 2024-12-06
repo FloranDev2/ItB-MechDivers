@@ -1,4 +1,3 @@
-
 --- MAIN YELLOW ---
 modApi:addPalette({
 		ID = "truelch_MechDiversYellow",
@@ -20,7 +19,7 @@ modApi:addPalette({
 		ID = "truelch_MechDiversBlack",
 		Name = "Mech Divers' Black",
 		Image = "img/units/player/patriotMech_ns.png", --Patriot / Eagle
-		PlateHighlight = { 255, 255, 255 },	--lights
+		PlateHighlight = {  10,  10,  75 },	--lights
 		PlateLight     = {  91,  92,  93 }, --main highlight
 		PlateMid       = {  41,  42,  43 }, --main light
 		PlateDark      = {  34,  34,  32 },	--main mid

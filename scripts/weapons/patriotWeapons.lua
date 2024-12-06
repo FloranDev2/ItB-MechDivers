@@ -39,7 +39,7 @@ function truelch_PatriotWeaponsMode1:targeting(point)
 	return points
 end
 
-function truelch_PatriotWeaponsMode1:fire(p1, p2, se)
+function truelch_PatriotWeaponsMode1:fire(p1, p2, se, betterKO)
 	--LOG("truelch_PatriotWeaponsMode1:fire(p1: "..p1:GetString()..", p2: "..p2:GetString()..")")
 	local direction = GetDirection(p2 - p1)
 
@@ -58,7 +58,7 @@ function truelch_PatriotWeaponsMode1:fire(p1, p2, se)
 		local target2 = GetProjectileEnd(target, target + DIR_VECTORS[direction], PATH_PROJECTILE)
 		local excessDamage = damage
 
-		local debugStr = "[A] excessDamage: "..tostring(excessDamage)
+		--local debugStr = "[A] excessDamage: "..tostring(excessDamage)
 
 		local deadPawn = Board:GetPawn(target)
 		if deadPawn ~= nil then
@@ -72,14 +72,14 @@ function truelch_PatriotWeaponsMode1:fire(p1, p2, se)
 				excessDamage = damage - 1
 			end
 
-			debugStr = debugStr.."\n[B] excessDamage: "..tostring(excessDamage)
+			--debugStr = debugStr.."\n[B] excessDamage: "..tostring(excessDamage)
 
 			--Subtract health
 			excessDamage = excessDamage - deadPawn:GetHealth()
 			if excessDamage < 0 then --equal 0 is fine since it creates a pushing projectile
 				LOG("--------- Shouldn't happen")
-				debugStr = debugStr.."\n[C] excessDamage: "..tostring(excessDamage)..", deadPawn:GetHealth(): "..tostring(deadPawn:GetHealth())
-				LOG(debugStr)
+				--debugStr = debugStr.."\n[C] excessDamage: "..tostring(excessDamage)..", deadPawn:GetHealth(): "..tostring(deadPawn:GetHealth())
+				--LOG(debugStr)
 				return
 			end
 
@@ -172,17 +172,7 @@ function truelch_PatriotWeaponsMode2:targeting(point)
 	return points
 end
 
---Oh that gave me an idea: it could shoot to all these 4 corners!
---[[
-local z = math.abs(p2.x - p1.x)
-local offset = { Point(-1, -1), Point(-1, 1), Point(1, -1), Point(1, 1) }
-for _, offset in pairs(offset) do
-	local curr = point + range * offset
-	local spaceDamage = SpaceDamage(curr, 3)
-	se:AddArtillery(spaceDamage, "effects/shotup_ignite_fireball.png")
-end
-]]
-function truelch_PatriotWeaponsMode2:fire(p1, p2, se)
+function truelch_PatriotWeaponsMode2:fire(p1, p2, se, betterKO)
 	--LOG("truelch_PatriotWeaponsMode2:fire(p1: "..p1:GetString()..", p2: "..p2:GetString()..")")
 	--Compute offset
 	local diff = p2 - p1
@@ -216,10 +206,13 @@ end
 
 truelch_PatriotWeapons = aFM_WeaponTemplate:new{
 	Name = "Patriot's weapons",
+	--[[
 	Description = "Two fire modes:"..
 		"\n\nMinigun: shoot a projectile dealing more damage to damaged units and that can pierce through its target if it kills it."..
 		"\n\nRocket pod: shoot a powerful rocket diagonally."..
 		"\n\n(more details on the modes buttons' descriptions)",
+	]]
+	Description = "Shoot a pushing projectile that deals additional damage equal to the target's health lost.",
 	Class = "Prime",
 	Icon = "weapons/truelch_patriot_weapons.png",
 	Rarity = 1,
@@ -234,8 +227,16 @@ truelch_PatriotWeapons = aFM_WeaponTemplate:new{
     --TwoClick = true,
 	LaunchSound = "/weapons/bomb_strafe",
 
-	aFM_ModeList = { "truelch_PatriotWeaponsMode1", "truelch_PatriotWeaponsMode2" },
+	--FMW
+	aFM_ModeList = { "truelch_PatriotWeaponsMode1", --[["truelch_PatriotWeaponsMode2"]] },
 	aFM_ModeSwitchDesc = "Click to change mode.",
+
+	--Upgrades
+	Upgrades = 1, --2
+	UpgradeCost = { 2 }, --{ 2, 1 },
+	RocketEnabled = true, --just for custom tip
+	--RocketEnabled = false, --just for custom tip
+	BetterOnKill = false,
 
 	--Tip image
 	PatriotTipIndex = 1, --this works, unlike using a variable from outside. Why? I HAVE NO IDEA
@@ -257,33 +258,42 @@ truelch_PatriotWeapons = aFM_WeaponTemplate:new{
 		Second_Origin = Point(2, 3),
 
 		CustomPawn = "truelch_PatriotMech",
-
-		--Length = 5, --borrowed from Support_Repair_Tooltip, maybe it'll prevent to shoot to fast
 	}
 }
 
--------------------- GET TARGET AREA --------------------
+Weapon_Texts.truelch_PatriotWeapons_Upgrade1 = "Improved On Kill"
+--Weapon_Texts.truelch_PatriotWeapons_Upgrade2 = "Enable Rockets" --not sure about this
 
---Using this will stop the tip image to work after the 1st loop.
---local patriotTipIndex = 1 --1 and 2: minigun, 3 and 4: rocket pod
+truelch_PatriotWeapons_A = truelch_PatriotWeapons:new{
+    UpgradeDescription = "OR MAYBE JUST ENABLE THE ON KILL EFFECT?!"..
+    	"\nThe KO effect can be repeated? Or keep the damage of the original target?"..
+    	"\nRocket: area damage cannot damage buildings?",
+    BetterOnKill = true,
+}
+
+--[[
+truelch_PatriotWeapons_B = truelch_PatriotWeapons:new{
+    UpgradeDescription = "Allow to use a secondary weapon: the rockets."..
+    	"\nIt shoots a diagonal projectile that deals 3 damage to its target."..
+    	"\nIf it kills its target, all adjacent tiles take 1 damage.",
+    aFM_ModeList = { "truelch_PatriotWeaponsMode1", "truelch_PatriotWeaponsMode2" },    
+    RocketEnabled = true, --just for tip
+}
+
+
+truelch_PatriotWeapons_AB = truelch_PatriotWeapons:new{
+    aFM_ModeList = { "truelch_PatriotWeaponsMode1", "truelch_PatriotWeaponsMode2" },
+    RocketEnabled = true, --just for tip
+    BetterOnKill = true,
+}
+]]
+
+-------------------- GET TARGET AREA --------------------
 
 function truelch_PatriotWeapons:GetTargetArea_TipImage(point)
 	local pl = PointList()
 	local points = {}
 
-	--[[
-	if self.PatriotTipIndex <= 2 then
-		points = truelch_PatriotWeaponsMode1:targeting(point)
-	else
-		points = truelch_PatriotWeaponsMode2:targeting(point)
-	end
-
-	for _, p in ipairs(points) do
-		pl:push_back(p)
-	end
-	]]
-
-	--Test. Well it works. Too lazy to understand what's wrong with above code.
 	for j = 0, 7 do
 		for i = 0, 7 do
 			p = Point(i, j)
@@ -318,32 +328,17 @@ end
 
 -------------------- GET SKILL EFFECT --------------------
 
---if self.PatriotTipIndex == 1 then
-	--Switched to minigun!
-	--Board:AddAlert(Point(2, 3), "Minigun")
-	--se:AddScript([[Board:AddAlert(Point(2, 3), "Minigun"]])		
---elseif self.PatriotTipIndex == 3 then
-	--Switched to rocket pod!
-	--Board:AddAlert(Point(2, 3), "Rocket Pod")
-	--se:AddScript([[Board:AddAlert(Point(2, 3), "Minigun"]])
---end
-
 function truelch_PatriotWeapons:GetSkillEffect_TipImage(p1, p2)
-	--LOG("truelch_PatriotWeapons:GetSkillEffect_TipImage(p1: "..p1:GetString()..", p2: "..p2:GetString()..")")
 	local se = SkillEffect()
 
 	if self.PatriotTipIndex == 1 then
-		--Switched to minigun!
-		Board:AddAlert(Point(2, 3), "Minigun")
-		--se:AddScript([[Board:AddAlert(Point(2, 3), "Minigun"]])		
+		Board:AddAlert(Point(2, 3), "Minigun")		
 	elseif self.PatriotTipIndex == 3 then
-		--Switched to rocket pod!
 		Board:AddAlert(Point(2, 3), "Rocket Pod")
-		--se:AddScript([[Board:AddAlert(Point(2, 3), "Minigun"]])
 	end
 
 	if self.PatriotTipIndex <= 2 then
-		truelch_PatriotWeaponsMode1:fire(p1, p2, se)
+		truelch_PatriotWeaponsMode1:fire(p1, p2, se, self.BetterOnKill)
 	else
 		if self.PatriotTipIndex == 3 then
 			p2 = Point(0, 1)
@@ -351,12 +346,12 @@ function truelch_PatriotWeapons:GetSkillEffect_TipImage(p1, p2)
 			p2 = Point(3, 2)
 		end
 
-		truelch_PatriotWeaponsMode2:fire(p1, p2, se)
+		truelch_PatriotWeaponsMode2:fire(p1, p2, se, self.BetterOnKill)
 	end
 
 	self.PatriotTipIndex = self.PatriotTipIndex + 1
 
-	if self.PatriotTipIndex > 4 then
+	if self.PatriotTipIndex > 4 or (not self.RocketEnabled and self.PatriotTipIndex > 2) then
 		self.PatriotTipIndex = 1
 	end
 
@@ -368,15 +363,13 @@ function truelch_PatriotWeapons:GetSkillEffect_Normal(p1, p2)
 	local currentMode = self:FM_GetMode(p1)
 	
 	if self:FM_CurrentModeReady(p1) then
-		_G[currentMode]:fire(p1, p2, se)
+		_G[currentMode]:fire(p1, p2, se, self.BetterOnKill)
 	end
 
 	return se
 end
 
 function truelch_PatriotWeapons:GetSkillEffect(p1, p2)
-	--LOG(">>> truelch_PatriotWeapons:GetSkillEffect(p1: "..p1:GetString()..", p2: "..p2:GetString()..")")
-
 	if not Board:IsTipImage() then
 		return self:GetSkillEffect_Normal(p1, p2)
 	else

@@ -245,10 +245,13 @@ truelch_Delivery = aFM_WeaponTemplate:new{
 	--Tip image
 	TipIndex = 0,
 	TipImage = {
-		Unit       = Point(1, 2),
-		Enemy      = Point(2, 3),
-		Friendly   = Point(2, 1),
-		Target     = Point(3, 2),
+		Unit       = Point(1, 0),
+		Enemy      = Point(2, 1),
+		Friendly   = Point(2, 3),
+		Building   = Point(3, 1),
+		Target     = Point(1, 2),
+		Second_Origin = Point(1, 2),
+		Second_Target = Point(3, 2),
 		CustomPawn = "truelch_EagleMech",
 	}
 }
@@ -280,15 +283,11 @@ function truelch_Delivery:GetTargetArea(point)
     
 	if self:FM_CurrentModeReady(point) then
 		local points = currentMode:targeting(point)
-		--LOG("truelch_Delivery:GetTargetArea -> loop:")
 		for _, p in ipairs(points) do
-			--LOG("-> p: "..p:GetString())
 			pl:push_back(p)
 		end
 	end
 
-	--LOG("truelch_Delivery:GetTargetArea -> end")
-	 
 	return pl
 end
 
