@@ -228,7 +228,8 @@ truelch_PatriotWeapons = aFM_WeaponTemplate:new{
 	LaunchSound = "/weapons/bomb_strafe",
 
 	--FMW
-	aFM_ModeList = { "truelch_PatriotWeaponsMode1", --[["truelch_PatriotWeaponsMode2"]] },
+	--aFM_ModeList = { "truelch_PatriotWeaponsMode1", --[["truelch_PatriotWeaponsMode2"]] },
+	aFM_ModeList = { "truelch_PatriotWeaponsMode1", "truelch_PatriotWeaponsMode2" },
 	aFM_ModeSwitchDesc = "Click to change mode.",
 
 	--Upgrades
