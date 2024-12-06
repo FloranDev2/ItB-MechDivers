@@ -9,6 +9,39 @@ local resourcePath = mod.resourcePath
 local truelch_divers_fmw = require(scriptPath.."fmw/FMW") --not needed?
 local truelch_divers_fmwApi = require(scriptPath.."fmw/api") --that's what I needed!
 
+
+----------------------------------------------- MISSION / GAME FUNCTIONS -----------------------------------------------
+
+local function isGame()
+    return true
+        and Game ~= nil
+        and GAME ~= nil
+end
+
+local function isMission()
+    local mission = GetCurrentMission()
+
+    return true
+        and isGame()
+        and mission ~= nil
+        and mission ~= Mission_Test
+end
+
+local function missionData()
+    local mission = GetCurrentMission()
+
+    if mission.truelch_MechDivers == nil then
+        mission.truelch_MechDivers = {}
+    end
+
+    --Position, Item Name
+    if mission.truelch_MechDivers.hellPods == nil then
+        mission.truelch_MechDivers.hellPods = {}
+    end
+
+    return mission.truelch_MechDivers
+end
+
 -------------------- TEST --------------------
 
 local function isStratagemWeapon(weapon)
@@ -58,18 +91,49 @@ end
 
 function truelch_StratagemMode1:fire(p1, p2, se)
     local damage = SpaceDamage(p2, 0)
-    damage.sItem = self.Item
+    --damage.sItem = self.Item
+    --TODO: add mark
+    --damage.sImageMark = "" --TODO
     se:AddArtillery(damage, self.UpShot)
+
+    --TODO: add Board Anim
 
     --Free action
     se:AddScript([[
         Pawn:SetActive(true)
     ]])
 
-    --I do need to add stuff in mission data, at least for the pseudo "ENV" effect
-    --se:AddScript([[
-    --    Pawn:SetActive(true)
-    --]])
+    if not Board:IsTipImage() and isMission() then
+    	LOG("------------- Attempting to add in the mission data...")
+	    --I do need to add stuff in mission data, at least for the pseudo "ENV" effect
+
+	    --V1: test
+	    if missionData() ~= nil then
+	    	LOG(" -> missionData() ok")
+	    	if missionData().hellPods ~= nil then
+	    		LOG(" -> missionData().hellPods ok")
+	    	else
+	    		LOG(" -> missionData().hellPods is nil!")
+	    	end
+	    else
+	    	LOG(" -> missionData() is nil!")
+	    end
+
+	    --missionData().hellPods[#missionData().hellPods+1] = { p2:GetString(), self.Item } --this causes an error
+	    table.insert(missionData().hellPods, { p2:GetString(), self.Item })
+
+	    --V2: real thing (but not working yet)
+	    --se:AddScript([[
+	    --    missionData().hellPods[]]..tostring(#missionData().hellPods+1)..[[] = {]]..p2:GetString()..[[,]]..self.Item..[[}
+	    --]])
+
+	    LOG("------------- After:")
+        for _, hellPod in pairs(missionData().hellPods) do
+	        local loc = hellPod[1]
+	        local item = hellPod[2]
+	        LOG(" -> loc: "..loc:GetString()..", item: "..item)
+    	end
+	end
 end
 
 

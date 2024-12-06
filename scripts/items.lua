@@ -23,6 +23,7 @@ local function isMission()
         and mission ~= Mission_Test
 end
 
+--[[
 local function missionData()
     local mission = GetCurrentMission()
 
@@ -30,13 +31,13 @@ local function missionData()
         mission.truelch_MechDivers = {}
     end
 
-    if mission.truelch_MechDivers.WeaponItems == nil then
-        mission.truelch_MechDivers.WeaponItems = {}
+    if mission.truelch_MechDivers.weaponItems == nil then
+        mission.truelch_MechDivers.weaponItems = {}
     end
 
     return mission.truelch_MechDivers
 end
-
+]]
 
 
 -------------------- MISC FUNCTIONS --------------------

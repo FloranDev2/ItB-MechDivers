@@ -43,6 +43,7 @@ function mod:init()
 	--require(self.scriptPath.."dropEnv")
 
 	--Hooks
+	require(self.scriptPath.."hellpods")
 	require(self.scriptPath.."hooks")   --> will be moved to the reinforcement passive
 	require(self.scriptPath.."protecc") --> will be moved to trait (OR PILOT??!)
 

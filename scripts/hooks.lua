@@ -28,8 +28,8 @@ local function missionData()
         mission.truelch_MechDivers = {}
     end
 
-    if mission.truelch_MechDivers.DeadMechs == nil then
-        mission.truelch_MechDivers.DeadMechs = {}
+    if mission.truelch_MechDivers.deadMechs == nil then
+        mission.truelch_MechDivers.deadMechs = {}
     end
 
     return mission.truelch_MechDivers
@@ -126,7 +126,7 @@ local function HOOK_onNextTurnHook()
         --V1
         --[[
         LOG("Revive loop:")
-        for _, pawnType in pairs(missionData().DeadMechs) do
+        for _, pawnType in pairs(missionData().deadMechs) do
             local randPoint = GetRandomPoint()
             LOG("pawnType type: "..type(pawnType))
             LOG("pawnType: "..pawnType)
@@ -136,7 +136,7 @@ local function HOOK_onNextTurnHook()
         end
 
         --Clear dead mech list (simplest way)
-        missionData().DeadMechs = {}
+        missionData().deadMechs = {}
         ]]
 
         --V2a
@@ -157,7 +157,7 @@ local function HOOK_onNextTurnHook()
         ]]
 
         --V2b
-        for _, pawn in pairs(missionData().DeadMechs) do
+        for _, pawn in pairs(missionData().deadMechs) do
             local randPoint = GetRandomPoint()
             pawn:SetSpace(randPoint) --this doesn't do a cool drop anim though
             --drop anim: take a look at candy island's candy goos
@@ -205,7 +205,7 @@ local HOOK_onPawnKilled = function(mission, pawn)
             Board:RemovePawn(pawn)
             --V1: Wait for next player turn
             --Edit: the pawn spawned next turn failed to become a Mech
-            --table.insert(missionData().DeadMechs, pawn:GetType())
+            --table.insert(missionData().deadMechs, pawn:GetType())
 
             --V2: Create it now, but hide it until next turn (or move it to (-1, -1))
             local randPoint = GetRandomPoint()
@@ -220,7 +220,7 @@ local HOOK_onPawnKilled = function(mission, pawn)
             Board:SpawnPawn(newMech, randPoint)
             local spawned = Board:GetPawn(randPoint)
             --LOG("------------ spawned: "..spawned:GetMechName())
-            table.insert(missionData().DeadMechs, spawned) --not really dead, but I understand myself
+            table.insert(missionData().deadMechs, spawned) --not really dead, but I understand myself
 
             --spawned:SetInvisible(true) --it's still there on the board though
             spawned:SetSpace(Point(-1, -1))
