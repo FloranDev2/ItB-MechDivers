@@ -27,6 +27,7 @@ local function isMission()
         and mission ~= Mission_Test
 end
 
+--Still local because AddScript() isn't calling it directly
 local function missionData()
     local mission = GetCurrentMission()
 
@@ -34,7 +35,6 @@ local function missionData()
         mission.truelch_MechDivers = {}
     end
 
-    --Position, Item Name
     if mission.truelch_MechDivers.hellPods == nil then
         mission.truelch_MechDivers.hellPods = {}
     end
@@ -89,14 +89,17 @@ function truelch_StratagemMode1:targeting(point)
 	return points
 end
 
+--Warning: this is a global function. Hence the very specific name.
+function truelch_MechDivers_AddPodData(point, item)
+	table.insert(missionData().hellPods, { point, item })
+end
+
 function truelch_StratagemMode1:fire(p1, p2, se)
     local damage = SpaceDamage(p2, 0)
     --damage.sItem = self.Item
     --TODO: add mark
     --damage.sImageMark = "" --TODO
-    se:AddArtillery(damage, self.UpShot)
-
-    --TODO: add Board Anim
+    se:AddArtillery(damage, self.UpShot)    
 
     --Free action
     se:AddScript([[
@@ -104,42 +107,15 @@ function truelch_StratagemMode1:fire(p1, p2, se)
     ]])
 
     if not Board:IsTipImage() and isMission() then
-    	LOG("------------- Attempting to add in the mission data...")
-	    --I do need to add stuff in mission data, at least for the pseudo "ENV" effect
+    	--Note: AddScript need to call a global function (so, a function without "local in front")
+    	--These functions need to have a very specific name (prefixed with modder's username for example)
+    	--to not accidentally override other function elsewhere with the same name.
+    	--I've decided to not use missionData() directly here and rather use an intermediate function for that reason.
+    	--Also, improvement: use string format
+    	--Thx tosx and Metalocif for the help!
+	    se:AddScript([[truelch_MechDivers_AddPodData(]]..p2:GetString()..[[,"]]..self.Item..[[")]])
 
-	    --V1: test
-	    if missionData() ~= nil then
-	    	LOG(" -> missionData() ok")
-	    	if missionData().hellPods ~= nil then
-	    		LOG(" -> missionData().hellPods ok")
-	    	else
-	    		LOG(" -> missionData().hellPods is nil!")
-	    	end
-	    else
-	    	LOG(" -> missionData() is nil!")
-	    end
-
-	    --missionData().hellPods[#missionData().hellPods+1] = { p2, self.Item } --this causes an error
-	    table.insert(missionData().hellPods, { p2, self.Item })
-
-	    --V2: real thing (but not working yet)
-	    --se:AddScript([[
-	    --    missionData().hellPods[]]..tostring(#missionData().hellPods+1)..[[] = {]]..p2:GetString()..[[,]]..self.Item..[[}
-	    --]])
-
-	    --se:AddScript([[
-	    --    table.insert(missionData().hellPods, { ]]..p2:GetString()..[[,]]..self.Item..[[ } )
-	    --]])
-
-	    LOG("------------- After -> loop:")
-        for _, hellPod in pairs(missionData().hellPods) do
-        	LOG("-> elem")
-	        local loc = hellPod[1]
-	        LOG("A")
-	        local item = hellPod[2]
-	        LOG("B")
-	        LOG(" ---> loc: "..loc:GetString()..", item: "..item)
-    	end
+	    --TODO: add Board Anim
 	end
 end
 
@@ -297,7 +273,7 @@ local HOOK_onNextTurn = function(mission)
 
 	truelch_stratagem_flag = false
 
-	LOG("---------> Computing Stratagems...")
+	--LOG("---------> Computing Stratagems...")
 
 	local size = Board:GetSize()
 	for j = 0, size.y do

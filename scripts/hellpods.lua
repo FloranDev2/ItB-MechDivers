@@ -42,7 +42,7 @@ end
 local function HOOK_onNextTurnHook()
     if Game:GetTeamTurn() ~= TEAM_PLAYER then return end
 
-    LOG("Hell pods spawn loop:")
+    --LOG("Hell pods spawn loop: (count: "..tostring(#missionData().hellPods)..")")
     --Kill pawns, play anim and spawn items
     for _, hellPod in pairs(missionData().hellPods) do
         local effect = SkillEffect() --so I can have delays
@@ -51,23 +51,17 @@ local function HOOK_onNextTurnHook()
         local loc = hellPod[1]
         local item = hellPod[2]
 
-        LOG(" -> loc: "..loc:GetString()..", item: "..item)
+        --LOG(" -> loc: "..loc:GetString()..", item: "..item)
 
         --Play anim
         --local dropAnim = SpaceDamage(loc, DAMAGE_DEATH)
         local dropAnim = SpaceDamage(loc, 0)
 
-        LOG(" -> A")
-
         --dropAnim.sAnimation = "" --TODO: Hell Pod drop animation
         effect:AddDamage(dropAnim)
 
-        LOG(" -> B")
-
         --Delay
         effect:AddDelay(0.5) --enough?
-
-        LOG(" -> C")
 
         --[[
         https://gist.github.com/Tarmean/bf415d920eecb4b2bbdd32de2ba75924
@@ -80,8 +74,6 @@ local function HOOK_onNextTurnHook()
         sfx.sSound = "/ui/battle/mech_drop" --that should be it
         effect:AddDamage(sfx)
 
-        LOG(" -> D")
-
         --Dust
         for dir = DIR_START, DIR_END do
             local curr = loc + DIR_VECTORS[dir]
@@ -90,33 +82,20 @@ local function HOOK_onNextTurnHook()
             effect:AddDamage(dust)
         end
 
-        LOG(" -> E")
-
         --Kill damage (regardless of what's under)
         local killSd = SpaceDamage(loc, DAMAGE_DEATH)
-
-        LOG(" -> F")
-
         effect:AddDamage(killSd)
-
-        LOG(" -> G")
 
         --Lil' delay (idk if it'd destroy the item otherwise)
         effect:AddDelay(0.1)
 
-        LOG(" -> H")
-
         --Add item
         local spawnItem = SpaceDamage(loc, 0)
-        LOG(" -> I")
         spawnItem.sItem = item
-        LOG(" -> J")
         effect:AddDamage(spawnItem)
-        LOG(" -> K")
 
         --Add effect to the board
         Board:AddEffect(effect)
-        LOG(" -> L")
     end
 
     --Clear
