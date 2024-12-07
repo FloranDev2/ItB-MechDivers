@@ -208,10 +208,15 @@ function truelch_DeliveryMode2:fire(p1, p2, se, up1, up2)
 		local damage = SpaceDamage(middlePoint)
 		damage.sImageMark = "combat/icons/icon_resupply.png"
 		se:AddDamage(damage)
-		se:AddScript([[
-			Board:AddAlert(]]..middlePoint:GetString()..[[, "RELOADED")
-			pawn:ResetUses()
-		]])
+
+		--Lazy reload
+		--se:AddScript([[
+		--	Board:AddAlert(]]..middlePoint:GetString()..[[, "RELOADED")
+		--	pawn:ResetUses()
+		--]])
+
+		--(Way) better reload: (oh also, I really need to get started on using string format!)
+		se:AddScript([[truelch_ItemReload(]]..tostring(pawn:GetId())..[[, 1)]])
 	end
 end
 
