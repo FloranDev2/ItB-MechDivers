@@ -10,11 +10,6 @@ local resourcePath = mod.resourcePath
 	
 truelch_DeliveryMode1 = {
 	aFM_name = "Strafing run",
-	--aFM_desc = "Leap over a tile, shooting any toward any direction there's a unit (enemy AND ally!).",
-	--aFM_desc = "Leap over a tile, shooting sideways if there's a unit (enemy or ally).",
-	--New idea: just raw damage around the unit. The damage is a flat amount, reduce my the numbers of enemies
-	--So you have some control; do you want to deal more damage to a single target or spread it?
-	--I'm also doing this because the squad is already overloaded with pushing projectiles
 	aFM_desc = "Fly forward, shooting all units and buildings that were under the fly path or adjacent."..
 		"\nDamage is reduced by the amount of units and buildings hit (minimum: 1).",
 	aFM_icon = "img/modes/icon_strafe.png",

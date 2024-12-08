@@ -67,7 +67,7 @@ truelch_StratagemMode1 = {
 
 	UpShot = "effects/truelch_shotup_stratagem_ball.png",
 	Range = 2,
-	Item = "truelch_Item_WeaponPod_Flam40", --in the end, I need to not spawn this directly
+	Item = "truelch_Item_WeaponPod_Mg43", --in the end, I need to not spawn this directly
 }
 
 CreateClass(truelch_StratagemMode1)
@@ -96,7 +96,7 @@ end
 
 function truelch_StratagemMode1:fire(p1, p2, se)
     local damage = SpaceDamage(p2, 0)
-    --damage.sItem = self.Item
+    damage.sItem = self.Item --just for test, need to comment it again
     --TODO: add mark
     --damage.sImageMark = "" --TODO
     se:AddArtillery(damage, self.UpShot)    
@@ -113,7 +113,9 @@ function truelch_StratagemMode1:fire(p1, p2, se)
     	--I've decided to not use missionData() directly here and rather use an intermediate function for that reason.
     	--Also, improvement: use string format
     	--Thx tosx and Metalocif for the help!
-	    se:AddScript([[truelch_MechDivers_AddPodData(]]..p2:GetString()..[[,"]]..self.Item..[[")]])
+
+    	--TODO: re-enable that
+	    --se:AddScript([[truelch_MechDivers_AddPodData(]]..p2:GetString()..[[,"]]..self.Item..[[")]])
 
 	    --TODO: add Board Anim
 	end

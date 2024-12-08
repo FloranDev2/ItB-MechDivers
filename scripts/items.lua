@@ -184,6 +184,10 @@ BoardEvents.onItemRemoved:subscribe(function(loc, removed_item)
 		local pawn = Board:GetPawn(loc)
 		if pawn ~= nil then
 			pawn:AddWeapon("truelch_mg43MachineGun")
+
+			--local weaponCount = #pawn:GetPoweredWeapons()
+			--pawn:FireWeapon(Point(400, 400), weaponCount) --attempt to make it visible in the UI
+
 			Board:AddAlert(loc, "Acquired a MG-43 Machine Gun!")
 		end
 	elseif removed_item == "truelch_Item_WeaponPod_Apw1" then
