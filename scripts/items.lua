@@ -160,7 +160,6 @@ TILE_TOOLTIPS.Item_Truelch_WeaponPod_Apw1_Text = {"APW-1 Pod", "Pick it up to ge
 
 BoardEvents.onTerrainChanged:subscribe(function(p, terrain, terrain_prev)
 	local item = Board:GetItem(p)
-	--if item == "truelch_Item_ResupplyPod" or item == "truelch_Item_WeaponPod_Mg43" then
 	if isHellPodItem(item) then
 		if terrain == TERRAIN_HOLE or terrain == TERRAIN_WATER then
 			Board:RemoveItem(p)
@@ -169,46 +168,40 @@ BoardEvents.onTerrainChanged:subscribe(function(p, terrain, terrain_prev)
 end)
 
 BoardEvents.onItemRemoved:subscribe(function(loc, removed_item)
+	local pawn = Board:GetPawn(loc)
+	if pawn == nil then return end
+	local weaponSuffix = "\n(de-select and re-select the Mech to see it)"
 	if removed_item == "truelch_Item_ResupplyPod" then
-		local pawn = Board:GetPawn(loc)
-		if pawn ~= nil then
-			if not pawn:IsEnemy() then
-				truelch_ItemReload(pawn:GetId(), 1)
-			else
-				Board:AddAlert(loc, "DESTROYED")
-			end
-			--There can be a case where it's a friendly unit but that can't reload
-			--Shame if it happens LOL
+		if not pawn:IsEnemy() then
+			truelch_ItemReload(pawn:GetId(), 1)
+		else
+			Board:AddAlert(loc, "DESTROYED")
 		end
-	elseif removed_item == "truelch_Item_WeaponPod_Mg43" then
-		local pawn = Board:GetPawn(loc)
-		if pawn ~= nil then
-			pawn:AddWeapon("truelch_mg43MachineGun")
-
-			--local weaponCount = #pawn:GetPoweredWeapons()
-			--pawn:FireWeapon(Point(400, 400), weaponCount) --attempt to make it visible in the UI
-
-			Board:AddAlert(loc, "Acquired a MG-43 Machine Gun!")
-		end
+		--There can be a case where it's a friendly unit but that can't reload
+		--Shame if it happens LOL
+	--[[
+	(About adding weapons)
+	The player needs to un-select and select again the pawn to see the newly added weapon.
+	I've tried some stuff to force the UI to update, but none worked:
+	 - Force fire to an unreachable position (400, 400)
+	 - Move the pawn to (-1, -1), wait a frame and move it back to loc, doesn't work (even if I also wait one frame before doing that)
+	]]
+	elseif removed_item == "truelch_Item_WeaponPod_Mg43" then	
+		pawn:AddWeapon("truelch_mg43MachineGun")
+		Board:AddAlert(loc, "Acquired a MG-43 Machine Gun!"..weaponSuffix)
 	elseif removed_item == "truelch_Item_WeaponPod_Apw1" then
-		local pawn = Board:GetPawn(loc)
-		if pawn ~= nil then
-			pawn:AddWeapon("truelch_apw1AntiMaterielRifle")
-			Board:AddAlert(loc, "Acquired an APW-1 Anti-Materiel Rifle!")
-		end
+		pawn:AddWeapon("truelch_apw1AntiMaterielRifle")
+		Board:AddAlert(loc, "Acquired an APW-1 Anti-Materiel Rifle!"..weaponSuffix)
 	elseif removed_item == "truelch_Item_WeaponPod_Flam40" then
-		local pawn = Board:GetPawn(loc)
-		if pawn ~= nil then
-			pawn:AddWeapon("truelch_flam40Flamethrower")
-			Board:AddAlert(loc, "Acquired a FLAM-40 Flamethrower!")
-		end
+		pawn:AddWeapon("truelch_flam40Flamethrower")
+		Board:AddAlert(loc, "Acquired a FLAM-40 Flamethrower!"..weaponSuffix)
 	end
 end)
 
 -------------------- HOOKS / EVENTS --------------------
 
 local HOOK_PawnUndoMove = function(mission, pawn, undonePosition)
-	LOG(pawn:GetMechName().." move was undone! Was at: "..undonePosition:GetString()..", returned to: "..pawn:GetSpace():GetString())
+	--LOG(pawn:GetMechName().." move was undone! Was at: "..undonePosition:GetString()..", returned to: "..pawn:GetSpace():GetString())
 
 	local item = Board:GetItem(undonePosition)
 	if item == "truelch_Item_ResupplyPod" then
@@ -217,7 +210,7 @@ local HOOK_PawnUndoMove = function(mission, pawn, undonePosition)
 			pawn:SetWeaponLimitedRemaining(j, 0) --tmp
 		end
 	elseif isHellPodItem(item) then --any hell pod item BUT resupply
-		pawn:RemoveWeapon()
+		pawn:RemoveWeapon(#pawn:GetPoweredWeapons()) --remove last weapon that SHOULD be the one previously added.
 	end
 end
 
