@@ -63,6 +63,9 @@ local function HOOK_onNextTurnHook()
         --Delay
         effect:AddDelay(0.5) --enough?
 
+        --TODO: Board Shake!
+        effect:AddScript("Board:StartShake(0.5)")
+
         --[[
         https://gist.github.com/Tarmean/bf415d920eecb4b2bbdd32de2ba75924
         /props/pylon_fall

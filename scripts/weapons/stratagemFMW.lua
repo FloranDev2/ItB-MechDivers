@@ -96,7 +96,7 @@ end
 
 function truelch_StratagemMode1:fire(p1, p2, se)
     local damage = SpaceDamage(p2, 0)
-    damage.sItem = self.Item --just for test, need to comment it again
+    --damage.sItem = self.Item --just for test, need to comment it again
     --TODO: add mark
     --damage.sImageMark = "" --TODO
     se:AddArtillery(damage, self.UpShot)    
@@ -115,7 +115,7 @@ function truelch_StratagemMode1:fire(p1, p2, se)
     	--Thx tosx and Metalocif for the help!
 
     	--TODO: re-enable that
-	    --se:AddScript([[truelch_MechDivers_AddPodData(]]..p2:GetString()..[[,"]]..self.Item..[[")]])
+	    se:AddScript([[truelch_MechDivers_AddPodData(]]..p2:GetString()..[[,"]]..self.Item..[[")]])
 
 	    --TODO: add Board Anim
 	end

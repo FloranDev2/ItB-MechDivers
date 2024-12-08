@@ -19,10 +19,10 @@ modApi:addPalette({
 		ID = "truelch_MechDiversBlack",
 		Name = "Mech Divers' Black",
 		Image = "img/units/player/patriotMech_ns.png", --Patriot / Eagle
-		PlateHighlight = {  10,  10,  75 },	--lights
+		PlateHighlight = {  30,  45,  95 },	--lights
 		PlateLight     = {  91,  92,  93 }, --main highlight
-		PlateMid       = {  41,  42,  43 }, --main light
-		PlateDark      = {  34,  34,  32 },	--main mid
+		PlateMid       = {  51,  52,  53 }, --main light
+		PlateDark      = {  30,  30,  28 },	--main mid
 		PlateOutline   = {  15,  15,  15 },	--main dark
 		PlateShadow    = { 125,  75,  50 },	--metal dark
 		BodyColor      = { 175, 100,  75 },	--metal mid

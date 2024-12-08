@@ -76,7 +76,7 @@ function mod:init()
 	modApi:addWeaponDrop("truelch_Reinforcements_Passive")
 
 	--Custom hangar
-	require(self.scriptPath.."modifiedHangar"):init(self)
+	--require(self.scriptPath.."modifiedHangar"):init(self) --just tmp
 end
 
 function mod:load(options, version)
@@ -96,7 +96,7 @@ function mod:load(options, version)
 		self.resourcePath.."img/squad_icon.png"
 	)
 
-	require(self.scriptPath.."modifiedHangar"):load(self, options)
+	--require(self.scriptPath.."modifiedHangar"):load(self, options) --just tmp
 end
 
 return mod
