@@ -56,21 +56,17 @@ function truelch_ItemReload(pawnId, ammoIncr)
 		return
 	end
 
-	LOG("truelch_ItemReload(pawn: "..pawn:GetMechName()..", ammoIncr: "..tostring(ammoIncr)..")")
+	--LOG("truelch_ItemReload(pawn: "..pawn:GetMechName()..", ammoIncr: "..tostring(ammoIncr)..")")
 	if not pawn:IsEnemy() then --this should be checked beforehand, but we never know...
 		--Reload
-		--TODO: FMW reload -> FM_SetUses
-		--pawn:ResetUses() --lazy way
-
 		local hasReloaded = false
-
 		local weapons = pawn:GetPoweredWeapons()
-		
+
 		--that being said, 3rd weapon would be stratagem-acquired weapon which is temporary
 		--and should be destroyed after use anyway
 		--"Sir, we are meant to be expandables."
 		for j = 1, #weapons do
-			LOG("-> weapon index j: "..tostring(j))
+			--LOG("-> weapon index j: "..tostring(j))
 		    --local fmw = fmwApi:GetSkill(pawn:GetId(), j, false)
 		    local fmw = fmwApi:GetSkill(pawn:GetId(), j) --taking inspiration from FMW.lua, line 45
 		    if fmw ~= nil then
@@ -83,7 +79,7 @@ function truelch_ItemReload(pawnId, ammoIncr)
 				end
 			else
 				--Regular weapon (non-FMW)
-				LOG(" ---> Is regular weapon (non-FMW)")
+				--LOG(" ---> Is regular weapon (non-FMW)")
 			    if pawn:GetWeaponLimitedUses(j) > 0 then
 			    	local currAmmo = pawn:GetWeaponLimitedRemaining(j)
 			    	local maxAmmo = pawn:GetWeaponLimitedUses(j)

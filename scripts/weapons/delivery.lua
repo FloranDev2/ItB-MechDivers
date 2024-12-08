@@ -140,7 +140,7 @@ function truelch_DeliveryMode1:fire(p1, p2, se, up1, up2)
 		local dmg = 0
 		if Board:IsBuilding(point) then
 			dmg = dmgVsBuildings
-		elseif Board:IsPawnSpace(point) then
+		else --in any other case, we want to damage the tile (empty tile, damaging forest, ice, sand, etc.)
 			dmg = dmgVsUnits
 		end
 
