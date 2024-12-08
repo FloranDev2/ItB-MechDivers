@@ -74,7 +74,6 @@ function this:closeModePanel()
 end
 
 function this:openModePanel()
-	--LOG("=== fm_ui - openModePanel() ===")
 	local root = sdlext.getUiRoot()
 	-- returns skill object, skill index, and owner (pawn object)
 	local weapon, _, owner = api:GetActiveSkill()
@@ -117,29 +116,15 @@ function this:openModePanel()
 		clip(Ui2, uiself, screen)
 	end
 
-	--LOG("--- A")
-	--Test: create a new mode list
+	--Create a new modes' list (with only active ones)
 	local afmActiveModeList = {}
-	--LOG("weapon: "..tostring(weapon))
-	--LOG("weapon.aFM_ModeList: "..tostring(weapon.aFM_ModeList))
 	for _, mode in ipairs(weapon.aFM_ModeList) do
-		--LOG("- loop iteration")
-		--LOG("mode: "..mode)
 		if weapon:FM_IsActive(owner:GetId(), mode) then
-			--LOG("added mode!")
 			afmActiveModeList[#afmActiveModeList+1] = mode
 		end
 	end
 
-	--LOG("--- B")
-
-	--LOG("weapon.aFM_ModeList count: "..tostring(#weapon.aFM_ModeList))
-	--LOG("afmActiveModeList count: "..tostring(#afmActiveModeList))
-
-	LOG("openModePanel - loop")
 	for i, mode in ipairs(afmActiveModeList) do
-		--LOG("-> mode: "..tostring(_G[mode].aFM_name)..", i: "..tostring(i))
-
 		local tt = string.format("%s\n\n%s", _G[mode].aFM_name, _G[mode].aFM_desc)
 		local icon = sdlext.surface(_G[mode].aFM_icon)
 

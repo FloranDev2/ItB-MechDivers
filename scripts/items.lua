@@ -65,41 +65,36 @@ function truelch_ItemReload(pawnId, ammoIncr)
 		local hasReloaded = false
 
 		local weapons = pawn:GetPoweredWeapons()
-		--or j = 1, 3 do --instead? (or even more)
+		
 		--that being said, 3rd weapon would be stratagem-acquired weapon which is temporary
 		--and should be destroyed after use anyway
 		--"Sir, we are meant to be expandables."
-		for j = 1, 2 do
+		for j = 1, #weapons do
 			LOG("-> weapon index j: "..tostring(j))
-		    local fmw = fmwApi:GetSkill(pawn:GetId(), j, false)
+		    --local fmw = fmwApi:GetSkill(pawn:GetId(), j, false)
+		    local fmw = fmwApi:GetSkill(pawn:GetId(), j) --taking inspiration from FMW.lua, line 45
 		    if fmw ~= nil then
 		    	--FMWeapon
-		    	LOG(" ---> Is FMWeapon!")
-		    	--Wait, I need to iterate over all modes, not only the current weapon's mode!
-		    	-- Single mode --->		    	
-		    	--local mode = fmw:FM_GetMode(pawn:GetId())
-				--fmw:FM_AddUses(pawn:GetId(), mode, ammoIncr) --I hope it take account of the initial limit
-				-- <--- Single mode
-
-				LOG(" ------> modes:")
-				for k = 1, #fmw.aFM_ModeList do
-					local mode = weapon.aFM_ModeList[k]
-					LOG(" ---------------> k: "..tostring(k)..", mode: "..tostring(mode).." (type: "..type(mode)..")")
+				for k = 1, #_G[weapon].aFM_ModeList do --no idea if I should use weapon or fmw there, I think it's the latter
+					--local mode = weapon.aFM_ModeList[k] --this?
+					local mode = fmw.aFM_ModeList[k] --or this?
 					fmw:FM_AddUses(pawn:GetId(), mode, ammoIncr)
+					hasReloaded = true
 				end
 			else
 				--Regular weapon (non-FMW)
 				LOG(" ---> Is regular weapon (non-FMW)")
-				--local weapon = weapons[j] --useless?
 			    if pawn:GetWeaponLimitedUses(j) > 0 then
 			    	local currAmmo = pawn:GetWeaponLimitedRemaining(j)
 			    	local maxAmmo = pawn:GetWeaponLimitedUses(j)
 			    	local newAmmo = math.min(currAmmo + ammoIncr, maxAmmo)
 			    	pawn:SetWeaponLimitedRemaining(j, newAmmo)
+			    	hasReloaded = true
 			    end
 		    end
 		end
 
+		--TODO: also check if the current amount of ammo was actually strictly inferior to the max ammo? Too lazy to do that for now
 		if hasReloaded == true then
 			Board:AddAlert(pawn:GetSpace(), "RELOADED!")
 		end

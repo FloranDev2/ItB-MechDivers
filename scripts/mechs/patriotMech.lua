@@ -49,9 +49,7 @@ truelch_PatriotMech = Pawn:new{
 	ImageOffset = mechDiversBlack,
 	
 	--Might remove stratagem from him?
-	--SkillList = { "truelch_PatriotWeapons", --[["truelch_StratagemFMW"]] },
-	--Just to test reload mechanic:
-	SkillList = { "Support_SmokeDrop", "Support_Repair" },
+	SkillList = { "truelch_PatriotWeapons", "truelch_StratagemFMW" }, --actually, I want to test with multiple stratagems
 
 	SoundLocation = "/mech/prime/punch_mech/",
 	ImpactMaterial = IMPACT_METAL,
