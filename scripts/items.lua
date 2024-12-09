@@ -186,7 +186,9 @@ BoardEvents.onItemRemoved:subscribe(function(loc, removed_item)
 	 - Force fire to an unreachable position (400, 400)
 	 - Move the pawn to (-1, -1), wait a frame and move it back to loc, doesn't work (even if I also wait one frame before doing that)
 	]]
-	elseif removed_item == "truelch_Item_WeaponPod_Mg43" then	
+	elseif removed_item == "truelch_Item_WeaponPod_Mg43" then
+		--pawn:AddWeapon("Prime_Punchmech_AB") --test adding upgraded weapon
+		--Board:AddAlert(loc, "Test add upgraded weapon!")
 		pawn:AddWeapon("truelch_mg43MachineGun")
 		Board:AddAlert(loc, "Acquired a MG-43 Machine Gun!"..weaponSuffix)
 	elseif removed_item == "truelch_Item_WeaponPod_Apw1" then

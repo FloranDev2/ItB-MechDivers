@@ -54,14 +54,13 @@ local function HOOK_onNextTurnHook()
         --LOG(" -> loc: "..loc:GetString()..", item: "..item)
 
         --Play anim
-        --local dropAnim = SpaceDamage(loc, DAMAGE_DEATH)
         local dropAnim = SpaceDamage(loc, 0)
 
-        --dropAnim.sAnimation = "" --TODO: Hell Pod drop animation
+        dropAnim.sAnimation = "truelch_anim_pod_land" --TODO: Hell Pod drop animation
         effect:AddDamage(dropAnim)
 
         --Delay
-        effect:AddDelay(0.5) --enough?
+        effect:AddDelay(2) --enough?
 
         --TODO: Board Shake!
         effect:AddScript("Board:StartShake(0.5)")
@@ -86,11 +85,14 @@ local function HOOK_onNextTurnHook()
         end
 
         --Kill damage (regardless of what's under)
-        local killSd = SpaceDamage(loc, DAMAGE_DEATH)
-        effect:AddDamage(killSd)
-
-        --Lil' delay (idk if it'd destroy the item otherwise)
-        effect:AddDelay(0.1)
+        local pawn = Board:GetPawn(loc)
+        if pawn ~= nil and pawn:IsEnemy() then
+            truelch_completeDropKill(true)
+            local killSd = SpaceDamage(loc, DAMAGE_DEATH)
+            effect:AddDamage(killSd)
+            --Lil' delay (idk if it'd destroy the item otherwise)
+            effect:AddDelay(0.5)
+        end
 
         --Add item
         local spawnItem = SpaceDamage(loc, 0)

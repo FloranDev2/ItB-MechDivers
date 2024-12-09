@@ -96,8 +96,8 @@ end
 
 function truelch_StratagemMode1:fire(p1, p2, se)
     local damage = SpaceDamage(p2, 0)
+    damage.sAnimation = "truelch_anim_pod_land"
     --damage.sItem = self.Item --just for test, need to comment it again
-    --TODO: add mark
     --damage.sImageMark = "" --TODO
     se:AddArtillery(damage, self.UpShot)    
 
@@ -190,6 +190,7 @@ truelch_StratagemFMW = aFM_WeaponTemplate:new{
 	Class = "",
 	Rarity = 1,
 	PowerCost = 1,
+	--Limited = 1, --what happens if I use the vanilla limited here?
 
 	--Art
 	Icon = "weapons/truelch_stratagem.png",

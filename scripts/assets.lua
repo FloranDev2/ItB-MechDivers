@@ -1,9 +1,9 @@
 local mod = mod_loader.mods[modApi.currentMod]
 local resourcePath = mod.resourcePath
 
---FMW modes icons (TODO)
+--FMW modes icons
 
---TMP
+--Debug stuff
 for i = 1, 8 do
 	modApi:appendAsset("img/modes/icon_mode"..tostring(i)..".png", resourcePath.."img/modes/icon_mode"..tostring(i)..".png")
 end
@@ -15,8 +15,8 @@ modApi:appendAsset("img/modes/icon_minigun.png",    resourcePath.."img/modes/ico
 modApi:appendAsset("img/modes/icon_rocket_pod.png", resourcePath.."img/modes/icon_rocket_pod.png")
 
 --Stratagem FMWs icons
-modApi:appendAsset("img/modes/icon_mg43.png", resourcePath.."img/modes/icon_mg43.png")
-modApi:appendAsset("img/modes/icon_apw1.png", resourcePath.."img/modes/icon_apw1.png")
+modApi:appendAsset("img/modes/icon_mg43.png",   resourcePath.."img/modes/icon_mg43.png")
+modApi:appendAsset("img/modes/icon_apw1.png",   resourcePath.."img/modes/icon_apw1.png")
 modApi:appendAsset("img/modes/icon_flam40.png", resourcePath.."img/modes/icon_flam40.png")
 
 --Items
@@ -33,7 +33,28 @@ modApi:appendAsset("img/combat/blue_stratagem_grenade.png", resourcePath.."img/c
 modApi:appendAsset("img/combat/red_stratagem_grenade.png", resourcePath.."img/combat/red_stratagem_grenade.png")
 	Location["combat/red_stratagem_grenade.png"] = Point(-7, -22)
 
---Board Anims
+--Anims
+modApi:appendAsset("img/effects/truelch_anim_pod_land.png", resourcePath.."img/effects/truelch_anim_pod_land.png")
+	Location["effects/truelch_anim_pod_land.png"] = Point(-20, -40)
+
+ANIMS.truelch_anim_pod_land = Animation:new{
+	Image = "effects/truelch_anim_pod_land.png",
+	PosX = -25, -- -20
+	PosY = -165, -- -40
+	Time = 0.04,
+	NumFrames = 9,
+}
+
+modApi:appendAsset("img/effects/truelch_nuke.png", resourcePath.."img/effects/truelch_nuke.png")
+	Location["effects/truelch_nuke.png"] = Point(-20, -40)
+
+ANIMS.truelch_nuke = Animation:new{
+	Image = "effects/truelch_nuke.png",
+	PosX = -20,
+	PosY = -40,
+	Time = 0.04,
+	NumFrames = 9,
+}
 
 --Damage mark
 modApi:appendAsset("img/combat/icons/icon_resupply.png", resourcePath.."img/combat/icons/icon_resupply.png")

@@ -2,7 +2,7 @@ local mod = {
 	id = "truelch_MechDivers",
 	name = "Mech Divers",
 	icon = "img/mod_icon.png",
-	version = "0.1.0",
+	version = "1.0.0",
 	modApiVersion = "2.9.2",
 	--gameVersion = "1.2.88",
     dependencies = {
@@ -19,7 +19,7 @@ function mod:init()
 	require(self.scriptPath.."palette")
 
 	--Achievements
-	--require(self.scriptPath.."achievements")
+	require(self.scriptPath.."achievements")
 
 	--Libs
 	require(self.scriptPath.."libs/artilleryArc") --weaponArmed is imported by artilleryArc
