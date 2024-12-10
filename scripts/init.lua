@@ -8,7 +8,7 @@ local mod = {
     dependencies = {
 		memedit = "1.0.4",
         modApiExt = "1.21",
-    }	
+    }
 }
 
 function mod:init()
@@ -53,13 +53,12 @@ function mod:init()
 	require(self.scriptPath.."mechs/eagleMech")
 
 	--Test
-	--require(self.scriptPath.."/weapons/test/testWeapon")
+	require(self.scriptPath.."/weapons/test/testWeapon")
 	--require(self.scriptPath.."/weapons/test/debugMechs")
 
 	--Regular weapons
 	require(self.scriptPath.."/weapons/dualAutocannons")
 	require(self.scriptPath.."/weapons/patriotWeapons")
-	--require(self.scriptPath.."/weapons/stratagem")
 	require(self.scriptPath.."/weapons/stratagemFMW")
 	require(self.scriptPath.."/weapons/delivery")
 	require(self.scriptPath.."/weapons/passive_respawn")
@@ -73,7 +72,14 @@ function mod:init()
 	require(self.scriptPath.."pilots")
 
 	--Weapon deck
+	modApi:addWeaponDrop("truelch_DualAutocannons")
+	modApi:addWeaponDrop("truelch_PatriotWeapons")
+	modApi:addWeaponDrop("truelch_StratagemFMW")
+	modApi:addWeaponDrop("truelch_Delivery")
 	modApi:addWeaponDrop("truelch_Reinforcements_Passive")
+
+	--Misc
+	TILE_TOOLTIPS["hell_drop"] = {"Hell Drop", "A Hell Pod will land here soon, killing any unit below."}
 
 	--Custom hangar
 	--require(self.scriptPath.."modifiedHangar"):init(self) --just tmp

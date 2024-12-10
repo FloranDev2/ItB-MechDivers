@@ -55,14 +55,12 @@ local function HOOK_onNextTurnHook()
 
         --Play anim
         local dropAnim = SpaceDamage(loc, 0)
-
-        dropAnim.sAnimation = "truelch_anim_pod_land" --TODO: Hell Pod drop animation
+        dropAnim.sAnimation = "truelch_anim_pod_land"
         effect:AddDamage(dropAnim)
 
         --Delay
         effect:AddDelay(2) --enough?
 
-        --TODO: Board Shake!
         effect:AddScript("Board:StartShake(0.5)")
 
         --[[
@@ -86,12 +84,16 @@ local function HOOK_onNextTurnHook()
 
         --Kill damage (regardless of what's under)
         local pawn = Board:GetPawn(loc)
-        if pawn ~= nil and pawn:IsEnemy() then
-            truelch_completeDropKill(true)
+        if pawn ~= nil then            
             local killSd = SpaceDamage(loc, DAMAGE_DEATH)
             effect:AddDamage(killSd)
+
+            if pawn:IsEnemy() then
+                truelch_completeDropKill()
+            end
+
             --Lil' delay (idk if it'd destroy the item otherwise)
-            effect:AddDelay(0.5)
+            effect:AddDelay(0.5) --doesn't work to prevent item being recovered / destroyed
         end
 
         --Add item
@@ -103,9 +105,27 @@ local function HOOK_onNextTurnHook()
         Board:AddEffect(effect)
     end
 
-    --Clear
     missionData().hellPods = {}
 
+    --modApi:runLater(function()
+        --[[
+        --So the unit on the loc won't recover (or destroy) the item
+        for _, hellPod in pairs(missionData().hellPods) do
+            --Add item
+            local spawnItem = SpaceDamage(loc, 0)
+            spawnItem.sItem = item
+            effect:AddDamage(spawnItem)
+
+            --Add effect to the board
+            Board:AddEffect(effect)
+        end
+
+        --Clear
+        missionData().hellPods = {}
+        ]]
+
+        --LOG("-------- HERE (modApi:runLater)")
+    --end)    
 end
 
 

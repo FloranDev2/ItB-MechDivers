@@ -158,6 +158,14 @@ local function HOOK_onNextTurnHook()
 
         --V2b
         for _, pawn in pairs(missionData().deadMechs) do
+
+            --[[
+            --Play anim
+            local dropAnim = SpaceDamage(loc, 0)
+            dropAnim.sAnimation = "truelch_anim_pod_land"
+            effect:AddDamage(dropAnim)
+            ]]
+
             local randPoint = GetRandomPoint()
             pawn:SetSpace(randPoint) --this doesn't do a cool drop anim though
             --drop anim: take a look at candy island's candy goos

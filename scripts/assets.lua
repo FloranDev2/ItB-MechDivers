@@ -20,12 +20,6 @@ modApi:appendAsset("img/modes/icon_apw1.png",   resourcePath.."img/modes/icon_ap
 modApi:appendAsset("img/modes/icon_flam40.png", resourcePath.."img/modes/icon_flam40.png")
 
 --Items
---TMP
---[[
-modApi:appendAsset("img/combat/item_truelch_supply_pod.png", resourcePath.."img/combat/item_truelch_supply_pod.png")
-	Location["combat/item_truelch_supply_pod.png"] = Point(-15, 10) --28, 22
-]]
-
 --Note: this is also temporary; these effects are kinda like ENV icons
 modApi:appendAsset("img/combat/blue_stratagem_grenade.png", resourcePath.."img/combat/blue_stratagem_grenade.png")
 	Location["combat/blue_stratagem_grenade.png"] = Point(-7, -22) --14, 52
@@ -39,10 +33,10 @@ modApi:appendAsset("img/effects/truelch_anim_pod_land.png", resourcePath.."img/e
 
 ANIMS.truelch_anim_pod_land = Animation:new{
 	Image = "effects/truelch_anim_pod_land.png",
-	PosX = -25, -- -20
-	PosY = -165, -- -40
-	Time = 0.04,
-	NumFrames = 9,
+	PosX = -25,
+	PosY = -165,
+	Time = 0.08,
+	NumFrames = 24,
 }
 
 modApi:appendAsset("img/effects/truelch_nuke.png", resourcePath.."img/effects/truelch_nuke.png")
@@ -77,4 +71,6 @@ modApi:appendAsset("img/weapons/truelch_dual_autocannon.png", resourcePath.."img
 modApi:appendAsset("img/weapons/truelch_patriot_weapons.png", resourcePath.."img/weapons/truelch_patriot_weapons.png")
 modApi:appendAsset("img/weapons/truelch_stratagem.png", resourcePath.."img/weapons/truelch_stratagem.png")
 
---Animations
+--Tile icons
+modApi:appendAsset("img/combat/tile_icon/tile_truelch_drop.png",mod.resourcePath.."img/combat/tile_icon/tile_truelch_drop.png")
+	Location["combat/tile_icon/tile_truelch_drop.png"] = Point(-27, 2)

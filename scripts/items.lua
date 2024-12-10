@@ -175,6 +175,7 @@ BoardEvents.onItemRemoved:subscribe(function(loc, removed_item)
 		if not pawn:IsEnemy() then
 			truelch_ItemReload(pawn:GetId(), 1)
 		else
+			LOG("--------------- DESTROYED")
 			Board:AddAlert(loc, "DESTROYED")
 		end
 		--There can be a case where it's a friendly unit but that can't reload
@@ -187,22 +188,32 @@ BoardEvents.onItemRemoved:subscribe(function(loc, removed_item)
 	 - Move the pawn to (-1, -1), wait a frame and move it back to loc, doesn't work (even if I also wait one frame before doing that)
 	]]
 	elseif removed_item == "truelch_Item_WeaponPod_Mg43" then
-		--pawn:AddWeapon("Prime_Punchmech_AB") --test adding upgraded weapon
-		--Board:AddAlert(loc, "Test add upgraded weapon!")
-		pawn:AddWeapon("truelch_mg43MachineGun")
-		Board:AddAlert(loc, "Acquired a MG-43 Machine Gun!"..weaponSuffix)
+		if not pawn:IsEnemy() then
+			pawn:AddWeapon("truelch_mg43MachineGun")
+			Board:AddAlert(loc, "Acquired a MG-43 Machine Gun!"..weaponSuffix)
+		else
+			Board:AddAlert(loc, "DESTROYED")
+		end
 	elseif removed_item == "truelch_Item_WeaponPod_Apw1" then
-		pawn:AddWeapon("truelch_apw1AntiMaterielRifle")
-		Board:AddAlert(loc, "Acquired an APW-1 Anti-Materiel Rifle!"..weaponSuffix)
+		if not pawn:IsEnemy() then
+			pawn:AddWeapon("truelch_apw1AntiMaterielRifle")
+			Board:AddAlert(loc, "Acquired an APW-1 Anti-Materiel Rifle!"..weaponSuffix)
+		else
+			Board:AddAlert(loc, "DESTROYED")
+		end
 	elseif removed_item == "truelch_Item_WeaponPod_Flam40" then
-		pawn:AddWeapon("truelch_flam40Flamethrower")
-		Board:AddAlert(loc, "Acquired a FLAM-40 Flamethrower!"..weaponSuffix)
+		if not pawn:IsEnemy() then
+			pawn:AddWeapon("truelch_flam40Flamethrower")
+			Board:AddAlert(loc, "Acquired a FLAM-40 Flamethrower!"..weaponSuffix)
+		else
+			Board:AddAlert(loc, "DESTROYED")
+		end
 	end
 end)
 
 -------------------- HOOKS / EVENTS --------------------
 
-local HOOK_PawnUndoMove = function(mission, pawn, undonePosition)
+local HOOK_pawnUndoMove = function(mission, pawn, undonePosition)
 	--LOG(pawn:GetMechName().." move was undone! Was at: "..undonePosition:GetString()..", returned to: "..pawn:GetSpace():GetString())
 
 	local item = Board:GetItem(undonePosition)
@@ -216,9 +227,13 @@ local HOOK_PawnUndoMove = function(mission, pawn, undonePosition)
 	end
 end
 
+local function HOOK_onNextTurnHook()
+	
+end
 
 local function EVENT_onModsLoaded()
-	modapiext:addPawnUndoMoveHook(HOOK_PawnUndoMove)
+	modapiext:addPawnUndoMoveHook(HOOK_pawnUndoMove)
+	modApi:addNextTurnHook(HOOK_onNextTurnHook)
 end
 
 modApi.events.onModsLoaded:subscribe(EVENT_onModsLoaded)

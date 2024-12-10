@@ -140,12 +140,10 @@ end
 --- MISC FUNCTIONS ---
 function isBot(pawn)
 	if pawn == nil then
-		--LOG("Pawn is nil!")
 		return false
 	end
 
 	if _G[pawn:GetType()].DefaultFaction == FACTION_BOTS then
-		LOG(pawn:GetMechName().." is a bot!")
 		return true
 	end
 
@@ -194,6 +192,13 @@ local HOOK_onPawnKilled = function(mission, pawn)
 		--Reached goal?
 		if achievementData().botsKilled >= ROBOTS_KILL_GOAL then
 			truelch_completeKillRobots()
+		end
+	end
+
+	if pawn:IsMech() then
+		achievementData().mechsKilled = achievementData().mechsKilled + 1
+		if achievementData().mechsKilled >= DEAD_MECHS_GOAL then
+			truelch_completeRespawnAbuse()
 		end
 	end
 end

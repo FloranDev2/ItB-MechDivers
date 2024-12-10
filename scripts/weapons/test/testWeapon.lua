@@ -61,12 +61,33 @@ function truelch_TestWeapon:GetSkillEffect(p1, p2)
 	ret:AddDamage(damage)
 	]]
 
-
+	--[[
 	local pawn = Board:GetPawn(p2)
 	if pawn ~= nil then
 		--pawn:RemoveWeapon(1)
 		pawn:AddWeapon("truelch_mg43MachineGun")
 	end
+	]]
+
+	--[[
+	LOG("------------- LOOP 1:")
+	for j = 0, 7 do
+		for i = 0, 7 do
+			local mech = Board:GetPawn(Point(i, j))
+			if mech ~= nil and mech:IsMech() then
+				LOG("mech: "..mech:GetMechName()..", id: "..tostring(mech:GetId()))
+			end
+		end
+	end
+
+	--This isn't reliable, so i'm sticking to the good old method to access all mechs
+	LOG("------------- LOOP 2:")
+	for _, p in pairs(extract_table(Board:GetPawns(TEAM_MECH))) do
+		local damage = SpaceDamage(p:GetSpace(), -10)
+		LOG("p: "..p:GetMechName()..", id: "..tostring(p:GetId()))
+		ret:AddDamage(damage)
+	end
+	]]
 
 
 	return ret

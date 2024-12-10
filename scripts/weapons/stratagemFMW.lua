@@ -75,12 +75,30 @@ CreateClass(truelch_StratagemMode1)
 function truelch_StratagemMode1:targeting(point)
 	local points = {}
 
+	--Check if it's not already a point in the mission data!
+
     for j = -self.Range, self.Range do
         for i = -self.Range, self.Range do
             local curr = point + Point(i, j)
+
+        	local isHellPodPoint = false
+        	if isMission() then
+				for _, hellPod in pairs(missionData().hellPods) do
+					if hellPod[1] == curr then
+						isHellPodPoint = true
+						break
+					end
+				end
+			end
+
             local isItem = Board:GetItem(curr) == nil
-            if curr ~= point and Board:IsValid(curr) and not Board:IsBlocked(curr, PATH_PROJECTILE) and
-                not Board:IsPod(curr) and isItem == false then
+            
+            if curr ~= point and
+            	Board:IsValid(curr) and
+            	not Board:IsBlocked(curr, PATH_PROJECTILE) and
+                not Board:IsPod(curr) and
+                isItem == false and
+                isHellPodPoint == false then
                 points[#points+1] = curr
             end
         end
@@ -96,9 +114,9 @@ end
 
 function truelch_StratagemMode1:fire(p1, p2, se)
     local damage = SpaceDamage(p2, 0)
-    damage.sAnimation = "truelch_anim_pod_land"
+    --damage.sAnimation = "truelch_anim_pod_land" --just to test the anim!
     --damage.sItem = self.Item --just for test, need to comment it again
-    --damage.sImageMark = "" --TODO
+    damage.sImageMark = "combat/blue_stratagem_grenade.png"
     se:AddArtillery(damage, self.UpShot)    
 
     --Free action
@@ -113,11 +131,7 @@ function truelch_StratagemMode1:fire(p1, p2, se)
     	--I've decided to not use missionData() directly here and rather use an intermediate function for that reason.
     	--Also, improvement: use string format
     	--Thx tosx and Metalocif for the help!
-
-    	--TODO: re-enable that
 	    se:AddScript([[truelch_MechDivers_AddPodData(]]..p2:GetString()..[[,"]]..self.Item..[[")]])
-
-	    --TODO: add Board Anim
 	end
 end
 
@@ -311,9 +325,41 @@ local HOOK_onNextTurn = function(mission)
 	end
 end
 
+--This causes a crash
+--[[
+local incr = 0.01
+local alpha = 0.5
+]]
+local HOOK_onMissionUpdate = function(mission)
+    --Alpha
+    --[[
+    alpha = alpha + incr
+    if alpha > 1 then
+    	alpha = 1
+    	incr = -0.01
+    elseif alpha < 0 then
+    	alpha = 0
+    	incr = 0.01
+    end
+    ]]
+
+    --Loop
+	for _, hellPod in pairs(missionData().hellPods) do
+    	--Retrieve data
+        local loc = hellPod[1]
+        local item = hellPod[2]
+
+        --thx tosx and Metalocif!
+		Board:MarkSpaceImage(loc, "combat/tile_icon/tile_truelch_drop.png", GL_Color(255, 180, 0, 0.75))
+		--Board:MarkSpaceImage(loc, "combat/tile_icon/tile_truelch_drop.png", GL_Color(255, 180, 0, alpha))
+		Board:MarkSpaceDesc(loc, "hell_drop")
+	end
+end
+
 local function EVENT_onModsLoaded()
     modApi:addMissionStartHook(HOOK_onMissionStarted)
     modApi:addNextTurnHook(HOOK_onNextTurn)
+    modApi:addMissionUpdateHook(HOOK_onMissionUpdate)
 end
 
 modApi.events.onModsLoaded:subscribe(EVENT_onModsLoaded)

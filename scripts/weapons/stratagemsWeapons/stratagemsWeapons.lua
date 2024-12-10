@@ -38,36 +38,11 @@ local function missionData()
     --List of pawn elligible to shoot again
     --Wait, I can just queue another attack!
     --Depends if I want it to happen before or after the enemies play
-    --[[
-    if mission.truelch_MechDivers.m43DoubleShots == nil then
-        mission.truelch_MechDivers.m43DoubleShots = {}
+    if mission.truelch_MechDivers.m43ShootStatus == nil then
+        mission.truelch_MechDivers.m43ShootStatus = {}
     end
-    ]]
 
     return mission.truelch_MechDivers
-end
-
-
------------------------------------------------ UTILITY FUNCTIONS -----------------------------------------------
-
-local stratagemWeapons = {
-    "truelch_mg43MachineGun",
-    "truelch_apw1AntiMaterielRifle",
-    "truelch_flam40Flamethrower",
-}
-
-local function isStratagemWeapon(weaponId)
-    if type(weaponId) == 'table' then
-        weaponId = weaponId.__Id
-    end
-
-    for _, stratagemWeapon in pairs(stratagemWeapons) do
-        if weaponId == stratagemWeapon then
-            return true
-        end
-    end
-
-    return false
 end
 
 
@@ -386,37 +361,26 @@ end
 ----------------------------------------------- ??? WEAPONS -----------------------------------------------
 
 
------------------------------------------------ HOOKS -----------------------------------------------
+----------------------------------------------- UTILITY FUNCTIONS -----------------------------------------------
 
-local function HOOK_onNextTurnHook()
-    --if Game:GetTeamTurn() == TEAM_PLAYER then
-	if Game:GetTeamTurn() == TEAM_ENEMY then --might be even more funny
-        --Going through all mechs like this instead of 0 -> 1 because freshly spawned Mech don't have 0 - 2 ids
-        local size = Board:GetSize()
-        for j = 0, size.y do
-        	for i = 0, size.x do
-        		local pawn = Board:GetPawn(Point(i, j))
-        		if pawn ~= nil and pawn:IsMech() then
-                    --pawn:FireWeapon() --TODO
-        		end
-        	end
-        end
-    end
-end
+local stratagemWeapons = {
+    "truelch_mg43MachineGun",
+    "truelch_apw1AntiMaterielRifle",
+    "truelch_flam40Flamethrower",
+}
 
-local HOOK_onSkillEnd = function(mission, pawn, weaponId, p1, p2)
+local function isStratagemWeapon(weaponId)
     if type(weaponId) == 'table' then
         weaponId = weaponId.__Id
     end
 
-    --better use the pawn move hook to track the distance
-    --if weaponId == "Move" then
-
-    --[[
-    if weaponId == "truelch_mg43MachineGun" then
-
+    for _, stratagemWeapon in pairs(stratagemWeapons) do
+        if weaponId == stratagemWeapon then
+            return true
+        end
     end
-    ]]
+
+    return false
 end
 
 local function destroyAllStratagemWeapons()
@@ -442,9 +406,71 @@ local function destroyAllStratagemWeapons()
     end
 end
 
+
+----------------------------------------------- HOOKS -----------------------------------------------
+
+local function HOOK_onNextTurnHook()
+    if Game:GetTeamTurn() == TEAM_PLAYER then
+        for _, p in pairs(extract_table(Board:GetPawns(TEAM_MECH))) do
+            --mission.truelch_MechDivers.m43ShootStatus
+            --p:FireWeapon()
+        end
+    end
+
+	if Game:GetTeamTurn() == TEAM_ENEMY then --might be even more funny
+        --Going through all mechs like this instead of 0 -> 1 because freshly spawned Mech don't have 0 - 2 ids
+        local size = Board:GetSize()
+        for j = 0, size.y do
+        	for i = 0, size.x do
+        		local pawn = Board:GetPawn(Point(i, j))
+        		if pawn ~= nil and pawn:IsMech() then
+                    --pawn:FireWeapon() --TODO
+        		end
+        	end
+        end
+    end
+end
+
+local HOOK_onSkillEnd = function(mission, pawn, weaponId, p1, p2)
+    if type(weaponId) == 'table' then
+        weaponId = weaponId.__Id
+    end
+
+    --better use the pawn move hook to track the distance
+    if weaponId == "Move" then
+        LOG("p1: "..p1:GetString().." -> p2: "..p2:GetString())
+        local dist = p1:Manhattan(p2)
+        local move = pawn:GetMoveSpeed()
+        LOG("move: "..tostring(move))
+        Board:AddAlert(p2, "Dist: "..tostring(dist).."/"..tostring(move))
+    end
+
+    if weaponId == "truelch_mg43MachineGun" then
+
+    end
+end
+
+local HOOK_PawnUndoMove = function(mission, pawn, undonePosition)
+
+end
+
+
+
+
+--Maybe it makes more sense to do that at mission start rather than mission end?
+local HOOK_onMissionStarted = function(mission)
+    --LOG("HOOK_onMissionStarted")
+    destroyAllStratagemWeapons()
+end
+
+local HOOK_onMissionTestStarted = function(mission)
+    --LOG("HOOK_onMissionTestStarted")
+    destroyAllStratagemWeapons()
+end
+
 --Maybe I need to keep this one
 local HOOK_onMissionEnded = function(mission)
-    LOG("HOOK_onMissionEnded")
+    --LOG("HOOK_onMissionEnded")
     destroyAllStratagemWeapons()
 end
 
@@ -456,23 +482,13 @@ local HOOK_onMissionTestEnded = function(mission)
 end
 ]]
 
---Maybe it makes more sense to do that at mission start rather than mission end?
-local HOOK_onMissionStarted = function(mission)
-    LOG("HOOK_onMissionStarted")
-    destroyAllStratagemWeapons()
-end
-
-local HOOK_onMissionTestStarted = function(mission)
-    LOG("HOOK_onMissionTestStarted")
-    destroyAllStratagemWeapons()
-end
-
 ----------------------------------------------- HOOKS / EVENTS SUBSCRIPTION -----------------------------------------------
 
 local function EVENT_onModsLoaded()
     --M43
     modApi:addNextTurnHook(HOOK_onNextTurnHook)
     modapiext:addSkillEndHook(HOOK_onSkillEnd)
+    modapiext:addPawnUndoMoveHook(HOOK_PawnUndoMove)
 
     --Destroy stratagem weapons
     modApi:addMissionStartHook(HOOK_onMissionStarted)
