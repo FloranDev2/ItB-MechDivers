@@ -27,11 +27,6 @@ tosx_Deploy_FighterAB = tosx_Deploy_Fighter:new{
 
 local mechDiversBlack = modApi:getPaletteImageOffset("truelch_MechDiversBlack")
 
-
--------------------- TURRETS --------------------
-
---Make turrets autonomous? As in they just shot a random enemy in sight?
-
 --[[
 -- locate our mech assets.
 local deployablePath = path .."img/deployables/" --truelch
@@ -59,7 +54,7 @@ local files = {
 ]]
 
 truelch_Amg43MachineGunSentry = Pawn:new{
-	Name = "A/MG-43 Machine Gun Sentry",
+	Name = "A/MG-43 Machine Gun Sentry", --A/G-16 Gatling Sentry --A/AC-8 Autocannon Sentry
 	Health = 1,
 	MoveSpeed = 0,
 	Image = "SmallTank1", --TODO
@@ -74,13 +69,20 @@ truelch_Amg43MachineGunSentry = Pawn:new{
 AddPawn("truelch_Amg43MachineGunSentry")
 
 --"Neutral" weapon
-truelch_Amg43MachineGunSentry_Weapon = Skill:new{  
+truelch_Amg43MachineGunSentry_Weapon = Skill:new{
+	--Infos
 	Name = "Machine Gun",
 	Description = "Shoots a projectile at a random aligned enemy.",
-	Icon = "weapons/deploy_tank.png",
 	Class = "Unique",
-	Damage = 1,
+
+	--Art
+	Icon = "weapons/deploy_tank.png",
 	ProjectileArt = "effects/shot_mechtank", --TMP
+
+	--Gameplay
+	Damage = 1,
+
+	--Tip image
 	TipImage = {
 		Unit   = Point(2, 2),
 		Enemy  = Point(2, 1),
@@ -97,9 +99,6 @@ function truelch_Amg43MachineGunSentry_Weapon:GetTargetScore(p1, p2)
 	end
 
 	return -10
-		
-	--return self:ScoreList(self:GetSkillEffect(p1,p2).q_effect, true)
-	--return self:ScoreList(self:GetSkillEffect(p1, p2).effect, true) --will this work?
 end
 
 function truelch_Amg43MachineGunSentry_Weapon:GetTargetArea(point)
@@ -127,49 +126,107 @@ function truelch_Amg43MachineGunSentry_Weapon:GetSkillEffect(p1, p2)
     return ret
 end
 
---Regular weapon
---[[
-truelch_Amg43MachineGunSentry_Weapon = Skill:new{  
-	Name = "Machine Gun",
-	Description = "TMP",
+
+
+
+truelch_Am12MortarSentry = Pawn:new{
+	Name = "A/M-12 Mortar Sentry",
+	Health = 1,
+	MoveSpeed = 0,
+	Image = "SmallTank1", --TODO
+	SkillList = { "truelch_Am12MortarSentry_Weapon" },
+	SoundLocation = "/mech/flying/jet_mech/",
+	ImageOffset = mechDiversBlack,
+	DefaultTeam = TEAM_PLAYER,
+	ImpactMaterial = IMPACT_METAL,
+	Corpse = false,
+	Neutral = true, --test!
+}
+AddPawn("truelch_Am12MortarSentry")
+
+--"Neutral" weapon?
+truelch_Am12MortarSentry_Weapon = Skill:new{
+	--Infos
+	Name = "Mortar",
+	Description = "Artillery strike.",
+	Class = "Unique",
+
+	--Art
 	Icon = "weapons/deploy_tank.png",
-	Class = "Unique", --Class = "Unique",
-	Damage = 1,
-	ProjectileArt = "effects/shot_mechtank", --TMP
+	UpShot = "effects/shotup_tribomb_missile.png", --TMP
+
+	--Gameplay
+	CenterDamage = 1,
+	OuterDamage = 1,
+
+	--Tip image
 	TipImage = {
-		Unit   = Point(2, 2),
-		Enemy  = Point(2, 1),
-		Target = Point(2, 1),
-		CustomPawn = "truelch_Amg43MachineGunSentry"
+		Unit     = Point(2, 3),
+		Mountain = Point(2, 2),
+		Enemy    = Point(2, 1),
+		Target   = Point(2, 1),
+		CustomPawn = "truelch_Am12MortarSentry"
 	}
 }
 
-function truelch_Amg43MachineGunSentry_Weapon:GetTargetArea(point)
+--If I do a weapon managed by the AI
+function truelch_Am12MortarSentry:GetTargetScore(p1, p2)
+	local effect = SkillEffect()
+
+	local score = 0
+	if Board:GetPawnTeam(p2) == TEAM_ENEMY then
+		score = score + 100
+	end
+
+	for dir = DIR_START, DIR_END do
+		local curr = p2 + DIR_VECTORS[dir]
+		local pawn = Board:GetPawn(curr)
+		if Board:IsBuilding() then
+			score = score - 50
+		elseif pawn ~= nil then
+			if pawn:IsEnemy() then
+				score = score + 50
+			else
+				score = score - 10
+			end
+		end
+	end
+
+	return score
+end
+
+function truelch_Am12MortarSentry:GetTargetArea(point)
     local ret = PointList()
 
     for dir = DIR_START, DIR_END do
-        for i = 1, 7 do
-            local curr = Point(point + DIR_VECTORS[dir] * i)
+    	for i = 2, 7 do
+        	local curr = point + DIR_VECTORS[dir]*i
 
-            if Board:IsValid(curr) then
-            	ret:push_back(curr)
-        	end
-
-            if not Board:IsValid(curr) or Board:IsBlocked(curr, PATH_PROJECTILE) then
-            	break
-            end
-        end
+        	--If I do a weapon managed by the AI
+	        if pawn ~= nil and pawn:IsEnemy() then
+	        	ret:push_back(target)
+	    	end
+	    end
     end
 
     return ret
 end
 
-function truelch_Amg43MachineGunSentry_Weapon:GetSkillEffect(p1, p2)
+function truelch_Am12MortarSentry:GetSkillEffect(p1, p2)
     local ret = SkillEffect()
-    local dir = GetDirection(p2 - p1)
-    local target = GetProjectileEnd(p1, p2, PATH_PROJECTILE)
-    local damage = SpaceDamage(target, self.Damage, dir)
-    ret:AddProjectile(p1, damage, self.ProjectileArt, NO_DELAY)
+
+    ret:AddBounce(p1, 1)
+
+    local damage = SpaceDamage(p2, self.CenterDamage)
+    damage.sAnimation = "ExploArt1"
+    ret:AddArtillery(damage, self.UpShot)
+
+    for dir = DIR_START, DIR_END do
+    	local damage = SpaceDamage(p2 + DIR_VECTORS[dir], self.OuterDamage)
+    	damage.sAnimation = "airpush_"..dir
+    	damage.iPush = dir
+    	ret:AddDamage(damage)
+    end
+
     return ret
 end
-]]

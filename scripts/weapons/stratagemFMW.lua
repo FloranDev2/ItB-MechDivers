@@ -27,6 +27,18 @@ local function isMission()
         and mission ~= Mission_Test
 end
 
+local function gameData()
+	if GAME.truelch_MechDivers == nil then
+		GAME.truelch_MechDivers = {}
+	end
+
+	if GAME.truelch_MechDivers.stratagems == nil then
+		GAME.truelch_MechDivers.stratagems = {}
+	end
+
+	return GAME.truelch_MechDivers
+end
+
 --Still local because AddScript() isn't calling it directly
 local function missionData()
     local mission = GetCurrentMission()
@@ -284,6 +296,7 @@ local HOOK_onMissionStarted = function(mission)
 	truelch_stratagem_flag = true
 end
 
+
 local HOOK_onNextTurn = function(mission)
 	if Game:GetTeamTurn() ~= TEAM_PLAYER or truelch_stratagem_flag == false then
 		return
@@ -291,7 +304,7 @@ local HOOK_onNextTurn = function(mission)
 
 	truelch_stratagem_flag = false
 
-	--LOG("---------> Computing Stratagems...")
+	LOG("---------> Computing Stratagems...")
 
 	local size = Board:GetSize()
 	for j = 0, size.y do
@@ -311,13 +324,45 @@ local HOOK_onNextTurn = function(mission)
 						end
 
 						if isStratagemWeapon(weapon) then
-							--TODO: set mode to the first available stratagem mode
-							--[[
-							fmw:FM_SetActive(p, "truelch_StratagemMode1", false)
-							fmw:FM_SetActive(p, "truelch_StratagemMode3", false)
-							fmw:FM_SetActive(p, "truelch_StratagemMode5", false)
-							fmw:FM_SetActive(p, "truelch_StratagemMode6", false)
-							]]
+							LOG("-------------- A")
+							local list = {}							
+							LOG("-------------- B")
+							for _, mode in pairs(_G[weapon].aFM_ModeList) do
+								LOG("-------------- BA")
+								if list_contains(gameData().stratagems[p], mode) then --this causes an issue
+									LOG("-------------- BAA")
+									fmw:FM_SetActive(p, mode, true)
+								else
+									LOG("-------------- BAB-1")
+									fmw:FM_SetActive(p, mode, false)
+									LOG("-------------- BAB-2")
+									table.insert(list, mode)
+									LOG("-------------- BAB-3")
+								end
+							end
+
+							LOG("-------------- C")
+
+							local randIndex = math.random(#list)
+
+							LOG("-------------- D")
+							local randMode = list[randIndex]
+
+							LOG("-------------- E")
+
+							--Enable
+							fmw:FM_SetActive(p, randMode, true)
+
+							--Add to game data
+							if gameData().stratagems[p] == nil then
+								gameData().stratagems[p] = {}
+							end							
+							table.insert(gameData().stratagems[p], randMode)
+
+							--TODO: set the mode to the first one found active!
+
+							--Board alert
+							Board:AddAlert(pawn:GetSpace(), _G[randMode].Name.." added")
 						end
 					end
 				end
