@@ -37,6 +37,7 @@ function mod:init()
 
 	--Items
 	require(self.scriptPath.."items")
+	require(self.scriptPath.."deployables") --deployable pawns
 
 	--Drop Env
 	--I won't use custom event because I want the drop effect to happen AFTER enemies act, not before

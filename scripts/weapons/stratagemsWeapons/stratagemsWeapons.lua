@@ -442,7 +442,7 @@ local HOOK_onSkillEnd = function(mission, pawn, weaponId, p1, p2)
         local dist = p1:Manhattan(p2)
         local move = pawn:GetMoveSpeed()
         LOG("move: "..tostring(move))
-        Board:AddAlert(p2, "Dist: "..tostring(dist).."/"..tostring(move))
+        --Board:AddAlert(p2, "Dist: "..tostring(dist).."/"..tostring(move))
     end
 
     if weaponId == "truelch_mg43MachineGun" then

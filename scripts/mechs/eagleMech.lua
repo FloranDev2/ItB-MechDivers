@@ -50,9 +50,7 @@ truelch_EagleMech = Pawn:new{
 	Image = "eagleMech",
 	ImageOffset = mechDiversBlack,
 	
-	--One FMWeapon that calls in various weapon and a Respawn passive
 	SkillList = { "truelch_Delivery", "truelch_Reinforcements_Passive" },
-	--SkillList = { "truelch_Stratagem" },
 
 	--[[
 	"/mech/flying/jet_mech/"	

@@ -48,8 +48,8 @@ truelch_PatriotMech = Pawn:new{
 	Image = "patriotMech",
 	ImageOffset = mechDiversBlack,
 	
-	--Might remove stratagem from him?
-	SkillList = { "truelch_PatriotWeapons", "truelch_StratagemFMW" }, --actually, I want to test with multiple stratagems
+	--SkillList = { "truelch_PatriotWeapons", "truelch_StratagemFMW" },
+	SkillList = { "truelch_PatriotWeapons", "truelch_StratagemFMW" },
 
 	SoundLocation = "/mech/prime/punch_mech/",
 	ImpactMaterial = IMPACT_METAL,
