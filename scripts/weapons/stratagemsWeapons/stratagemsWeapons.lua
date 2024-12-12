@@ -12,8 +12,8 @@ local function gameData()
     end
 
     --Acquired stratagems
-    if GAME.truelch_MechDivers.Stratagems == nil then
-        GAME.truelch_MechDivers.Stratagems = {}
+    if GAME.truelch_MechDivers.stratagems == nil then
+        GAME.truelch_MechDivers.stratagems = {}
     end
 
     return GAME.truelch_MechDivers
@@ -35,15 +35,79 @@ local function missionData()
         mission.truelch_MechDivers = {}
     end
 
-    --List of pawn elligible to shoot again
-    --Wait, I can just queue another attack!
-    --Depends if I want it to happen before or after the enemies play
-    if mission.truelch_MechDivers.m43ShootStatus == nil then
-        mission.truelch_MechDivers.m43ShootStatus = {}
+    --[[
+    shots = 1 -> 3 (depending on the movement)
+    mg43ShootStatus[pawn:GetId()] = { shots, dir }
+    Example:
+    mg43ShootStatus[0] = { 3, -1 }
+    ]]
+    if mission.truelch_MechDivers.mg43ShootStatus == nil then
+        mission.truelch_MechDivers.mg43ShootStatus = {}
+    end
+
+    --
+    if mission.truelch_MechDivers.isCharged == nil then
+        mission.truelch_MechDivers.isCharged = {}
     end
 
     return mission.truelch_MechDivers
 end
+
+----------------------------------------------- DEBUG -----------------------------------------------
+--[[
+function debugMissionData(msg)
+    LOG("=== debugMissionData("..msg..") ===")
+    LOG("mg43ShootStatus:")
+    for i, elem in pairs(missionData().mg43ShootStatus) do
+        LOG(string.format("i: %s -> shots: %s, dir: %s", tostring(i), tostring(elem[1]), tostring(elem[2])))
+    end
+
+    LOG("isCharged:")
+    for i, elem in pairs(missionData().isCharged) do
+        LOG(string.format("i: %s -> isCharged: ", tostring(i), tostring(elem)))
+    end
+end
+]]
+
+--because putting this logic directly in the AddScript didn't work for some reason...
+function truelch_setCharged(pawnId, value)
+    missionData().isCharged[pawnId] = value
+end
+
+--it seems I also need to do that for that
+function truelch_setShootStatus(pawnId, dir)
+    LOG("truelch_setShootStatus(pawnId: "..tostring(pawnId)..", dir: "..tostring(dir)..")")
+    if missionData().mg43ShootStatus[Pawn:GetId()] == nil then
+        missionData().mg43ShootStatus[Pawn:GetId()] = { 3, dir } --if we're in this case, we assume the Mech didn't move
+    else
+        missionData().mg43ShootStatus[Pawn:GetId()][2] = dir
+    end
+end
+
+
+
+--Test
+--[[
+local testList = {}
+testList[42] = true
+testList[43] = false
+LOG("testList: "..save_table(testList))
+for i, elem in pairs(testList) do
+    LOG(string.format("i: %s, elem: %s", tostring(i), tostring(elem)))
+end
+LOG("---> testList[42]: "..tostring(testList[42]))
+]]
+
+--[[
+Result:
+    testList: { 
+    [43] = false, 
+    [42] = true 
+    }
+
+    i: 43, elem: false
+    i: 42, elem: true
+]]
 
 
 ----------------------------------------------- SUPPORT WEAPONS -----------------------------------------------
@@ -67,7 +131,7 @@ truelch_mg43MachineGun = Skill:new{
     Explosion = "",
 
 	--Gameplay
-    Limited = 2,
+    Limited = 6, --funnily enough, shots fired by queued attack and 3rd shot also consume this
 	Damage = 1,
     Push = 1,
     QueuedDamage = 1,
@@ -174,10 +238,11 @@ function truelch_mg43MachineGun:GetSkillEffect_TipImage(p1, p2)
     end
 end
 
+local isThirdShot = false --test
 function truelch_mg43MachineGun:GetSkillEffect_Normal(p1, p2)
     --Some vars
     local ret = SkillEffect()
-    local direction = GetDirection(p2 - p1)            
+    local direction = GetDirection(p2 - p1)
     local target = GetProjectileEnd(p1, p2)
     
     --Regular shot
@@ -189,21 +254,37 @@ function truelch_mg43MachineGun:GetSkillEffect_Normal(p1, p2)
     end
     ret:AddProjectile(p1, damage, self.Projectile, NO_DELAY)
 
-    --Additional queued shot (OR add to mission data to shoot AFTER enemy turn)
-    local queuedDamage = nil
-    if self.QueuedPush == 1 then
-        queuedDamage = SpaceDamage(target, self.QueuedDamage, direction)
-    else
-        queuedDamage = SpaceDamage(target, self.QueuedDamage)
+    if not isThirdShot then
+        --Save direction:
+        ret:AddScript(string.format("truelch_setShootStatus(%s, %s)", Pawn:GetId(), tostring(direction)))
+
+        if missionData().mg43ShootStatus[Pawn:GetId()] ~= nil then
+            LOG("status -> %s"..tostring(missionData().mg43ShootStatus[Pawn:GetId()]))
+        end
+
+        --Additional queued shot (OR add to mission data to shoot AFTER enemy turn)
+        if missionData().mg43ShootStatus[Pawn:GetId()] == nil then
+            missionData().mg43ShootStatus[Pawn:GetId()] = { 3, direction }
+        end
+
+        local shots = missionData().mg43ShootStatus[Pawn:GetId()][1]
+
+        if shots >= 2 then
+            local queuedDamage = nil
+            if self.QueuedPush == 1 then
+                queuedDamage = SpaceDamage(target, self.QueuedDamage, direction)
+            else
+                queuedDamage = SpaceDamage(target, self.QueuedDamage)
+            end
+            ret:AddQueuedProjectile(queuedDamage, self.Projectile)
+        end
     end
-    ret:AddQueuedProjectile(queuedDamage, self.Projectile)
 
     --Return
     return ret
 end
 
 function truelch_mg43MachineGun:GetSkillEffect(p1, p2)
-    --LOG("truelch_mg43MachineGun:GetSkillEffect")
     if not Board:IsTipImage() then
         return self:GetSkillEffect_Normal(p1, p2)
     else
@@ -234,7 +315,7 @@ truelch_apw1AntiMaterielRifle = Skill:new{
     Sound = "/general/combat/explode_small",
     LaunchSound = "/weapons/raining_volley",
     ImpactSound = "/impact/generic/explosion",
-    Projectile = "effects/shot_sniper",
+    ProjectileArt = "effects/shot_sniper",
     Explosion = "",
 
     --Gameplay
@@ -257,7 +338,9 @@ function truelch_apw1AntiMaterielRifle:GetTargetArea(point)
             local curr = Point(point + DIR_VECTORS[dir] * i)
             if Board:IsValid(curr) then
                 ret:push_back(curr)
-            else
+            end
+            
+            if Board:IsValid(p2) or Board:IsBlocked(p2, PATH_PROJECTILE) then
                 break
             end
         end
@@ -270,7 +353,7 @@ function truelch_apw1AntiMaterielRifle:GetSkillEffect(p1, p2)
     local pullDir = GetDirection(p1 - p2)
     local target = GetProjectileEnd(p1, p2)
     local damage = SpaceDamage(target, self.Damage, pullDir)
-    ret:AddProjectile(damage, self.Projectile)
+    ret:AddProjectile(damage, self.ProjectileArt)
     return ret
 end
 
@@ -279,8 +362,7 @@ truelch_flam40Flamethrower = Skill:new{
     --Infos
     Name = "FLAM-40 Flamethrower",
     Class = "",
-    Description = "Ignite a target and pull inward an adjacent tile."..
-        "\nRange: 2 - 4.",
+    Description = "Ignite a target and pull inward an adjacent tile.\nRange: 2 - 4.",
 
     --Art
     Icon = "weapons/prime_flamethrower.png",
@@ -294,7 +376,7 @@ truelch_flam40Flamethrower = Skill:new{
 
     --Gameplay
     TwoClick = true,
-    Limited = 2,
+    --Limited = 2,
     MinRange = 2,
     MaxRange = 4,
 
@@ -357,8 +439,89 @@ function truelch_flam40Flamethrower:GetFinalEffect(p1, p2, p3)
 end
 
 --???: Channel a powerful attack for the next turn. Channeling still does a little effect (push + fire?)
+--RS-422 Railgun or LAS-99 Quasar Cannon
+truelch_rs422Railgun = Skill:new{
+    --Infos
+    Name = "RS-422 Railgun",
+    Class = "",
+    Description = "Charges a powerful projectile that'll be released next turn.\nCharging the attack push back an adjacent tile.",
 
------------------------------------------------ ??? WEAPONS -----------------------------------------------
+    --Art
+    Icon = "weapons/brute_sniper.png",
+    --Sound = "/general/combat/explode_small",
+    LaunchSound = "/weapons/artillery_volley",
+    ImpactSound = "/impact/generic/explosion",
+    ProjectileArt = "effects/shot_sniper",
+
+    --Gameplay
+    Damage = 3,
+
+    --Tip image
+    TipIndex = 0,
+    TipImage = {
+        Unit   = Point(2, 4),
+        Enemy  = Point(2, 2),
+        Target = Point(2, 2),
+        --Second_Click = Point(3, 2),
+    }
+}
+
+function truelch_rs422Railgun:GetTargetArea(point)
+    local ret = PointList()
+
+    --LOG("isMission(): "..tostring(isMission()))
+    --LOG("isCharged table: "..tostring(missionData().isCharged))
+    --LOG("isCharged value: "..tostring(missionData().isCharged[Board:GetPawn(point):GetId()]))
+
+    if isMission() and missionData().isCharged and  missionData().isCharged[Board:GetPawn(point):GetId()] then
+        --Charged: projectile
+        for dir = DIR_START, DIR_END do
+            for i = 1, 7 do
+                local curr = Point(point + DIR_VECTORS[dir] * i)
+                if Board:IsValid(curr) then
+                    ret:push_back(curr)
+                end
+            
+                if not Board:IsValid(curr) or Board:IsBlocked(curr, PATH_PROJECTILE) then
+                    break
+                end
+            end
+        end
+    else
+        --Not charged: melee push back
+        for dir = DIR_START, DIR_END do
+            local curr = Point(point + DIR_VECTORS[dir])
+            if Board:IsValid(curr) then
+                ret:push_back(curr)
+            end
+        end
+    end
+
+    return ret
+end
+
+function truelch_rs422Railgun:GetSkillEffect(p1, p2)
+    local ret = SkillEffect()
+    local dir = GetDirection(p2 - p1)
+
+    if isMission() and missionData().isCharged and missionData().isCharged[Board:GetPawn(p1):GetId()] then
+        --Charged
+        local target = GetProjectileEnd(p1, p2)
+        local damage = SpaceDamage(target, self.Damage, dir)
+        ret:AddProjectile(damage, self.ProjectileArt)
+        ret:AddScript(string.format("truelch_setCharged(%s, false)", tostring(Pawn:GetId())))
+
+    else
+        --Not charged
+        local damage = SpaceDamage(p2, 0)
+        damage.iPush = dir
+        damage.sAnimation = "airpush_"..dir
+        ret:AddDamage(damage)
+        ret:AddScript(string.format("truelch_setCharged(%s, true)", tostring(Pawn:GetId())))
+    end
+
+    return ret
+end
 
 
 ----------------------------------------------- UTILITY FUNCTIONS -----------------------------------------------
@@ -367,6 +530,7 @@ local stratagemWeapons = {
     "truelch_mg43MachineGun",
     "truelch_apw1AntiMaterielRifle",
     "truelch_flam40Flamethrower",
+    "truelch_rs422Railgun",
 }
 
 local function isStratagemWeapon(weaponId)
@@ -378,6 +542,19 @@ local function isStratagemWeapon(weaponId)
         if weaponId == stratagemWeapon then
             return true
         end
+    end
+
+    return false
+end
+
+local function isMg43(weaponId)
+    if type(weaponId) == 'table' then
+        weaponId = weaponId.__Id
+    end
+
+    --Need to improve that if I do upgrade versions of the weapon!
+    if weaponId == "truelch_mg43MachineGun" then
+        return true
     end
 
     return false
@@ -395,7 +572,7 @@ local function destroyAllStratagemWeapons()
             local pawn = Board:GetPawn(Point(i, j))
             if pawn ~= nil and pawn:IsMech() then
                 local weapons = pawn:GetPoweredWeapons()
-                for k = 0, 3 do
+                for k = 1, 3 do
                     if isStratagemWeapon(weapons[k]) then
                         LOG("---------------> Is stratagem weapon!!! -> REMOVE")
                         pawn:RemoveWeapon(k)
@@ -411,22 +588,28 @@ end
 
 local function HOOK_onNextTurnHook()
     if Game:GetTeamTurn() == TEAM_PLAYER then
-        for _, p in pairs(extract_table(Board:GetPawns(TEAM_MECH))) do
-            --mission.truelch_MechDivers.m43ShootStatus
-            --p:FireWeapon()
-        end
-    end
-
-	if Game:GetTeamTurn() == TEAM_ENEMY then --might be even more funny
-        --Going through all mechs like this instead of 0 -> 1 because freshly spawned Mech don't have 0 - 2 ids
         local size = Board:GetSize()
         for j = 0, size.y do
-        	for i = 0, size.x do
-        		local pawn = Board:GetPawn(Point(i, j))
-        		if pawn ~= nil and pawn:IsMech() then
-                    --pawn:FireWeapon() --TODO
-        		end
-        	end
+            for i = 0, size.x do
+                local pawn = Board:GetPawn(Point(i, j))
+                if pawn ~= nil and pawn:IsMech() and isMission() and missionData().mg43ShootStatus ~= nil and missionData().mg43ShootStatus[pawn:GetId()] ~= nil then
+                    --{ shots, dir }
+                    local shots = missionData().mg43ShootStatus[pawn:GetId()][1]
+                    local dir = missionData().mg43ShootStatus[pawn:GetId()][2]
+                    local weapons = pawn:GetPoweredWeapons()
+                    for k = 1, 3 do
+                        local weapon = weapons[k]
+                        if isMg43(weapon) and shots >= 3 and dir ~= -1 then
+                            LOG("=========================== THIRD SHOT ===========================")
+                            Board:AddAlert(pawn:GetSpace(), "Mg43's 3rd shot!")
+                            missionData().mg43ShootStatus[pawn:GetId()] = { 0, -1 } --reset
+                            isThirdShot = true
+                            pawn:FireWeapon(pawn:GetSpace() + DIR_VECTORS[dir], k) --wait, it might launch again the 2nd and 3rd shots!
+                            isThirdShot = false
+                        end
+                    end
+                end
+            end
         end
     end
 end
@@ -443,17 +626,34 @@ local HOOK_onSkillEnd = function(mission, pawn, weaponId, p1, p2)
         local move = pawn:GetMoveSpeed()
         LOG("move: "..tostring(move))
         --Board:AddAlert(p2, "Dist: "..tostring(dist).."/"..tostring(move))
+
+        --Move cannot be a 0 distance
+        if isMission() and missionData().mg43ShootStatus ~= nil then
+            if move <= math.floor(0.5 * move) then
+                LOG("less than half move!")
+                missionData().mg43ShootStatus[pawn:GetId()][1] = 2
+            else
+                LOG("more than half move!")
+                missionData().mg43ShootStatus[pawn:GetId()][1] = 1
+            end
+        end
     end
 
-    if weaponId == "truelch_mg43MachineGun" then
-
+    if isMg43(weaponId) then
+        local dir = GetDirection(p2 - p1)
+        missionData().mg43ShootStatus[pawn:GetId()][2] = dir
     end
 end
 
 local HOOK_PawnUndoMove = function(mission, pawn, undonePosition)
+    if not isMission() then return end
 
+    if missionData().mg43ShootStatus[pawn:GetId()] == nil then
+        missionData().mg43ShootStatus[pawn:GetId()] = { 3, -1 }
+    else
+        missionData().mg43ShootStatus[pawn:GetId()][1] = 3 --3: not moved, 2: half moved or less, 1: more than half move
+    end    
 end
-
 
 
 
@@ -461,6 +661,17 @@ end
 local HOOK_onMissionStarted = function(mission)
     --LOG("HOOK_onMissionStarted")
     destroyAllStratagemWeapons()
+
+    --Reset Mg43 shoot status
+    local size = Board:GetSize()
+    for j = 0, size.y do
+        for i = 0, size.x do
+            local pawn = Board:GetPawn(Point(i, j))
+            if pawn ~= nil and pawn:IsMech() then
+                missionData().mg43ShootStatus[pawn:GetId()] = { 3, -1 } --shots, dir (default: -1)
+            end
+        end
+    end
 end
 
 local HOOK_onMissionTestStarted = function(mission)

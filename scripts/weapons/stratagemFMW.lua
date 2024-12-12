@@ -70,12 +70,14 @@ end
 -------------------- MODE 1: MG-43 Machine Gun --------------------
 
 truelch_StratagemMode1 = {
-	aFM_name = "Call-in Machine Gun",
+	aFM_name = "Call-in a Machine Gun",
 	aFM_desc = "Free action."..
 		"\nCall-in a pod containing a MG-43 Machine Gun that shoots a pushing projectile that deals 1 damage."..
 		"\nShoots a second pushing projectile just before the enemies act if the Mech used half movement."..
 		"\nShoots a third projectile after enemies actions if the Mech stayed immobile.",
 	aFM_icon = "img/modes/icon_mg43.png",
+
+	aFM_limited = 1,
 
 	UpShot = "effects/truelch_shotup_stratagem_ball.png",
 	Range = 2,
@@ -129,7 +131,7 @@ function truelch_StratagemMode1:fire(p1, p2, se)
     --damage.sAnimation = "truelch_anim_pod_land" --just to test the anim!
     --damage.sItem = self.Item --just for test, need to comment it again
     --damage.sImageMark = "combat/blue_stratagem_grenade.png"
-    damage.sPawn = "truelch_Amg43MachineGunSentry"
+    --damage.sPawn = "truelch_Amg43MachineGunSentry"
     se:AddArtillery(damage, self.UpShot)
 
     --Free action
@@ -144,8 +146,12 @@ function truelch_StratagemMode1:fire(p1, p2, se)
     	--I've decided to not use missionData() directly here and rather use an intermediate function for that reason.
     	--Also, improvement: use string format
     	--Thx tosx and Metalocif for the help!
-	    --se:AddScript([[truelch_MechDivers_AddPodData(]]..p2:GetString()..[[,"]]..self.Item..[[")]]) --tmp disabled
+	    se:AddScript([[truelch_MechDivers_AddPodData(]]..p2:GetString()..[[,"]]..self.Item..[[")]]) --tmp disabled
 	end
+end
+
+function truelch_StratagemMode1:getName()
+	return aFM_name
 end
 
 
@@ -157,6 +163,8 @@ truelch_StratagemMode2 = truelch_StratagemMode1:new{
 		"\nCall-in a pod containing a APW-1 Anti-Materiel Rifle."..
 		"It shoots projectiles with a minimum range of 2 that deals heavy damage and pull.",
 	aFM_icon = "img/modes/icon_apw1.png",
+
+	aFM_limited = 1,
 }
 
 
@@ -168,18 +176,22 @@ truelch_StratagemMode3 = truelch_StratagemMode1:new{
 		"\nCall-in a pod containing a FLAM-40 Flamethrower."..
 		"Ignite the target tile and pull inward an adjacent tile.",
 	aFM_icon = "img/modes/icon_flam40.png",
+
+	aFM_limited = 1,
 }
 
 
 -------------------- MODE 4: RS-422 Railgun --------------------
 
 truelch_StratagemMode4 = truelch_StratagemMode1:new{
-	aFM_name = "Call-in a RS-422 Railgun",
+	aFM_name = "Call-in a Railgun",
 	aFM_desc = "Free action."..
 		"\nCall-in a pod containing a RS-422 Railgun."..
 		"\nIt channels a powerful attack that can be released next turn."..
 		"\nThe channeling does a push effect.",
 	aFM_icon = "img/modes/icon_mode4.png",
+
+	aFM_limited = 1,
 }
 
 
@@ -193,6 +205,8 @@ truelch_StratagemMode5 = truelch_StratagemMode1:new{
 	aFM_name = "Mode 5",
 	aFM_desc = "Mode 5 desc.",
 	aFM_icon = "img/modes/icon_mode5.png",
+
+	aFM_limited = 1,
 }
 
 -------------------- MODE 6 --------------------
@@ -201,6 +215,8 @@ truelch_StratagemMode6 = truelch_StratagemMode1:new{
 	aFM_name = "Mode 6",
 	aFM_desc = "Mode 6 desc.",
 	aFM_icon = "img/modes/icon_mode6.png",
+
+	aFM_limited = 1,
 }
 
 
@@ -229,14 +245,12 @@ truelch_StratagemFMW = aFM_WeaponTemplate:new{
 		"truelch_StratagemMode1", --Call-in MG-43 Machine Gun
 		"truelch_StratagemMode2", --Call-in a APW-1 Anti-Materiel Rifle (Sniper)
 		"truelch_StratagemMode3", --Call-in a FLAM-40 Flamethrower
-		"truelch_StratagemMode4", --Call-in a ??? (channeling weapon)
+		"truelch_StratagemMode4", --Call-in a RS-422 Railgun (Channeling weapon)
 		--Air strikes
-		"truelch_StratagemMode5",
+		"truelch_StratagemMode5", --
 		"truelch_StratagemMode6",
 		--Orbital strikes
-		--Turrets
-		--Drones
-		--Misc
+		--Turrets and Drones
 	},
 	aFM_ModeSwitchDesc = "Click to change mode.",
 
@@ -289,6 +303,14 @@ end
 ----------------------------------------------- HOOKS / EVENTS SUBSCRIPTION -----------------------------------------------
 
 local truelch_stratagem_flag = false
+local truelch_statagemNames = {
+	"Call-in Machine Gun",
+	"Call-in a Sniper Rifle",
+	"Call-in a Flamethrower",
+	"Call-in a Railgun",
+	"Mode5",
+	"Mode6",
+}
 
 --TODO: final mission second phase
 local HOOK_onMissionStarted = function(mission)
@@ -304,7 +326,7 @@ local HOOK_onNextTurn = function(mission)
 
 	truelch_stratagem_flag = false
 
-	LOG("---------> Computing Stratagems...")
+	--LOG("---------> Computing Stratagems...")
 
 	local size = Board:GetSize()
 	for j = 0, size.y do
@@ -318,40 +340,37 @@ local HOOK_onNextTurn = function(mission)
 					local fmw = truelch_divers_fmwApi:GetSkill(p, weaponIdx, false)
 					if fmw ~= nil then
 						local weapon = weapons[weaponIdx]
-
 						if type(weapon) == 'table' then
 							weapon = weapon.__Id
 						end
 
 						if isStratagemWeapon(weapon) then
-							LOG("-------------- A")
-							local list = {}							
-							LOG("-------------- B")
-							for _, mode in pairs(_G[weapon].aFM_ModeList) do
-								LOG("-------------- BA")
-								if list_contains(gameData().stratagems[p], mode) then --this causes an issue
-									LOG("-------------- BAA")
+							local list = {}
+							--LOG(" --------- StratagemFMW found! Mode list:")
+							for k, mode in pairs(_G[weapon].aFM_ModeList) do
+								--LOG(string.format("k: %s, mode: %s", tostring(k), tostring(mode)))
+								if gameData().stratagems[p] ~= nil and list_contains(gameData().stratagems[p], mode) then
+									LOG(" -> This is an active mode in the game data!")
 									fmw:FM_SetActive(p, mode, true)
 								else
-									LOG("-------------- BAB-1")
+									--LOG(" -> Not an active mode in the game data! - A")
 									fmw:FM_SetActive(p, mode, false)
-									LOG("-------------- BAB-2")
-									table.insert(list, mode)
-									LOG("-------------- BAB-3")
+									--LOG(" -> Not an active mode in the game data! - B")
+									table.insert(list, {mode, k})
+									--LOG(" -> Not an active mode in the game data! - C")
 								end
 							end
 
-							LOG("-------------- C")
-
 							local randIndex = math.random(#list)
-
-							LOG("-------------- D")
-							local randMode = list[randIndex]
-
-							LOG("-------------- E")
+							--LOG("randIndex: "..tostring(randIndex))
+							local randMode = list[randIndex][1]
+							local index = list[randIndex][2]	
 
 							--Enable
 							fmw:FM_SetActive(p, randMode, true)
+
+							--Set mode to the last added
+							fmw:FM_SetMode(p, randMode)
 
 							--Add to game data
 							if gameData().stratagems[p] == nil then
@@ -359,10 +378,7 @@ local HOOK_onNextTurn = function(mission)
 							end							
 							table.insert(gameData().stratagems[p], randMode)
 
-							--TODO: set the mode to the first one found active!
-
-							--Board alert
-							Board:AddAlert(pawn:GetSpace(), _G[randMode].Name.." added")
+							Board:AddAlert(pawn:GetSpace(), tostring(truelch_statagemNames[index]).." added")
 						end
 					end
 				end

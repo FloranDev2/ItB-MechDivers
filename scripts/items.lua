@@ -179,6 +179,16 @@ truelch_Item_WeaponPod_Flam40 = {
 }
 TILE_TOOLTIPS.Item_Truelch_WeaponPod_Flam40_Text = {"FLAM-40 Pod", "Pick it up to get a FLAM-40 Flamethrower."}
 
+--RS-422 Railgun
+truelch_Item_WeaponPod_Rs422 = {
+	Image = "combat/blue_stratagem_grenade.png",
+	Damage = SpaceDamage(0),
+	Tooltip = "Item_Truelch_WeaponPod_Rs422_Text",
+	Icon = "combat/icons/icon_mine_glow.png",
+	UsedImage = ""
+}
+TILE_TOOLTIPS.Item_Truelch_WeaponPod_Rs422_Text = {"RS-422 Pod", "Pick it up to get a RS-422 Railgun."}
+
 
 -------------------- UTILITY FUNCTIONS --------------------
 
@@ -249,6 +259,13 @@ BoardEvents.onItemRemoved:subscribe(function(loc, removed_item)
 		if not pawn:IsEnemy() then
 			pawn:AddWeapon("truelch_flam40Flamethrower")
 			Board:AddAlert(loc, "Acquired a FLAM-40 Flamethrower!"..weaponSuffix)
+		else
+			Board:AddAlert(loc, "DESTROYED")
+		end	
+	elseif removed_item == "truelch_Item_WeaponPod_Rs422" then
+		if not pawn:IsEnemy() then
+			pawn:AddWeapon("truelch_rs422Railgun")
+			Board:AddAlert(loc, "Acquired a RS-422 Railgun!"..weaponSuffix)
 		else
 			Board:AddAlert(loc, "DESTROYED")
 		end
