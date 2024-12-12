@@ -256,14 +256,14 @@ truelch_StratagemFMW = aFM_WeaponTemplate:new{
 
 	--Upgrades
 	Upgrades = 2,
-	UpgradeCost = { 1, 1 },
+	UpgradeCost = { 3, 2 },
 }
 
 Weapon_Texts.truelch_StratagemFMW_Upgrade1 = "Veteran stratagems"
 Weapon_Texts.truelch_StratagemFMW_Upgrade2 = "+1 Stratagems"
 
 truelch_StratagemFMW_A = truelch_StratagemFMW:new{
-    UpgradeDescription = "Give access to more powerful stratagems.",
+    UpgradeDescription = "Upgrade the stratagems.",
 }
 
 truelch_StratagemFMW_B = truelch_StratagemFMW:new{
@@ -304,11 +304,13 @@ end
 
 local truelch_stratagem_flag = false
 local truelch_statagemNames = {
-	"Call-in Machine Gun",
+	--Weapons
+	"Call-in a Machine Gun",
 	"Call-in a Sniper Rifle",
 	"Call-in a Flamethrower",
 	"Call-in a Railgun",
-	"Mode5",
+	--Airstrikes
+	"Eagle Airstrike",
 	"Mode6",
 }
 
@@ -353,11 +355,8 @@ local HOOK_onNextTurn = function(mission)
 									LOG(" -> This is an active mode in the game data!")
 									fmw:FM_SetActive(p, mode, true)
 								else
-									--LOG(" -> Not an active mode in the game data! - A")
 									fmw:FM_SetActive(p, mode, false)
-									--LOG(" -> Not an active mode in the game data! - B")
 									table.insert(list, {mode, k})
-									--LOG(" -> Not an active mode in the game data! - C")
 								end
 							end
 

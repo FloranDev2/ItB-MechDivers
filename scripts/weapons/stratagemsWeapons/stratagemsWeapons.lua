@@ -76,7 +76,7 @@ end
 
 --it seems I also need to do that for that
 function truelch_setShootStatus(pawnId, dir)
-    LOG("truelch_setShootStatus(pawnId: "..tostring(pawnId)..", dir: "..tostring(dir)..")")
+    --LOG("truelch_setShootStatus(pawnId: "..tostring(pawnId)..", dir: "..tostring(dir)..")")
     if missionData().mg43ShootStatus[Pawn:GetId()] == nil then
         missionData().mg43ShootStatus[Pawn:GetId()] = { 3, dir } --if we're in this case, we assume the Mech didn't move
     else
@@ -113,7 +113,7 @@ Result:
 ----------------------------------------------- SUPPORT WEAPONS -----------------------------------------------
 
 --"A machine gun designed for stationary use. Trades higher power for increased recoil and reduced accuracy.",
-truelch_mg43MachineGun = Skill:new{
+truelch_Mg43MachineGun = Skill:new{
 	--Infos
 	Name = "MG-43 Machine Gun",
     Class = "",
@@ -156,12 +156,12 @@ truelch_mg43MachineGun = Skill:new{
 }
 
 
-function truelch_mg43MachineGun:GetTargetArea(point)
+function truelch_Mg43MachineGun:GetTargetArea(point)
     return Board:GetSimpleReachable(point, INT_MAX, false) --I guess
 end
 
 
-function truelch_mg43MachineGun:TipImmobile(p1, p2)
+function truelch_Mg43MachineGun:TipImmobile(p1, p2)
     --From confuse shot
     --[[
     local ret = SkillEffect()
@@ -197,7 +197,7 @@ function truelch_mg43MachineGun:TipImmobile(p1, p2)
     return ret
 end
 
-function truelch_mg43MachineGun:TipHalfMove(p1, p2)
+function truelch_Mg43MachineGun:TipHalfMove(p1, p2)
     local ret = SkillEffect()
 
     --Prepare enemy attack
@@ -211,7 +211,7 @@ function truelch_mg43MachineGun:TipHalfMove(p1, p2)
     return ret
 end
 
-function truelch_mg43MachineGun:TipFullMove(p1, p2)
+function truelch_Mg43MachineGun:TipFullMove(p1, p2)
     local ret = SkillEffect()
 
     --Prepare enemy attack
@@ -225,7 +225,7 @@ function truelch_mg43MachineGun:TipFullMove(p1, p2)
     return ret
 end
 
-function truelch_mg43MachineGun:GetSkillEffect_TipImage(p1, p2)
+function truelch_Mg43MachineGun:GetSkillEffect_TipImage(p1, p2)
     if self.TipStage == 1 then
         self.TipStage = 2
         return self:TipImmobile(p1, p2)
@@ -239,7 +239,7 @@ function truelch_mg43MachineGun:GetSkillEffect_TipImage(p1, p2)
 end
 
 local isThirdShot = false --test
-function truelch_mg43MachineGun:GetSkillEffect_Normal(p1, p2)
+function truelch_Mg43MachineGun:GetSkillEffect_Normal(p1, p2)
     --Some vars
     local ret = SkillEffect()
     local direction = GetDirection(p2 - p1)
@@ -284,7 +284,7 @@ function truelch_mg43MachineGun:GetSkillEffect_Normal(p1, p2)
     return ret
 end
 
-function truelch_mg43MachineGun:GetSkillEffect(p1, p2)
+function truelch_Mg43MachineGun:GetSkillEffect(p1, p2)
     if not Board:IsTipImage() then
         return self:GetSkillEffect_Normal(p1, p2)
     else
@@ -303,7 +303,7 @@ end
 
 --A high-caliber sniper rifle effective over long distances against light vehicle armor. This rifle must be aimed downscope.
 --Sniper: minimum range, PULL, (or confuse if at a certain range), or TC (p2 == p3 => confuse, otherwise pull?)
-truelch_apw1AntiMaterielRifle = Skill:new{
+truelch_Apw1AntiMaterielRifle = Skill:new{
     --Infos
     Name = "APW-1 Anti-Materiel Rifle",
     Class = "",
@@ -331,7 +331,7 @@ truelch_apw1AntiMaterielRifle = Skill:new{
     }
 }
 
-function truelch_apw1AntiMaterielRifle:GetTargetArea(point)
+function truelch_Apw1AntiMaterielRifle:GetTargetArea(point)
     local ret = PointList()
     for dir = DIR_START, DIR_END do
         for i = self.MinRange, 7 do
@@ -348,7 +348,7 @@ function truelch_apw1AntiMaterielRifle:GetTargetArea(point)
     return ret
 end
 
-function truelch_apw1AntiMaterielRifle:GetSkillEffect(p1, p2)
+function truelch_Apw1AntiMaterielRifle:GetSkillEffect(p1, p2)
     local ret = SkillEffect()
     local pullDir = GetDirection(p1 - p2)
     local target = GetProjectileEnd(p1, p2)
@@ -358,7 +358,7 @@ function truelch_apw1AntiMaterielRifle:GetSkillEffect(p1, p2)
 end
 
 --Flam-40: ignite a tile and pull inward lateral tiles?
-truelch_flam40Flamethrower = Skill:new{
+truelch_Flam40Flamethrower = Skill:new{
     --Infos
     Name = "FLAM-40 Flamethrower",
     Class = "",
@@ -389,7 +389,7 @@ truelch_flam40Flamethrower = Skill:new{
     }
 }
 
-function truelch_flam40Flamethrower:GetTargetArea(point)
+function truelch_Flam40Flamethrower:GetTargetArea(point)
     local ret = PointList()
     for dir = DIR_START, DIR_END do
         for i = self.MinRange, self.MaxRange do
@@ -404,7 +404,7 @@ function truelch_flam40Flamethrower:GetTargetArea(point)
     return ret
 end
 
-function truelch_flam40Flamethrower:GetSkillEffect(p1, p2)
+function truelch_Flam40Flamethrower:GetSkillEffect(p1, p2)
     local ret = SkillEffect()
 
     local damage = SpaceDamage(p2, 0)
@@ -415,7 +415,7 @@ function truelch_flam40Flamethrower:GetSkillEffect(p1, p2)
     return ret
 end
 
-function truelch_flam40Flamethrower:GetSecondTargetArea(p1, p2)
+function truelch_Flam40Flamethrower:GetSecondTargetArea(p1, p2)
     local ret = PointList()
 
     for dir = DIR_START, DIR_END do
@@ -428,7 +428,7 @@ function truelch_flam40Flamethrower:GetSecondTargetArea(p1, p2)
     return ret
 end
 
-function truelch_flam40Flamethrower:GetFinalEffect(p1, p2, p3)
+function truelch_Flam40Flamethrower:GetFinalEffect(p1, p2, p3)
     local ret = self:GetSkillEffect(p1, p2)
     local direction = GetDirection(p2 - p3)
     local damage = SpaceDamage(p3, 0)
@@ -440,7 +440,7 @@ end
 
 --???: Channel a powerful attack for the next turn. Channeling still does a little effect (push + fire?)
 --RS-422 Railgun or LAS-99 Quasar Cannon
-truelch_rs422Railgun = Skill:new{
+truelch_Rs422Railgun = Skill:new{
     --Infos
     Name = "RS-422 Railgun",
     Class = "",
@@ -466,7 +466,7 @@ truelch_rs422Railgun = Skill:new{
     }
 }
 
-function truelch_rs422Railgun:GetTargetArea(point)
+function truelch_Rs422Railgun:GetTargetArea(point)
     local ret = PointList()
 
     --LOG("isMission(): "..tostring(isMission()))
@@ -500,7 +500,7 @@ function truelch_rs422Railgun:GetTargetArea(point)
     return ret
 end
 
-function truelch_rs422Railgun:GetSkillEffect(p1, p2)
+function truelch_Rs422Railgun:GetSkillEffect(p1, p2)
     local ret = SkillEffect()
     local dir = GetDirection(p2 - p1)
 
@@ -527,10 +527,10 @@ end
 ----------------------------------------------- UTILITY FUNCTIONS -----------------------------------------------
 
 local stratagemWeapons = {
-    "truelch_mg43MachineGun",
-    "truelch_apw1AntiMaterielRifle",
-    "truelch_flam40Flamethrower",
-    "truelch_rs422Railgun",
+    "truelch_Mg43MachineGun",
+    "truelch_Apw1AntiMaterielRifle",
+    "truelch_Flam40Flamethrower",
+    "truelch_Rs422Railgun",
 }
 
 local function isStratagemWeapon(weaponId)
