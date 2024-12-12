@@ -63,13 +63,18 @@ local function isStratagemWeapon(weapon)
     return string.find(weapon, "truelch_Stratagem") ~= nil
 end
 
+--Warning: this is a global function. Hence the very specific name.
+function truelch_MechDivers_AddPodData(point, item)
+	table.insert(missionData().hellPods, { point, item })
+end
+
 ---------------------------------------------------------
 -------------------- SUPPORT WEAPONS --------------------
 ---------------------------------------------------------
 
 -------------------- MODE 1: MG-43 Machine Gun --------------------
 
-truelch_StratagemMode1 = {
+truelch_Mg43Mode = {
 	aFM_name = "Call-in a Machine Gun",
 	aFM_desc = "Free action."..
 		"\nCall-in a pod containing a MG-43 Machine Gun that shoots a pushing projectile that deals 1 damage."..
@@ -81,12 +86,12 @@ truelch_StratagemMode1 = {
 
 	UpShot = "effects/truelch_shotup_stratagem_ball.png",
 	Range = 2,
-	Item = "truelch_Item_WeaponPod_Mg43", --in the end, I need to not spawn this directly
+	Item = "truelch_Item_WeaponPod_Mg43",
 }
 
-CreateClass(truelch_StratagemMode1)
+CreateClass(truelch_Mg43Mode)
 
-function truelch_StratagemMode1:targeting(point)
+function truelch_Mg43Mode:targeting(point)
 	local points = {}
 
 	--Check if it's not already a point in the mission data!
@@ -121,12 +126,9 @@ function truelch_StratagemMode1:targeting(point)
 	return points
 end
 
---Warning: this is a global function. Hence the very specific name.
-function truelch_MechDivers_AddPodData(point, item)
-	table.insert(missionData().hellPods, { point, item })
-end
 
-function truelch_StratagemMode1:fire(p1, p2, se)
+
+function truelch_Mg43Mode:fire(p1, p2, se)
     local damage = SpaceDamage(p2, 0)
     --damage.sAnimation = "truelch_anim_pod_land" --just to test the anim!
     --damage.sItem = self.Item --just for test, need to comment it again
@@ -146,44 +148,44 @@ function truelch_StratagemMode1:fire(p1, p2, se)
     	--I've decided to not use missionData() directly here and rather use an intermediate function for that reason.
     	--Also, improvement: use string format
     	--Thx tosx and Metalocif for the help!
-	    se:AddScript([[truelch_MechDivers_AddPodData(]]..p2:GetString()..[[,"]]..self.Item..[[")]]) --tmp disabled
+	    se:AddScript([[truelch_MechDivers_AddPodData(]]..p2:GetString()..[[,"]]..self.Item..[[")]])
 	end
-end
-
-function truelch_StratagemMode1:getName()
-	return aFM_name
 end
 
 
 -------------------- MODE 2: APW-1 Anti-Materiel Rifle --------------------
 
-truelch_StratagemMode2 = truelch_StratagemMode1:new{
+truelch_Apw1Mode = truelch_Mg43Mode:new{
 	aFM_name = "Call-in a Sniper Rifle",
 	aFM_desc = "Free action."..
 		"\nCall-in a pod containing a APW-1 Anti-Materiel Rifle."..
 		"It shoots projectiles with a minimum range of 2 that deals heavy damage and pull.",
 	aFM_icon = "img/modes/icon_apw1.png",
 
-	aFM_limited = 1,
+	--aFM_limited = 1, --no need to re-define this
+
+	Item = "truelch_Item_WeaponPod_Apw1",
 }
 
 
 -------------------- MODE 3: FLAM-40 Flamethrower --------------------
 
-truelch_StratagemMode3 = truelch_StratagemMode1:new{
+truelch_Flam40Mode = truelch_Mg43Mode:new{
 	aFM_name = "Call-in a Flamethrower",
 	aFM_desc = "Free action."..
 		"\nCall-in a pod containing a FLAM-40 Flamethrower."..
 		"Ignite the target tile and pull inward an adjacent tile.",
 	aFM_icon = "img/modes/icon_flam40.png",
 
-	aFM_limited = 1,
+	--aFM_limited = 1, --no need to re-define this
+
+	Item = "truelch_Item_WeaponPod_Flam40",
 }
 
 
 -------------------- MODE 4: RS-422 Railgun --------------------
 
-truelch_StratagemMode4 = truelch_StratagemMode1:new{
+truelch_Rs422Mode = truelch_Mg43Mode:new{
 	aFM_name = "Call-in a Railgun",
 	aFM_desc = "Free action."..
 		"\nCall-in a pod containing a RS-422 Railgun."..
@@ -194,14 +196,20 @@ truelch_StratagemMode4 = truelch_StratagemMode1:new{
 	aFM_limited = 1,
 }
 
+-----------------------------------------------------
+-------------------- DEPLOYABLES --------------------
+-----------------------------------------------------
+
+
+
 
 -----------------------------------------------------
 -------------------- AIR STRIKES --------------------
 -----------------------------------------------------
 
--------------------- MODE 5 --------------------
+-------------------- MODE 5:  --------------------
 
-truelch_StratagemMode5 = truelch_StratagemMode1:new{
+truelch_StratagemMode5 = truelch_Mg43Mode:new{
 	aFM_name = "Mode 5",
 	aFM_desc = "Mode 5 desc.",
 	aFM_icon = "img/modes/icon_mode5.png",
@@ -211,7 +219,7 @@ truelch_StratagemMode5 = truelch_StratagemMode1:new{
 
 -------------------- MODE 6 --------------------
 
-truelch_StratagemMode6 = truelch_StratagemMode1:new{
+truelch_StratagemMode6 = truelch_Mg43Mode:new{
 	aFM_name = "Mode 6",
 	aFM_desc = "Mode 6 desc.",
 	aFM_icon = "img/modes/icon_mode6.png",
@@ -242,8 +250,8 @@ truelch_StratagemFMW = aFM_WeaponTemplate:new{
     --FMW
 	aFM_ModeList = {
 		--Weapons
-		"truelch_StratagemMode1", --Call-in MG-43 Machine Gun
-		"truelch_StratagemMode2", --Call-in a APW-1 Anti-Materiel Rifle (Sniper)
+		"truelch_Mg43Mode", --Call-in MG-43 Machine Gun
+		"truelch_Apw1Mode", --Call-in a APW-1 Anti-Materiel Rifle (Sniper)
 		"truelch_StratagemMode3", --Call-in a FLAM-40 Flamethrower
 		"truelch_StratagemMode4", --Call-in a RS-422 Railgun (Channeling weapon)
 		--Air strikes
@@ -259,15 +267,16 @@ truelch_StratagemFMW = aFM_WeaponTemplate:new{
 	UpgradeCost = { 3, 2 },
 }
 
-Weapon_Texts.truelch_StratagemFMW_Upgrade1 = "Veteran stratagems"
-Weapon_Texts.truelch_StratagemFMW_Upgrade2 = "+1 Stratagems"
+Weapon_Texts.truelch_StratagemFMW_Upgrade1 = "Veteran Stratagems"
+Weapon_Texts.truelch_StratagemFMW_Upgrade2 = "+1 Stratagem"
 
 truelch_StratagemFMW_A = truelch_StratagemFMW:new{
     UpgradeDescription = "Upgrade the stratagems.",
 }
 
 truelch_StratagemFMW_B = truelch_StratagemFMW:new{
-    UpgradeDescription = "Increase by 1 the max amount of stratagem and the stratagems acquired at the start of a mission.",
+    --UpgradeDescription = "Increase by 1 the max amount of stratagem and the stratagems acquired at the start of a mission.",
+    UpgradeDescription = "+1 stratagem acquired at the start of each mission",
 }
 
 truelch_StratagemFMW_AB = truelch_StratagemFMW:new{
@@ -312,6 +321,9 @@ local truelch_statagemNames = {
 	--Airstrikes
 	"Eagle Airstrike",
 	"Mode6",
+	--Orbital strikes
+	--Deployables (turrets, drones)
+	--Misc (shield?)
 }
 
 --TODO: final mission second phase
@@ -327,6 +339,8 @@ local HOOK_onNextTurn = function(mission)
 	end
 
 	truelch_stratagem_flag = false
+
+	if true then return end --tmp
 
 	--LOG("---------> Computing Stratagems...")
 
