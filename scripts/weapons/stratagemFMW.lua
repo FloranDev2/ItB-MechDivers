@@ -56,6 +56,8 @@ end
 
 -------------------- TEST --------------------
 
+local truelch_stratagem_flag = false --moved this here
+
 local function isStratagemWeapon(weapon)
     if type(weapon) == 'table' then
         weapon = weapon.__Id
@@ -73,7 +75,6 @@ end
 ---------------------------------------------------------
 
 -------------------- MODE 1: MG-43 Machine Gun --------------------
-
 truelch_Mg43Mode = {
 	aFM_name = "Call-in a Machine Gun",
 	aFM_desc = "Free action."..
@@ -82,6 +83,7 @@ truelch_Mg43Mode = {
 		"\nShoots a third projectile after enemies actions if the Mech stayed immobile.",
 	aFM_icon = "img/modes/icon_mg43.png",
 
+	aFM_twoClick = false,
 	aFM_limited = 1,
 
 	UpShot = "effects/truelch_shotup_stratagem_ball.png",
@@ -154,7 +156,6 @@ end
 
 
 -------------------- MODE 2: APW-1 Anti-Materiel Rifle --------------------
-
 truelch_Apw1Mode = truelch_Mg43Mode:new{
 	aFM_name = "Call-in a Sniper Rifle",
 	aFM_desc = "Free action."..
@@ -169,7 +170,6 @@ truelch_Apw1Mode = truelch_Mg43Mode:new{
 
 
 -------------------- MODE 3: FLAM-40 Flamethrower --------------------
-
 truelch_Flam40Mode = truelch_Mg43Mode:new{
 	aFM_name = "Call-in a Flamethrower",
 	aFM_desc = "Free action."..
@@ -184,7 +184,6 @@ truelch_Flam40Mode = truelch_Mg43Mode:new{
 
 
 -------------------- MODE 4: RS-422 Railgun --------------------
-
 truelch_Rs422Mode = truelch_Mg43Mode:new{
 	aFM_name = "Call-in a Railgun",
 	aFM_desc = "Free action."..
@@ -194,41 +193,158 @@ truelch_Rs422Mode = truelch_Mg43Mode:new{
 	aFM_icon = "img/modes/icon_mode4.png",
 
 	aFM_limited = 1,
+
+	Item = "truelch_Item_WeaponPod_Rs422",
 }
 
 -----------------------------------------------------
 -------------------- DEPLOYABLES --------------------
 -----------------------------------------------------
 
+-------------------- MODE 5: A/MG Machine Gun Sentry --------------------
+truelch_MgSentryMode = truelch_Mg43Mode:new{
+	aFM_name = "Call-in a Machine Gun Sentry",
+	aFM_desc = "Drop an A/MG Machine Gun Sentry."..
+		"\nIt shoots projectiles with a minimum range of 2 that deals heavy damage and pull.",
+	aFM_icon = "img/modes/icon_apw1.png",
+	--aFM_limited = 1, --no need to re-define this
+	Pawn = "truelch_Amg43MachineGunSentry",
+}
+
+function truelch_MgSentryMode:fire(p1, p2, se)
+    local damage = SpaceDamage(p2, 0)    
+    se:AddArtillery(damage, self.UpShot, FULL_DELAY)
+
+    local dropAnim = SpaceDamage(p2, 0)
+    dropAnim.sAnimation = "truelch_anim_pod_land"
+    se:AddDamage(dropAnim)
+
+    se:AddDelay(1.9)
+    local spawn = SpaceDamage(p2, 0)
+    spawn.sPawn = self.Pawn
+    se:AddDamage(spawn)
+end
+
+-------------------- MODE 6: AA/M-12 Mortar Sentry --------------------
+truelch_MortarSentryMode = truelch_MgSentryMode:new{
+	aFM_name = "Call-in a Mortar Sentry",
+	aFM_desc = "Drop an AA/M-12 Mortar Sentry."..
+		"\n(...)",
+	aFM_icon = "img/modes/icon_apw1.png",
+	Pawn = "truelch_Amg43MachineGunSentry", --"truelch_Am12MortarSentry_Weapon"
+}
+
+-------------------- MODE 7: A/ARC-3 Tesla Tower --------------------
+truelch_TeslaTowerMode = truelch_MgSentryMode:new{
+	aFM_name = "Call-in a Tesla Tower",
+	aFM_desc = "Drop an A/ARC-3 Tesla Tower."..
+		"\n(...)",
+	aFM_icon = "img/modes/icon_apw1.png",
+	Pawn = "truelch_Amg43MachineGunSentry", --"truelch_TeslaTower"
+}
+
+-------------------- MODE 8: Guard Dog --------------------
+truelch_GuardDogMode = truelch_MgSentryMode:new{
+	aFM_name = "Release a Guard Dog",
+	aFM_desc = "AX/AR-23 Guard Dog.".. --don't know if '' can work as a replacement to "" inside a string
+		"\n(...)",
+	aFM_icon = "img/modes/icon_apw1.png",
+	Pawn = "truelch_Amg43MachineGunSentry", --TODO
+}
 
 
 
 -----------------------------------------------------
 -------------------- AIR STRIKES --------------------
 -----------------------------------------------------
+--Airstrikes after Mechs' turn but before Vek act. If the Shuttle Mech is in range, it can fires the effect itself, making it instant.
 
--------------------- MODE 5:  --------------------
+-------------------- MODE 9: Eagle Napalm Airstrike --------------------
+truelch_NapalmAirstrikeMode = truelch_Mg43Mode:new{
+	aFM_name = "Napalm Airstrike",
+	aFM_desc = "(TODO)",
+	aFM_icon = "img/modes/icon_apw1.png",
 
-truelch_StratagemMode5 = truelch_Mg43Mode:new{
-	aFM_name = "Mode 5",
-	aFM_desc = "Mode 5 desc.",
-	aFM_icon = "img/modes/icon_mode5.png",
+	aFM_twoClick = true, --!!!!
 
-	aFM_limited = 1,
+	MinRange = 1,
+	MaxRange = 3,
 }
 
--------------------- MODE 6 --------------------
+function truelch_NapalmAirstrikeMode:targeting(point)
+	local points = {}
 
-truelch_StratagemMode6 = truelch_Mg43Mode:new{
-	aFM_name = "Mode 6",
-	aFM_desc = "Mode 6 desc.",
-	aFM_icon = "img/modes/icon_mode6.png",
+    for dir = DIR_START, DIR_END do
+    	for i = 1, 7 do
+    		local curr = point + DIR_VECTORS[dir]*i
+    		points[#points+1] = curr
+    		if not Board:IsValid(curr) then
+    			break
+    		end
+    	end
+    end
 
-	aFM_limited = 1,
-}
+	return points
+end
+
+function truelch_NapalmAirstrikeMode:fire(p1, p2, se)    
+    local pawn = Board:GetPawn(p2)
+
+    if pawn ~= nil and pawn:GetType() == "truelch_EagleMech" then
+    	LOG("------------ is Shuttle Mech!")
+    end
+end
+
+function truelch_NapalmAirstrikeMode:second_targeting(p1, p2) 
+    --return Ranged_TC_BounceShot.GetSecondTargetArea(Ranged_TC_BounceShot, p1, p2)
+    local ret = PointList()
+
+    local isShuttle = IsPawnSpace(p2) and Board:GetPawn(p2):GetType() == "truelch_EagleMech"
+
+	for dir = DIR_START, DIR_END do
+		for i = self.MinRange, self.MaxRange do
+			local curr = p2 + DIR_VECTORS[dir]*i
+			if not isShuttle or not Board:IsBlocked(curr, PATH_PROJECTILE) then
+				ret:push_back(curr)
+			end
+		end
+	end
+
+    return ret
+end
+
+function truelch_NapalmAirstrikeMode:second_fire(p1, p2, p3)
+    --return Ranged_TC_BounceShot.GetFinalEffect(Ranged_TC_BounceShot, p1, p2, p3)
+    local ret = SkillEffect()
+
+    local isShuttle = IsPawnSpace(p2) and Board:GetPawn(p2):GetType() == "truelch_EagleMech"
+
+    --Shuttle's move
+    if isShuttle then
+		local move = PointList()
+		move:push_back(p2)
+		move:push_back(p3)
+		ret:AddBounce(p2, 2)
+		ret:AddLeap(move, 0.25)
+
+		--Instant damage effect
+	else
+    	--Queued effect
+
+    end
+
+    return ret
+end
+
+---------------------------------------------------------
+-------------------- ORBITAL STRIKES --------------------
+---------------------------------------------------------
+--Orbital strikes effects will happen AFTER Vek act.
 
 
+------------------------------------------------
 -------------------- WEAPON --------------------
+------------------------------------------------
 
 truelch_StratagemFMW = aFM_WeaponTemplate:new{
 	--Infos
@@ -239,6 +355,7 @@ truelch_StratagemFMW = aFM_WeaponTemplate:new{
 		"\nSome stratagems are free actions (generally the calls for weapons)."..
 		"\nIf you have a Shuttle Mech in range, the call-in can be instant. (airstrikes and weapons drops)",
 	Class = "",
+	TwoClick = true, --!!!!
 	Rarity = 1,
 	PowerCost = 1,
 	--Limited = 1, --what happens if I use the vanilla limited here?
@@ -250,13 +367,20 @@ truelch_StratagemFMW = aFM_WeaponTemplate:new{
     --FMW
 	aFM_ModeList = {
 		--Weapons
-		"truelch_Mg43Mode", --Call-in MG-43 Machine Gun
-		"truelch_Apw1Mode", --Call-in a APW-1 Anti-Materiel Rifle (Sniper)
+		"truelch_Mg43Mode",   --Call-in MG-43 Machine Gun
+		"truelch_Apw1Mode",   --Call-in a APW-1 Anti-Materiel Rifle (Sniper)
 		"truelch_Flam40Mode", --Call-in a FLAM-40 Flamethrower
-		"truelch_Rs422Mode", --Call-in a RS-422 Railgun (Channeling weapon)
+		"truelch_Rs422Mode",  --Call-in a RS-422 Railgun (Channeling weapon)
+
+		--Deployables
+		"truelch_MgSentryMode",
+		"truelch_MortarSentryMode",
+		"truelch_TeslaTowerMode",
+		"truelch_GuardDogMode",
+
 		--Air strikes
-		"truelch_StratagemMode5", --
-		"truelch_StratagemMode6",
+		--"truelch_NapalmAirstrikeMode", --
+		--"truelch_StratagemMode6",
 		--Orbital strikes
 		--Turrets and Drones
 	},
@@ -308,21 +432,57 @@ function truelch_StratagemFMW:GetSkillEffect(p1, p2)
 	return se
 end
 
+function truelch_StratagemFMW:IsTwoClickException(p1, p2)
+	return not _G[self:FM_GetMode(p1)].aFM_twoClick 
+end
+
+function truelch_StratagemFMW:GetSecondTargetArea(p1, p2)
+	local currentShell = _G[self:FM_GetMode(p1)]
+    local pl = PointList()
+    
+	if self:FM_CurrentModeReady(p1) and currentShell.aFM_twoClick then 
+		pl = currentShell:second_targeting(p1, p2)
+	end
+    
+    return pl 
+end
+
+function truelch_StratagemFMW:GetFinalEffect(p1, p2, p3) 
+    local se = SkillEffect()
+	local currentShell = _G[self:FM_GetMode(p1)]
+
+	if self:FM_CurrentModeReady(p1) and currentShell.aFM_twoClick then 
+		se = currentShell:second_fire(p1, p2, p3)  
+	end
+    
+    return se 
+end
+
 
 ----------------------------------------------- HOOKS / EVENTS SUBSCRIPTION -----------------------------------------------
 
-local truelch_stratagem_flag = false
+
 local truelch_statagemNames = {
 	--Weapons
 	"Call-in a Machine Gun",
 	"Call-in a Sniper Rifle",
 	"Call-in a Flamethrower",
 	"Call-in a Railgun",
+
+	--Deployables
+	"Deploy a MG Sentry",
+	"Deploy a Mortar Sentry",
+	"Deploy a Tesla Tower",
+	"Unleash Guard Dog",
+
 	--Airstrikes
-	"Eagle Airstrike",
-	"Mode6",
+	"Napalm Airstrike",
+	--"Mode6",
+
 	--Orbital strikes
+
 	--Deployables (turrets, drones)
+
 	--Misc (shield?)
 }
 
@@ -332,6 +492,7 @@ local HOOK_onMissionStarted = function(mission)
 	truelch_stratagem_flag = true
 end
 
+local testMode = true
 
 local HOOK_onNextTurn = function(mission)
 	if Game:GetTeamTurn() ~= TEAM_PLAYER or truelch_stratagem_flag == false then
@@ -340,9 +501,7 @@ local HOOK_onNextTurn = function(mission)
 
 	truelch_stratagem_flag = false
 
-	if true then return end --tmp
-
-	--LOG("---------> Computing Stratagems...")
+	if testMode then return end
 
 	local size = Board:GetSize()
 	for j = 0, size.y do

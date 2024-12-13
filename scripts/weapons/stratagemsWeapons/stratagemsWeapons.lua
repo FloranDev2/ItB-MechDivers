@@ -629,12 +629,23 @@ local HOOK_onSkillEnd = function(mission, pawn, weaponId, p1, p2)
 
         --Move cannot be a 0 distance
         if isMission() and missionData().mg43ShootStatus ~= nil then
-            if move <= math.floor(0.5 * move) then
+
+            --Attempt to fix the nil value below --->
+            if missionData().mg43ShootStatus[pawn:GetId()] == nil then
+                LOG("[A] missionData().mg43ShootStatus[pawn:GetId()] == nil")
+                missionData().mg43ShootStatus[pawn:GetId()] = { 3, -1 } --safe init again
+            elseif missionData().mg43ShootStatus[pawn:GetId()][1] == nil then
+                LOG("[B] missionData().mg43ShootStatus[pawn:GetId()][1] == nil")
+                missionData().mg43ShootStatus[pawn:GetId()] = { 3, -1 } --safe init again
+            end
+            -- <--- Attempt to fix the nil value below
+
+            if dist <= math.floor(0.5 * move) then
                 LOG("less than half move!")
                 missionData().mg43ShootStatus[pawn:GetId()][1] = 2
             else
                 LOG("more than half move!")
-                missionData().mg43ShootStatus[pawn:GetId()][1] = 1
+                missionData().mg43ShootStatus[pawn:GetId()][1] = 1 --attempt to index field '?' (a nil value)
             end
         end
     end

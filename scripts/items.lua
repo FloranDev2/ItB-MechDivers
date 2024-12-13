@@ -127,7 +127,7 @@ local hellPodItems =
 	"truelch_Item_WeaponPod_Mg43",
 	"truelch_Item_WeaponPod_Apw1",
 	"truelch_Item_WeaponPod_Flam40",
-	"truelch_Item_WeaponPod_Flam40",
+	"truelch_Item_WeaponPod_Rs422",
 }
 local function isHellPodItem(item)
 	for _, hellPodItem in pairs(hellPodItems) do

@@ -53,6 +53,10 @@ local files = {
 }
 ]]
 
+----------------------------------------------------------------------------------------------------
+---------------------------------------- MACHINE GUN SENTRY ----------------------------------------
+----------------------------------------------------------------------------------------------------
+
 truelch_Amg43MachineGunSentry = Pawn:new{
 	Name = "A/MG-43 Machine Gun Sentry", --A/G-16 Gatling Sentry --A/AC-8 Autocannon Sentry
 	Health = 1,
@@ -129,6 +133,10 @@ end
 
 
 
+-----------------------------------------------------------------------------------------------
+---------------------------------------- MORTAR SENTRY ----------------------------------------
+-----------------------------------------------------------------------------------------------
+
 truelch_Am12MortarSentry = Pawn:new{
 	Name = "A/M-12 Mortar Sentry",
 	Health = 1,
@@ -170,7 +178,7 @@ truelch_Am12MortarSentry_Weapon = Skill:new{
 }
 
 --If I do a weapon managed by the AI
-function truelch_Am12MortarSentry:GetTargetScore(p1, p2)
+function truelch_Am12MortarSentry_Weapon:GetTargetScore(p1, p2)
 	local effect = SkillEffect()
 
 	local score = 0
@@ -195,7 +203,7 @@ function truelch_Am12MortarSentry:GetTargetScore(p1, p2)
 	return score
 end
 
-function truelch_Am12MortarSentry:GetTargetArea(point)
+function truelch_Am12MortarSentry_Weapon:GetTargetArea(point)
     local ret = PointList()
 
     for dir = DIR_START, DIR_END do
@@ -212,7 +220,7 @@ function truelch_Am12MortarSentry:GetTargetArea(point)
     return ret
 end
 
-function truelch_Am12MortarSentry:GetSkillEffect(p1, p2)
+function truelch_Am12MortarSentry_Weapon:GetSkillEffect(p1, p2)
     local ret = SkillEffect()
 
     ret:AddBounce(p1, 1)
@@ -230,3 +238,102 @@ function truelch_Am12MortarSentry:GetSkillEffect(p1, p2)
 
     return ret
 end
+
+
+
+
+---------------------------------------------------------------------------------------------
+---------------------------------------- TESLA TOWER ----------------------------------------
+---------------------------------------------------------------------------------------------
+
+truelch_TeslaTower = Pawn:new{
+	Name = "A/ARC-3 Tesla Tower",
+	Health = 1,
+	MoveSpeed = 0,
+	Image = "terraformer3",
+	SkillList = { "truelch_TeslaTower_Weapon" },
+	SoundLocation = "/mech/flying/jet_mech/",
+	ImageOffset = mechDiversBlack,
+	DefaultTeam = TEAM_PLAYER,
+	ImpactMaterial = IMPACT_METAL,
+	Corpse = false,
+	Neutral = true, --test!
+}
+AddPawn("truelch_TeslaTower")
+
+--"Neutral" weapon?
+truelch_TeslaTower_Weapon = Skill:new{
+	--Infos
+	Name = "Tesla Discharge",
+	Description = "(TODO)",
+	Class = "Unique",
+
+	--Art
+	Icon = "weapons/deploy_tank.png",
+	UpShot = "effects/shotup_tribomb_missile.png", --TMP
+
+	--Gameplay
+	Damage = 2,
+	Buildings = false,
+
+	--Tip image
+	TipImage = {
+		Unit   = Point(2, 3),
+		Target = Point(2, 2),
+		Enemy1 = Point(2, 2),
+		Enemy2 = Point(2, 1),
+		Enemy3 = Point(3, 1),
+	}
+}
+
+function truelch_TeslaTower_Weapon:GetSkillEffect(p1, p2)
+	local ret = SkillEffect()
+	local damage = SpaceDamage(p2, self.Damage)
+	local hash = function(point) return point.x + point.y*10 end
+	local explored = {[hash(p1)] = true}
+	local todo = {p2}
+	local origin = { [hash(p2)] = p1 }
+	
+	if Board:IsPawnSpace(p2) or (self.Buildings and Board:IsBuilding(p2)) then
+		ret:AddAnimation(p1, "Lightning_Hit")
+	end
+	
+	while #todo ~= 0 do
+		local current = pop_back(todo)
+		
+		if not explored[hash(current)] then
+			explored[hash(current)] = true
+			
+			if Board:IsPawnSpace(current) or (self.Buildings and Board:IsBuilding(current)) then
+			
+				local direction = GetDirection(current - origin[hash(current)])
+				damage.sAnimation = "Lightning_Attack_"..direction
+				damage.loc = current
+				damage.iDamage = Board:IsBuilding(current) and DAMAGE_ZERO or self.Damage
+				
+				ret:AddDamage(damage)
+				
+				if not Board:IsBuilding(current) then
+					ret:AddAnimation(current, "Lightning_Hit")
+				end
+				
+				for i = DIR_START, DIR_END do
+					local neighbor = current + DIR_VECTORS[i]
+					if not explored[hash(neighbor)] then
+						todo[#todo + 1] = neighbor
+						origin[hash(neighbor)] = current
+					end
+				end
+			end		
+		end
+	end
+
+	return ret
+end
+
+
+
+
+-------------------------------------------------------------------------------------------
+---------------------------------------- GUARD DOG ----------------------------------------
+-------------------------------------------------------------------------------------------
