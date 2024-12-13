@@ -252,8 +252,8 @@ truelch_StratagemFMW = aFM_WeaponTemplate:new{
 		--Weapons
 		"truelch_Mg43Mode", --Call-in MG-43 Machine Gun
 		"truelch_Apw1Mode", --Call-in a APW-1 Anti-Materiel Rifle (Sniper)
-		"truelch_StratagemMode3", --Call-in a FLAM-40 Flamethrower
-		"truelch_StratagemMode4", --Call-in a RS-422 Railgun (Channeling weapon)
+		"truelch_Flam40Mode", --Call-in a FLAM-40 Flamethrower
+		"truelch_Rs422Mode", --Call-in a RS-422 Railgun (Channeling weapon)
 		--Air strikes
 		"truelch_StratagemMode5", --
 		"truelch_StratagemMode6",
