@@ -51,6 +51,10 @@ local function missionData()
         mission.truelch_MechDivers.hellPods = {}
     end
 
+    if mission.truelch_MechDivers.airstrikes == then
+    	mission.truelch_MechDivers.airstrikes = {}
+    end
+
     return mission.truelch_MechDivers
 end
 
@@ -68,6 +72,45 @@ end
 --Warning: this is a global function. Hence the very specific name.
 function truelch_MechDivers_AddPodData(point, item)
 	table.insert(missionData().hellPods, { point, item })
+end
+
+--id: 0: Napalm
+--Or I could just pass the mode name?
+function truelch_MechDivers_AddAirstrike(point, dir, id)	
+	table.insert(missionData().airstrikes, { point, dir, id })
+end
+
+--Call this with the event I discovered recently (that happens before Vek action, it's something related to ENV)
+--https://github.com/search?q=repo%3AMetalocif%2FMeta-s-Mods%20env&type=code
+--modApi:addPreEnvironmentHook(function(mission)
+local function resolveAirstrikes()
+	--Loop
+	for _, airstrike in pairs(missionData().airstrikes) do
+		local point = airstrike[1]
+		local dir   = airstrike[2]
+		local id    = airstrike[3]
+		if id == 0 then
+			----- NAPALM AIRSTRIKE -----
+			--Center
+			local damage = SpaceDamage(p2, 0)
+			damage.iFire = EFFECT_CREATE
+			Board:AddEffect(damage)
+
+			--Forward, left, right			
+			local dirOffsets = {0, -1, 1} 
+			for _, offset in ipairs(dirOffsets) do
+				local curr = p2 + DIR_VECTORS[(dir + offset)% 4]
+				local damage = SpaceDamage(curr, 0)
+				damage.iFire = EFFECT_CREATE
+				Board:AddEffect(damage)
+			end
+		elseif id == 1 then
+			----- ???? airstrike -----
+		end
+	end
+
+	--Clear airstrikes data
+	missionData().airstrikes = {}
 end
 
 ---------------------------------------------------------
@@ -262,13 +305,14 @@ truelch_GuardDogMode = truelch_MgSentryMode:new{
 -------------------- MODE 9: Eagle Napalm Airstrike --------------------
 truelch_NapalmAirstrikeMode = truelch_Mg43Mode:new{
 	aFM_name = "Napalm Airstrike",
-	aFM_desc = "(TODO)",
+	aFM_desc = "Ignite 4 tiles in an arrow shapes."..
+		"\nYou can first target a Shuttle Mech to do the strike instantly."..
+		"\nOtherwise, the strike is released just before the Vek act", --wait, it actually doesn't change anything then?
 	aFM_icon = "img/modes/icon_apw1.png",
-
 	aFM_twoClick = true, --!!!!
-
 	MinRange = 1,
 	MaxRange = 3,
+	AirstrikeAnim = "units/mission/bomber_1.png", --TODO
 }
 
 function truelch_NapalmAirstrikeMode:targeting(point)
@@ -291,36 +335,53 @@ function truelch_NapalmAirstrikeMode:fire(p1, p2, se)
     local pawn = Board:GetPawn(p2)
 
     if pawn ~= nil and pawn:GetType() == "truelch_EagleMech" then
-    	LOG("------------ is Shuttle Mech!")
+    	--LOG("------------ is Shuttle Mech!")
+
+    	--Fake damage (just for test)
+    	local damage = SpaceDamage(p2, 0)
+    	se:AddDamage(damage)
+    else
+		local damage = SpaceDamage(p2, 0)
+    	se:AddDamage(damage)
     end
 end
 
 function truelch_NapalmAirstrikeMode:second_targeting(p1, p2) 
     --return Ranged_TC_BounceShot.GetSecondTargetArea(Ranged_TC_BounceShot, p1, p2)
+    --LOG("truelch_NapalmAirstrikeMode:second_targeting - A")
     local ret = PointList()
 
-    local isShuttle = IsPawnSpace(p2) and Board:GetPawn(p2):GetType() == "truelch_EagleMech"
+    local isShuttle = Board:IsPawnSpace(p2) and Board:GetPawn(p2):GetType() == "truelch_EagleMech"
 
+    --LOG("truelch_NapalmAirstrikeMode:second_targeting - B")
+
+    local occ = 0
 	for dir = DIR_START, DIR_END do
 		for i = self.MinRange, self.MaxRange do
 			local curr = p2 + DIR_VECTORS[dir]*i
 			if not isShuttle or not Board:IsBlocked(curr, PATH_PROJECTILE) then
 				ret:push_back(curr)
+				occ = occ + 1
 			end
 		end
 	end
+
+	--LOG("truelch_NapalmAirstrikeMode:second_targeting - C")
+
+	--LOG("--------------- occ: "..tostring(occ))
 
     return ret
 end
 
 function truelch_NapalmAirstrikeMode:second_fire(p1, p2, p3)
-    --return Ranged_TC_BounceShot.GetFinalEffect(Ranged_TC_BounceShot, p1, p2, p3)
+	--LOG("truelch_NapalmAirstrikeMode:second_fire")
     local ret = SkillEffect()
-
-    local isShuttle = IsPawnSpace(p2) and Board:GetPawn(p2):GetType() == "truelch_EagleMech"
+    local isShuttle = Board:IsPawnSpace(p2) and Board:GetPawn(p2):GetType() == "truelch_EagleMech"
+    local dir = GetDirection(p3 - p2)
 
     --Shuttle's move
     if isShuttle then
+    	--Shuttle move
 		local move = PointList()
 		move:push_back(p2)
 		move:push_back(p3)
@@ -328,9 +389,61 @@ function truelch_NapalmAirstrikeMode:second_fire(p1, p2, p3)
 		ret:AddLeap(move, 0.25)
 
 		--Instant damage effect
+		--Center
+		local damage = SpaceDamage(p2, 0)
+		damage.iFire = EFFECT_CREATE
+		ret:AddDamage(damage)
+
+		--Forward, left, right
+		
+		local dirOffsets = {0, -1, 1} 
+		for _, offset in ipairs(dirOffsets) do
+			local curr = p2 + DIR_VECTORS[(dir + offset)% 4]
+			local damage = SpaceDamage(curr, 0)
+			damage.iFire = EFFECT_CREATE
+			ret:AddDamage(damage)
+		end
+
 	else
+		--LOG("Not shuttle ----------> queued effect")
     	--Queued effect
 
+    	--V1: real queued effect
+
+    	--[[
+    	--None of queued air strike work...
+		if dir == DIR_UP or dir == DIR_DOWN then
+			--TODO: animation
+			--Wait, AddQueuedAirStrike while regular AddAirstrike (with lowercase "s")... F*CK!!!
+			--ret:AddQueuedReverseAirstrike(p2, self.AirstrikeAnim) --Does that even exist? --> Apparently not lol.
+			--ret:AddQueuedAirStrike(p2, self.AirstrikeAnim) --Oh, it was with with upper case "s", so maybe the above will actually work
+		else
+			--TODO: animation
+			--ret:AddQueuedAirStrike(p2, self.AirstrikeAnim)
+		end
+
+    	--AddQueuedAirStrike
+		--Center
+		local damage = SpaceDamage(p2, 1)
+		damage.iFire = EFFECT_CREATE
+		ret:AddQueuedDamage(damage)
+		--LOG("p2: "..p2:GetString())
+
+		--Forward, left, right
+		local dir = GetDirection(p3 - p2)
+		local dirOffsets = {0, -1, 1} 
+		for _, offset in ipairs(dirOffsets) do
+			local curr = p2 + DIR_VECTORS[(dir + offset)% 4]
+			--LOG("curr: "..curr:GetString())
+			local damage = SpaceDamage(curr, 1)
+			damage.iFire = EFFECT_CREATE
+			ret:AddQueuedDamage(damage)
+		end
+		]]
+
+		--V2: using mission data (yay...)
+		--point, dir, id (0 = Napalm Airstrike)
+		ret:AddScript(string.format("truelch_MechDivers_AddAirstrike(%s, %s, 0)", p2:GetString(), tostring(dir)))
     end
 
     return ret
@@ -373,15 +486,17 @@ truelch_StratagemFMW = aFM_WeaponTemplate:new{
 		"truelch_Rs422Mode",  --Call-in a RS-422 Railgun (Channeling weapon)
 
 		--Deployables
-		"truelch_MgSentryMode",
-		"truelch_MortarSentryMode",
-		"truelch_TeslaTowerMode",
-		"truelch_GuardDogMode",
+		--"truelch_MgSentryMode",
+		--"truelch_MortarSentryMode",
+		--"truelch_TeslaTowerMode",
+		--"truelch_GuardDogMode",
 
 		--Air strikes
-		--"truelch_NapalmAirstrikeMode", --
+		"truelch_NapalmAirstrikeMode", --
 		--"truelch_StratagemMode6",
+
 		--Orbital strikes
+
 		--Turrets and Drones
 	},
 	aFM_ModeSwitchDesc = "Click to change mode.",

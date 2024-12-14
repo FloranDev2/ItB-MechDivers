@@ -600,7 +600,7 @@ local function HOOK_onNextTurnHook()
                     for k = 1, 3 do
                         local weapon = weapons[k]
                         if isMg43(weapon) and shots >= 3 and dir ~= -1 then
-                            LOG("=========================== THIRD SHOT ===========================")
+                            --LOG("=========================== THIRD SHOT ===========================")
                             Board:AddAlert(pawn:GetSpace(), "Mg43's 3rd shot!")
                             missionData().mg43ShootStatus[pawn:GetId()] = { 0, -1 } --reset
                             isThirdShot = true
@@ -621,30 +621,30 @@ local HOOK_onSkillEnd = function(mission, pawn, weaponId, p1, p2)
 
     --better use the pawn move hook to track the distance
     if weaponId == "Move" then
-        LOG("p1: "..p1:GetString().." -> p2: "..p2:GetString())
+        --LOG("p1: "..p1:GetString().." -> p2: "..p2:GetString())
         local dist = p1:Manhattan(p2)
         local move = pawn:GetMoveSpeed()
-        LOG("move: "..tostring(move))
+        --LOG("move: "..tostring(move))
         --Board:AddAlert(p2, "Dist: "..tostring(dist).."/"..tostring(move))
 
         --Move cannot be a 0 distance
         if isMission() and missionData().mg43ShootStatus ~= nil then
 
             --Attempt to fix the nil value below --->
-            if missionData().mg43ShootStatus[pawn:GetId()] == nil then
-                LOG("[A] missionData().mg43ShootStatus[pawn:GetId()] == nil")
+            if missionData().mg43ShootStatus[pawn:GetId()] == nil then --this seems to be the one I needed
+                --LOG("[A] missionData().mg43ShootStatus[pawn:GetId()] == nil")
                 missionData().mg43ShootStatus[pawn:GetId()] = { 3, -1 } --safe init again
             elseif missionData().mg43ShootStatus[pawn:GetId()][1] == nil then
-                LOG("[B] missionData().mg43ShootStatus[pawn:GetId()][1] == nil")
+                --LOG("[B] missionData().mg43ShootStatus[pawn:GetId()][1] == nil")
                 missionData().mg43ShootStatus[pawn:GetId()] = { 3, -1 } --safe init again
             end
             -- <--- Attempt to fix the nil value below
 
             if dist <= math.floor(0.5 * move) then
-                LOG("less than half move!")
+                --LOG("less than half move!")
                 missionData().mg43ShootStatus[pawn:GetId()][1] = 2
             else
-                LOG("more than half move!")
+                --LOG("more than half move!")
                 missionData().mg43ShootStatus[pawn:GetId()][1] = 1 --attempt to index field '?' (a nil value)
             end
         end
