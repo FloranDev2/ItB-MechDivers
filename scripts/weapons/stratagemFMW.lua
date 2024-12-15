@@ -51,7 +51,7 @@ local function missionData()
         mission.truelch_MechDivers.hellPods = {}
     end
 
-    if mission.truelch_MechDivers.airstrikes == then
+    if mission.truelch_MechDivers.airstrikes == nil then
     	mission.truelch_MechDivers.airstrikes = {}
     end
 
@@ -84,28 +84,69 @@ end
 --https://github.com/search?q=repo%3AMetalocif%2FMeta-s-Mods%20env&type=code
 --modApi:addPreEnvironmentHook(function(mission)
 local function resolveAirstrikes()
+	LOG("resolveAirstrikes()")
 	--Loop
 	for _, airstrike in pairs(missionData().airstrikes) do
+		local se = SkillEffect()
+
+		LOG("-> airstrike")
 		local point = airstrike[1]
 		local dir   = airstrike[2]
 		local id    = airstrike[3]
+
+		LOG(string.format(" --- point: %s, dir: %s, id: %s", point:GetString(), tostring(dir), tostring(id)))
+
+		--Airstrike anim
+		se:AddAirstrike(point, "units/mission/bomber_1.png") --it see;s thqt I had multiple anims, wtf?
+
 		if id == 0 then
+			LOG(" --- Napalm airstrike!")
 			----- NAPALM AIRSTRIKE -----
 			--Center
-			local damage = SpaceDamage(p2, 0)
+			local damage = SpaceDamage(point, 0)
 			damage.iFire = EFFECT_CREATE
 			Board:AddEffect(damage)
 
 			--Forward, left, right			
 			local dirOffsets = {0, -1, 1} 
 			for _, offset in ipairs(dirOffsets) do
-				local curr = p2 + DIR_VECTORS[(dir + offset)% 4]
+				local curr = point + DIR_VECTORS[(dir + offset)% 4]
 				local damage = SpaceDamage(curr, 0)
 				damage.iFire = EFFECT_CREATE
+				se:AddDamage(damage)
+				Board:AddEffect(se)
+			end
+			LOG(" --- End")
+		elseif id == 1 then
+			----- SMOKE AIRSTRIKE -----
+			--Center
+			local damage = SpaceDamage(point, 0)
+			damage.iSmoke = EFFECT_CREATE
+			Board:AddEffect(damage)
+
+			--Forward, left, right			
+			local dirOffsets = {0, -1, 1} 
+			for _, offset in ipairs(dirOffsets) do
+				local curr = point + DIR_VECTORS[(dir + offset)% 4]
+				local damage = SpaceDamage(curr, 0)
+				damage.iSmoke = EFFECT_CREATE
+				se:AddDamage(damage)
+				Board:AddEffect(se)
+			end
+		elseif id == 2 then
+			----- 500KG BOMB -----
+			--Center
+			local damage = SpaceDamage(point, 4)
+			damage.sAnimation = "ExploArt3" --TODO
+			Board:AddEffect(damage)
+
+			--Adjacent
+			for dir = DIR_START, DIR_END do
+				local curr = point + DIR_VECTORS[dir]
+				local damage = SpaceDamage(curr, 2)
+				damage.sAnimation = "ExploArt1" --TODO
 				Board:AddEffect(damage)
 			end
-		elseif id == 1 then
-			----- ???? airstrike -----
 		end
 	end
 
@@ -347,28 +388,17 @@ function truelch_NapalmAirstrikeMode:fire(p1, p2, se)
 end
 
 function truelch_NapalmAirstrikeMode:second_targeting(p1, p2) 
-    --return Ranged_TC_BounceShot.GetSecondTargetArea(Ranged_TC_BounceShot, p1, p2)
-    --LOG("truelch_NapalmAirstrikeMode:second_targeting - A")
     local ret = PointList()
-
     local isShuttle = Board:IsPawnSpace(p2) and Board:GetPawn(p2):GetType() == "truelch_EagleMech"
 
-    --LOG("truelch_NapalmAirstrikeMode:second_targeting - B")
-
-    local occ = 0
 	for dir = DIR_START, DIR_END do
 		for i = self.MinRange, self.MaxRange do
 			local curr = p2 + DIR_VECTORS[dir]*i
 			if not isShuttle or not Board:IsBlocked(curr, PATH_PROJECTILE) then
 				ret:push_back(curr)
-				occ = occ + 1
 			end
 		end
 	end
-
-	--LOG("truelch_NapalmAirstrikeMode:second_targeting - C")
-
-	--LOG("--------------- occ: "..tostring(occ))
 
     return ret
 end
@@ -394,8 +424,7 @@ function truelch_NapalmAirstrikeMode:second_fire(p1, p2, p3)
 		damage.iFire = EFFECT_CREATE
 		ret:AddDamage(damage)
 
-		--Forward, left, right
-		
+		--Forward, left, right		
 		local dirOffsets = {0, -1, 1} 
 		for _, offset in ipairs(dirOffsets) do
 			local curr = p2 + DIR_VECTORS[(dir + offset)% 4]
@@ -443,6 +472,149 @@ function truelch_NapalmAirstrikeMode:second_fire(p1, p2, p3)
 
 		--V2: using mission data (yay...)
 		--point, dir, id (0 = Napalm Airstrike)
+		ret:AddScript(string.format("truelch_MechDivers_AddAirstrike(%s, %s, 0)", p2:GetString(), tostring(dir)))
+    end
+
+    return ret
+end
+
+-------------------- MODE 10: Eagle Smoke Airstrike --------------------
+truelch_SmokeAirstrikeMode = truelch_NapalmAirstrikeMode:new{
+	aFM_name = "Smoke Airstrike",
+	aFM_desc = "Smoke 4 tiles in an arrow shapes."..
+		"\nYou can first target a Shuttle Mech to do the strike instantly."..
+		"\nOtherwise, the strike is released just before the Vek act", --wait, it actually doesn't change anything then?
+	aFM_icon = "img/modes/icon_apw1.png",
+	--aFM_twoClick = true,
+	--MinRange = 1,
+	--MaxRange = 3,
+	--AirstrikeAnim = "units/mission/bomber_1.png", --TODO
+}
+
+function truelch_SmokeAirstrikeMode:second_fire(p1, p2, p3)
+    local ret = SkillEffect()
+    local isShuttle = Board:IsPawnSpace(p2) and Board:GetPawn(p2):GetType() == "truelch_EagleMech"
+    local dir = GetDirection(p3 - p2)
+
+    --Shuttle's move
+    if isShuttle then
+    	--Shuttle move
+		local move = PointList()
+		move:push_back(p2)
+		move:push_back(p3)
+		ret:AddBounce(p2, 2)
+		ret:AddLeap(move, 0.25)
+
+		--Instant damage effect
+		--Center
+		local damage = SpaceDamage(p2, 0)
+		damage.iSmoke = EFFECT_CREATE
+		ret:AddDamage(damage)
+
+		--Forward, left, right		
+		local dirOffsets = {0, -1, 1} 
+		for _, offset in ipairs(dirOffsets) do
+			local curr = p2 + DIR_VECTORS[(dir + offset)% 4]
+			local damage = SpaceDamage(curr, 0)
+			damage.iSmoke = EFFECT_CREATE
+			ret:AddDamage(damage)
+		end
+
+	else
+		--point, dir, id (1 = Smoke Airstrike)
+		ret:AddScript(string.format("truelch_MechDivers_AddAirstrike(%s, %s, 1)", p2:GetString(), tostring(dir)))
+    end
+
+    return ret
+end
+
+-------------------- MODE 11: 500kg Bomb Airstrike --------------------
+truelch_500kgAirstrikeMode = truelch_Mg43Mode:new{
+	aFM_name = "500kg Bomb",
+	aFM_desc = "Deal massive damage in 4 tiles in an cross shape."..
+		"\nYou can first target a Shuttle Mech to do the strike instantly."..
+		"\nOtherwise, the strike is released just before the Vek act", --wait, it actually doesn't change anything then?
+	aFM_icon = "img/modes/icon_apw1.png",
+	aFM_twoClick = true,
+	MinRange = 1,
+	MaxRange = 3,
+	AirstrikeAnim = "units/mission/bomber_1.png", --TODO
+}
+
+function truelch_500kgAirstrikeMode:targeting(point)
+	local points = {}
+
+    for dir = DIR_START, DIR_END do
+    	for i = 1, 7 do
+    		local curr = point + DIR_VECTORS[dir]*i
+    		points[#points+1] = curr
+    		if not Board:IsValid(curr) then
+    			break
+    		end
+    	end
+    end
+
+	return points
+end
+
+function truelch_500kgAirstrikeMode:fire(p1, p2, se)    
+    local pawn = Board:GetPawn(p2)
+    if pawn ~= nil and pawn:GetType() == "truelch_EagleMech" then
+    	local damage = SpaceDamage(p2, 0)
+    	se:AddDamage(damage)
+    else
+		local damage = SpaceDamage(p2, 0)
+    	se:AddDamage(damage)
+    end
+end
+
+function truelch_500kgAirstrikeMode:second_targeting(p1, p2) 
+    local ret = PointList()
+    local isShuttle = Board:IsPawnSpace(p2) and Board:GetPawn(p2):GetType() == "truelch_EagleMech"
+
+	for dir = DIR_START, DIR_END do
+		for i = self.MinRange, self.MaxRange do
+			local curr = p2 + DIR_VECTORS[dir]*i
+			if not isShuttle or not Board:IsBlocked(curr, PATH_PROJECTILE) then
+				ret:push_back(curr)
+			end
+		end
+	end
+
+    return ret
+end
+
+function truelch_500kgAirstrikeMode:second_fire(p1, p2, p3)
+	--LOG("truelch_NapalmAirstrikeMode:second_fire")
+    local ret = SkillEffect()
+    local isShuttle = Board:IsPawnSpace(p2) and Board:GetPawn(p2):GetType() == "truelch_EagleMech"
+    local dir = GetDirection(p3 - p2)
+
+    --Shuttle's move
+    if isShuttle then
+    	--Shuttle move
+		local move = PointList()
+		move:push_back(p2)
+		move:push_back(p3)
+		ret:AddBounce(p2, 2)
+		ret:AddLeap(move, 0.25)
+
+		--Instant damage effect
+		--Center
+		local damage = SpaceDamage(p2, 0)
+		damage.iFire = EFFECT_CREATE
+		ret:AddDamage(damage)
+
+		--Forward, left, right		
+		local dirOffsets = {0, -1, 1} 
+		for _, offset in ipairs(dirOffsets) do
+			local curr = p2 + DIR_VECTORS[(dir + offset)% 4]
+			local damage = SpaceDamage(curr, 0)
+			damage.iFire = EFFECT_CREATE
+			ret:AddDamage(damage)
+		end
+
+	else
 		ret:AddScript(string.format("truelch_MechDivers_AddAirstrike(%s, %s, 0)", p2:GetString(), tostring(dir)))
     end
 
@@ -609,15 +781,7 @@ end
 
 local testMode = true
 
-local HOOK_onNextTurn = function(mission)
-	if Game:GetTeamTurn() ~= TEAM_PLAYER or truelch_stratagem_flag == false then
-		return
-	end
-
-	truelch_stratagem_flag = false
-
-	if testMode then return end
-
+local function computeStratagems()
 	local size = Board:GetSize()
 	for j = 0, size.y do
 		for i = 0, size.x do
@@ -674,6 +838,16 @@ local HOOK_onNextTurn = function(mission)
 	end
 end
 
+local HOOK_onNextTurn = function(mission)
+	if Game:GetTeamTurn() ~= TEAM_PLAYER then
+		if truelch_stratagem_flag == false and not testMode then
+			truelch_stratagem_flag = false
+			computeStratagems()
+		end
+		--Resolve orbital strikes here
+	end	
+end
+
 --This causes a crash
 --[[
 local incr = 0.01
@@ -707,10 +881,16 @@ local HOOK_onMissionUpdate = function(mission)
 	end
 end
 
+local HOOK_onPreEnv = function(mission)
+	LOG("HOOK_onPreEnv")
+	resolveAirstrikes()
+end
+
 local function EVENT_onModsLoaded()
     modApi:addMissionStartHook(HOOK_onMissionStarted)
     modApi:addNextTurnHook(HOOK_onNextTurn)
     modApi:addMissionUpdateHook(HOOK_onMissionUpdate)
+    modApi:addPreEnvironmentHook(HOOK_onPreEnv)
 end
 
 modApi.events.onModsLoaded:subscribe(EVENT_onModsLoaded)
