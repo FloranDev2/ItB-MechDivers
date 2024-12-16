@@ -184,11 +184,16 @@ function truelch_Mg43MachineGun:TipImmobile(p1, p2)
     local ret = SkillEffect()
 
     --Prepare enemy attack
+    local damage = SpaceDamage(0)
+    damage.bHide = true
+    damage.sScript = "Board:GetPawn(Point(2,0)):FireWeapon(Point(0,0),1)"
+    ret:AddDamage(damage)
 
     --(No move) -> nothing todo
-    --Board:AddAlert("")
+    Board:AddAlert("No move => 3 shots")
 
     --1st shot
+    
 
     --2nd shot
 

@@ -18,6 +18,7 @@ modApi:appendAsset("img/modes/icon_rocket_pod.png", resourcePath.."img/modes/ico
 modApi:appendAsset("img/modes/icon_mg43.png",   resourcePath.."img/modes/icon_mg43.png")
 modApi:appendAsset("img/modes/icon_apw1.png",   resourcePath.."img/modes/icon_apw1.png")
 modApi:appendAsset("img/modes/icon_flam40.png", resourcePath.."img/modes/icon_flam40.png")
+modApi:appendAsset("img/modes/icon_rs422.png",  resourcePath.."img/modes/icon_rs422.png")
 
 --Items
 --Note: this is also temporary; these effects are kinda like ENV icons
