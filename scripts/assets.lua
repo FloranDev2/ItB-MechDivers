@@ -20,6 +20,17 @@ modApi:appendAsset("img/modes/icon_apw1.png",   resourcePath.."img/modes/icon_ap
 modApi:appendAsset("img/modes/icon_flam40.png", resourcePath.."img/modes/icon_flam40.png")
 modApi:appendAsset("img/modes/icon_rs422.png",  resourcePath.."img/modes/icon_rs422.png")
 
+modApi:appendAsset("img/modes/icon_mg_sentry.png",     resourcePath.."img/modes/icon_mg_sentry.png")
+modApi:appendAsset("img/modes/icon_mortar_sentry.png", resourcePath.."img/modes/icon_mortar_sentry.png")
+modApi:appendAsset("img/modes/icon_tesla_tower.png",   resourcePath.."img/modes/icon_tesla_tower.png")
+modApi:appendAsset("img/modes/icon_guard_dog.png",     resourcePath.."img/modes/icon_guard_dog.png")
+
+modApi:appendAsset("img/modes/icon_napalm_airstrike.png", resourcePath.."img/modes/icon_napalm_airstrike.png")
+modApi:appendAsset("img/modes/icon_smoke_airstrike.png",  resourcePath.."img/modes/icon_smoke_airstrike.png")
+modApi:appendAsset("img/modes/icon_500kg_airstrike.png",  resourcePath.."img/modes/icon_500kg_airstrike.png")
+
+modApi:appendAsset("img/modes/icon_orbital_precision_strike.png", resourcePath.."img/modes/icon_orbital_precision_strike.png")
+
 --Items
 --Note: this is also temporary; these effects are kinda like ENV icons
 modApi:appendAsset("img/combat/blue_stratagem_grenade.png", resourcePath.."img/combat/blue_stratagem_grenade.png")
@@ -64,6 +75,8 @@ modApi:appendAsset("img/effects/truelch_shotup_stratagem_ball.png", resourcePath
 
 --Projectiles
 
+--Airstrikes
+modApi:appendAsset("img/effects/truelch_eagle.png", resourcePath.."img/effects/truelch_eagle.png")
 
 --Weapons icons
 modApi:appendAsset("img/weapons/truelch_delivery.png", resourcePath.."img/weapons/truelch_delivery.png")

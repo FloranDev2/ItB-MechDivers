@@ -55,6 +55,10 @@ local function missionData()
     	mission.truelch_MechDivers.airstrikes = {}
     end
 
+    if mission.truelch_MechDivers.orbitalStrikes == nil then
+    	mission.truelch_MechDivers.orbitalStrikes = {}
+    end
+
     return mission.truelch_MechDivers
 end
 
@@ -66,7 +70,10 @@ local function isStratagemWeapon(weapon)
     if type(weapon) == 'table' then
         weapon = weapon.__Id
     end
-    return string.find(weapon, "truelch_Stratagem") ~= nil
+    local isStratagemWeapon = string.find(weapon, "truelch_Stratagem") ~= nil
+    LOG("weapon: "..weapon.." -> is stratagem weapon? "..tostring(isStratagemWeapon))
+    --return string.find(weapon, "truelch_Stratagem") ~= nil
+    return isStratagemWeapon
 end
 
 --Warning: this is a global function. Hence the very specific name.
@@ -80,9 +87,11 @@ function truelch_MechDivers_AddAirstrike(point, dir, id)
 	table.insert(missionData().airstrikes, { point, dir, id })
 end
 
---Call this with the event I discovered recently (that happens before Vek action, it's something related to ENV)
---https://github.com/search?q=repo%3AMetalocif%2FMeta-s-Mods%20env&type=code
---modApi:addPreEnvironmentHook(function(mission)
+function truelch_MechDivers_AddOrbitalStrike(point, dir, id)	
+	table.insert(missionData().orbitalStrikes, { point, dir, id })
+end
+
+--Happens before Vek actions
 local function resolveAirstrikes()
 	LOG("resolveAirstrikes()")
 	--Loop
@@ -94,13 +103,14 @@ local function resolveAirstrikes()
 		local dir   = airstrike[2]
 		local id    = airstrike[3]
 
-		LOG(string.format(" --- point: %s, dir: %s, id: %s", point:GetString(), tostring(dir), tostring(id)))
+		--LOG(string.format(" --- point: %s, dir: %s, id: %s", point:GetString(), tostring(dir), tostring(id)))
 
 		--Airstrike anim
-		se:AddAirstrike(point, "units/mission/bomber_1.png") --it see;s thqt I had multiple anims, wtf?
+		se:AddAirstrike(point, "effects/truelch_eagle.png")
+		--se:AddAirstrike(point, "units/mission/bomber_1.png") --I have multiple anims, wtf?
 
 		if id == 0 then
-			LOG(" --- Napalm airstrike!")
+			--LOG(" --- Napalm airstrike!")
 			----- NAPALM AIRSTRIKE -----
 			--Center
 			local damage = SpaceDamage(point, 0)
@@ -116,7 +126,7 @@ local function resolveAirstrikes()
 				se:AddDamage(damage)
 				Board:AddEffect(se)
 			end
-			LOG(" --- End")
+			--LOG(" --- End")
 		elseif id == 1 then
 			----- SMOKE AIRSTRIKE -----
 			--Center
@@ -152,6 +162,110 @@ local function resolveAirstrikes()
 
 	--Clear airstrikes data
 	missionData().airstrikes = {}
+end
+
+local function rippleEffect(point)
+	--Ripple effect
+	local ripple = SkillEffect()
+	--[[
+	<center> (ring1) {ring2} [ring3]	
+	                 {0,  2}
+	        {-1,  1} (0,  1) {1,  1}
+	{-2, 0} (-1,  0) <0,  0> (1,  0) {2,  0}
+	        {-1, -1} (0, -1) {1, -1}
+	                 {0,  2}
+	]]
+
+	--V1
+	ring1 = { Point(0, 1), Point(-1, 0), Point(1, 0), Point(0, -1) }
+	ring2 = { Point(0, 2), Point(-1, 1), Point(1, 1), Point(-2, 0), Point(2, 0), Point(-1, -1), Point(1, -1), Point(0, 2) }
+
+	--Center
+	ripple:AddBounce(point, 5)
+
+	ripple:AddDelay(0.2)
+
+	--1
+	for _, offset in pairs(ring1) do
+		local curr = point + offset
+		if Board:IsValid(curr) then
+			ripple:AddBounce(point + offset, 3)
+		end
+		--Negative bounce for center?
+	end
+
+	ripple:AddDelay(0.2)
+
+	--2
+	for _, offset in pairs(ring2) do
+		local curr = point + offset
+		if Board:IsValid(curr) then
+			ripple:AddBounce(point + offset, 1)
+		end
+		--Negative bounce for ring1?
+	end
+
+	--3?
+
+	--V2
+	--[[
+	doneList = { point }
+	todoList = {}
+	for i = 1, 3 do
+		local bounce = 5 - i
+
+		for _, pos in pairs(todoList) do
+			--
+
+			--Add adjacent tiles to todo list if they aren't already in the todo or done list:
+			for dir = DIR_START, DIR_END do
+				local curr = pos + DIR_VECTORS[dir]
+				if not list_contains(doneList, curr) and list_contains(todoList, curr) then
+					table.insert(todoList, p)
+				end
+			end
+
+			--Remove from todo list
+		end
+	end
+	]]
+
+	--Add effect to Board
+	Board:AddEffect(ripple)
+end
+
+--Happens AFTER enemies' actions
+local function resolveOrbitalStrikes()
+	--LOG("resolveOrbitalStrikes()")
+	--Loop
+	for _, orbitalStrike in pairs(missionData().orbitalStrikes) do
+		--LOG("-> orbital strike")
+
+		local se = SkillEffect()
+
+		local point = orbitalStrike[1]
+		local dir   = orbitalStrike[2] --not used
+		local id    = orbitalStrike[3]
+
+		--LOG(string.format(" --- point: %s, dir: %s, id: %s", point:GetString(), tostring(dir), tostring(id)))
+
+		if id == 0 then
+			----- ORIBTAL PRECISION STRIKE -----
+			--LOG("Orbital precision strike")
+			--Center
+			local damage = SpaceDamage(point, DAMAGE_DEATH)
+			damage.sAnimation = "ExploArt2" --TMP
+			Board:AddEffect(damage)
+
+			rippleEffect(point)
+
+		--elseif id == 1 then
+			----- ??? -----
+		end
+	end
+
+	--Clear orbital strikes data
+	missionData().orbitalStrikes = {}
 end
 
 ---------------------------------------------------------
@@ -274,7 +388,7 @@ truelch_Rs422Mode = truelch_Mg43Mode:new{
 		"\nCall-in a pod containing a RS-422 Railgun."..
 		"\nIt channels a powerful attack that can be released next turn."..
 		"\nThe channeling does a push effect.",
-	aFM_icon = "img/modes/icon_mode4.png",
+	aFM_icon = "img/modes/icon_rs422.png",
 
 	aFM_limited = 1,
 
@@ -290,7 +404,7 @@ truelch_MgSentryMode = truelch_Mg43Mode:new{
 	aFM_name = "Call-in a Machine Gun Sentry",
 	aFM_desc = "Drop an A/MG Machine Gun Sentry."..
 		"\nIt shoots projectiles with a minimum range of 2 that deals heavy damage and pull.",
-	aFM_icon = "img/modes/icon_apw1.png",
+	aFM_icon = "img/modes/icon_mg_sentry.png",
 	--aFM_limited = 1, --no need to re-define this
 	Pawn = "truelch_Amg43MachineGunSentry",
 }
@@ -323,7 +437,7 @@ truelch_TeslaTowerMode = truelch_MgSentryMode:new{
 	aFM_name = "Call-in a Tesla Tower",
 	aFM_desc = "Drop an A/ARC-3 Tesla Tower."..
 		"\n(...)",
-	aFM_icon = "img/modes/icon_apw1.png",
+	aFM_icon = "img/modes/icon_tesla_tower.png",
 	Pawn = "truelch_Amg43MachineGunSentry", --"truelch_TeslaTower"
 }
 
@@ -332,7 +446,7 @@ truelch_GuardDogMode = truelch_MgSentryMode:new{
 	aFM_name = "Release a Guard Dog",
 	aFM_desc = "AX/AR-23 Guard Dog.".. --don't know if '' can work as a replacement to "" inside a string
 		"\n(...)",
-	aFM_icon = "img/modes/icon_apw1.png",
+	aFM_icon = "img/modes/icon_guard_dog.png",
 	Pawn = "truelch_Amg43MachineGunSentry", --TODO
 }
 
@@ -343,13 +457,13 @@ truelch_GuardDogMode = truelch_MgSentryMode:new{
 -----------------------------------------------------
 --Airstrikes after Mechs' turn but before Vek act. If the Shuttle Mech is in range, it can fires the effect itself, making it instant.
 
--------------------- MODE 9: Eagle Napalm Airstrike --------------------
+-------------------- MODE 9: Napalm Airstrike --------------------
 truelch_NapalmAirstrikeMode = truelch_Mg43Mode:new{
 	aFM_name = "Napalm Airstrike",
 	aFM_desc = "Ignite 4 tiles in an arrow shapes."..
 		"\nYou can first target a Shuttle Mech to do the strike instantly."..
 		"\nOtherwise, the strike is released just before the Vek act", --wait, it actually doesn't change anything then?
-	aFM_icon = "img/modes/icon_apw1.png",
+	aFM_icon = "img/modes/icon_napalm_airstrike.png",
 	aFM_twoClick = true, --!!!!
 	MinRange = 1,
 	MaxRange = 3,
@@ -478,13 +592,13 @@ function truelch_NapalmAirstrikeMode:second_fire(p1, p2, p3)
     return ret
 end
 
--------------------- MODE 10: Eagle Smoke Airstrike --------------------
+-------------------- MODE 10: Smoke Airstrike --------------------
 truelch_SmokeAirstrikeMode = truelch_NapalmAirstrikeMode:new{
 	aFM_name = "Smoke Airstrike",
 	aFM_desc = "Smoke 4 tiles in an arrow shapes."..
 		"\nYou can first target a Shuttle Mech to do the strike instantly."..
 		"\nOtherwise, the strike is released just before the Vek act", --wait, it actually doesn't change anything then?
-	aFM_icon = "img/modes/icon_apw1.png",
+	aFM_icon = "img/modes/icon_smoke_airstrike.png",
 	--aFM_twoClick = true,
 	--MinRange = 1,
 	--MaxRange = 3,
@@ -615,7 +729,7 @@ function truelch_500kgAirstrikeMode:second_fire(p1, p2, p3)
 		end
 
 	else
-		ret:AddScript(string.format("truelch_MechDivers_AddAirstrike(%s, %s, 0)", p2:GetString(), tostring(dir)))
+		ret:AddScript(string.format("truelch_MechDivers_AddAirstrike(%s, %s, 2)", p2:GetString(), tostring(dir)))
     end
 
     return ret
@@ -625,6 +739,21 @@ end
 -------------------- ORBITAL STRIKES --------------------
 ---------------------------------------------------------
 --Orbital strikes effects will happen AFTER Vek act.
+
+-------------------- MODE 12: Orbital Strike --------------------
+truelch_OrbitalPrecisionStrikeMode = truelch_Mg43Mode:new{
+	aFM_name = "Orbital Precision Strike",
+	aFM_desc = "Command a precision orbital strike that'll kill anything below."..
+		"\nOrbital strikes happen after enemy turn, so you'll need to anticipate enemies' movement!",
+	aFM_icon = "img/modes/icon_orbital_precision_strike.png",
+	Anim = "", --TODO
+}
+
+function truelch_OrbitalPrecisionStrikeMode:fire(p1, p2, se)
+	--dir might not be used
+	--point, dir, id
+	se:AddScript(string.format("truelch_MechDivers_AddOrbitalStrike(%s, -1, 0)", p2:GetString()))
+end
 
 
 ------------------------------------------------
@@ -658,18 +787,18 @@ truelch_StratagemFMW = aFM_WeaponTemplate:new{
 		"truelch_Rs422Mode",  --Call-in a RS-422 Railgun (Channeling weapon)
 
 		--Deployables
-		--"truelch_MgSentryMode",
-		--"truelch_MortarSentryMode",
-		--"truelch_TeslaTowerMode",
-		--"truelch_GuardDogMode",
+		"truelch_MgSentryMode",
+		"truelch_MortarSentryMode",
+		"truelch_TeslaTowerMode",
+		"truelch_GuardDogMode",
 
 		--Air strikes
-		"truelch_NapalmAirstrikeMode", --
-		--"truelch_StratagemMode6",
+		"truelch_NapalmAirstrikeMode",
+		"truelch_SmokeAirstrikeMode",
+		"truelch_500kgAirstrikeMode",
 
 		--Orbital strikes
-
-		--Turrets and Drones
+		"truelch_OrbitalPrecisionStrikeMode",
 	},
 	aFM_ModeSwitchDesc = "Click to change mode.",
 
@@ -764,11 +893,11 @@ local truelch_statagemNames = {
 
 	--Airstrikes
 	"Napalm Airstrike",
-	--"Mode6",
+	"Smoke Airstrike",
+	"500kg Airstrike",
 
 	--Orbital strikes
-
-	--Deployables (turrets, drones)
+	"Orbital Precision Strike",
 
 	--Misc (shield?)
 }
@@ -779,9 +908,8 @@ local HOOK_onMissionStarted = function(mission)
 	truelch_stratagem_flag = true
 end
 
-local testMode = true
-
 local function computeStratagems()
+	--LOG("computeStratagems()")
 	local size = Board:GetSize()
 	for j = 0, size.y do
 		for i = 0, size.x do
@@ -804,7 +932,7 @@ local function computeStratagems()
 							for k, mode in pairs(_G[weapon].aFM_ModeList) do
 								--LOG(string.format("k: %s, mode: %s", tostring(k), tostring(mode)))
 								if gameData().stratagems[p] ~= nil and list_contains(gameData().stratagems[p], mode) then
-									LOG(" -> This is an active mode in the game data!")
+									--LOG(" -> This is an active mode in the game data!")
 									fmw:FM_SetActive(p, mode, true)
 								else
 									fmw:FM_SetActive(p, mode, false)
@@ -812,24 +940,37 @@ local function computeStratagems()
 								end
 							end
 
-							local randIndex = math.random(#list)
-							--LOG("randIndex: "..tostring(randIndex))
-							local randMode = list[randIndex][1]
-							local index = list[randIndex][2]	
+							local stratIncr = 1 --amount of Stratagem modes added at the start of the mission (+2 with an upgrade)
+							if weapon == "truelch_StratagemFMW_B" or weapon == "truelch_StratagemFMW_AB" then
+								stratIncr = 2
+							end
 
-							--Enable
-							fmw:FM_SetActive(p, randMode, true)
+							for i = 1, stratIncr do
+								--TODO: check if the list count > 0
+								--TODO: max amount of stratagems
+								--LOG("i: "..tostring(i).." / stratIncr: "..tostring(stratIncr)..", list size: "..tostring(#list))
 
-							--Set mode to the last added
-							fmw:FM_SetMode(p, randMode)
+								local randIndex = math.random(#list)
+								--LOG("randIndex: "..tostring(randIndex))
+								local randMode = list[randIndex][1]
+								local index = list[randIndex][2]
 
-							--Add to game data
-							if gameData().stratagems[p] == nil then
-								gameData().stratagems[p] = {}
-							end							
-							table.insert(gameData().stratagems[p], randMode)
+								--Enable
+								fmw:FM_SetActive(p, randMode, true)
 
-							Board:AddAlert(pawn:GetSpace(), tostring(truelch_statagemNames[index]).." added")
+								--Set mode to the last added
+								fmw:FM_SetMode(p, randMode)
+
+								table.remove(list, randIndex)
+
+								--Add to game data
+								if gameData().stratagems[p] == nil then
+									gameData().stratagems[p] = {}
+								end							
+								table.insert(gameData().stratagems[p], randMode)
+							end
+
+							--Board:AddAlert(pawn:GetSpace(), tostring(truelch_statagemNames[index]).." added")
 						end
 					end
 				end
@@ -838,15 +979,24 @@ local function computeStratagems()
 	end
 end
 
+local testMode = false
+
 local HOOK_onNextTurn = function(mission)
 	if Game:GetTeamTurn() ~= TEAM_PLAYER then
-		if truelch_stratagem_flag == false and not testMode then
+		if truelch_stratagem_flag == true and not testMode then
 			truelch_stratagem_flag = false
 			computeStratagems()
 		end
 		--Resolve orbital strikes here
+		resolveOrbitalStrikes()
 	end	
 end
+
+local HOOK_onPreEnv = function(mission)
+	--LOG("HOOK_onPreEnv")
+	resolveAirstrikes()
+end
+
 
 --This causes a crash
 --[[
@@ -879,18 +1029,59 @@ local HOOK_onMissionUpdate = function(mission)
 		--Board:MarkSpaceImage(loc, "combat/tile_icon/tile_truelch_drop.png", GL_Color(255, 180, 0, alpha))
 		Board:MarkSpaceDesc(loc, "hell_drop")
 	end
+
+	--Also do airstrikes and orbital strikes?
 end
 
-local HOOK_onPreEnv = function(mission)
-	LOG("HOOK_onPreEnv")
-	resolveAirstrikes()
+local function debugGameData()
+	for i, stratagem in pairs(gameData().stratagems) do
+		LOG(string.format("stratagem[%s]: %s", tostring(i), tostring(stratagem[i])))
+	end
 end
+
+local HOOK_onSkillEnd = function(mission, pawn, weaponId, p1, p2)
+    if type(weaponId) == 'table' then
+        weaponId = weaponId.__Id
+    end
+
+    local p = pawn:GetId()
+
+    --LOG("=========== BEFORE ===========")
+    --debugGameData()
+
+    local weapons = pawn:GetPoweredWeapons()
+
+    local fmw
+    for weaponIdx = 1, 3 do
+    	local fmw = truelch_divers_fmwApi:GetSkill(p, weaponIdx, false)
+    	weapon = weapons[weaponIdx]
+
+    	--LOG(string.format("weaponIdx: %s, weaponId: %s, weapon: %s, fmw: %s", tostring(weaponIdx), tostring(weaponId), tostring(weapon), tostring(fmw)))
+
+    	if fmw ~= nil and isStratagemWeapon(weaponId) and weapon == weaponId then
+    		local mode = fmw:FM_GetMode(p)
+    		--LOG(" ---> here, mode: "..tostring(mode))
+    		for i, stratagem in pairs(gameData().stratagems) do
+    			--if gameData().stratagems[p][i] == mode then
+				if stratagem[i] == mode then
+    				--LOG(" ------> HERE!!!!")
+    				table.remove(gameData().stratagems[p], i)
+    			end
+			end
+    	end
+	end
+
+    --LOG("=========== AFTER ===========")
+    --debugGameData()
+end
+
 
 local function EVENT_onModsLoaded()
     modApi:addMissionStartHook(HOOK_onMissionStarted)
     modApi:addNextTurnHook(HOOK_onNextTurn)
-    modApi:addMissionUpdateHook(HOOK_onMissionUpdate)
     modApi:addPreEnvironmentHook(HOOK_onPreEnv)
+    modApi:addMissionUpdateHook(HOOK_onMissionUpdate)
+    modapiext:addSkillEndHook(HOOK_onSkillEnd)
 end
 
 modApi.events.onModsLoaded:subscribe(EVENT_onModsLoaded)
