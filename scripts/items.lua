@@ -243,29 +243,45 @@ BoardEvents.onItemRemoved:subscribe(function(loc, removed_item)
 	]]
 	elseif removed_item == "truelch_Item_WeaponPod_Mg43" then
 		if not pawn:IsEnemy() then
-			pawn:AddWeapon("truelch_Mg43MachineGun")
-			Board:AddAlert(loc, "Acquired a MG-43 Machine Gun!"..weaponSuffix)
+			if #pawn:GetPoweredWeapons() < 3 then
+				pawn:AddWeapon("truelch_Mg43MachineGun")
+				Board:AddAlert(loc, "Acquired a MG-43 Machine Gun!"..weaponSuffix)
+			else
+				Board:AddAlert(loc, "Cannot acquire more weapons!")
+			end
 		else
 			Board:AddAlert(loc, "DESTROYED")
 		end
 	elseif removed_item == "truelch_Item_WeaponPod_Apw1" then
 		if not pawn:IsEnemy() then
-			pawn:AddWeapon("truelch_Apw1AntiMaterielRifle")
-			Board:AddAlert(loc, "Acquired an APW-1 Anti-Materiel Rifle!"..weaponSuffix)
+			if #pawn:GetPoweredWeapons() < 3 then
+				pawn:AddWeapon("truelch_Apw1AntiMaterielRifle")
+				Board:AddAlert(loc, "Acquired an APW-1 Anti-Materiel Rifle!"..weaponSuffix)
+			else
+				Board:AddAlert(loc, "Cannot acquire more weapons!")
+			end
 		else
 			Board:AddAlert(loc, "DESTROYED")
 		end
 	elseif removed_item == "truelch_Item_WeaponPod_Flam40" then
 		if not pawn:IsEnemy() then
-			pawn:AddWeapon("truelch_Flam40Flamethrower")
-			Board:AddAlert(loc, "Acquired a FLAM-40 Flamethrower!"..weaponSuffix)
+			if #pawn:GetPoweredWeapons() < 3 then
+				pawn:AddWeapon("truelch_Flam40Flamethrower")
+				Board:AddAlert(loc, "Acquired a FLAM-40 Flamethrower!"..weaponSuffix)
+			else
+				Board:AddAlert(loc, "Cannot acquire more weapons!")
+			end
 		else
 			Board:AddAlert(loc, "DESTROYED")
 		end	
 	elseif removed_item == "truelch_Item_WeaponPod_Rs422" then
 		if not pawn:IsEnemy() then
-			pawn:AddWeapon("truelch_Rs422Railgun")
-			Board:AddAlert(loc, "Acquired a RS-422 Railgun!"..weaponSuffix)
+			if #pawn:GetPoweredWeapons() < 3 then
+				pawn:AddWeapon("truelch_Rs422Railgun")
+				Board:AddAlert(loc, "Acquired a RS-422 Railgun!"..weaponSuffix)
+			else
+				Board:AddAlert(loc, "Cannot acquire more weapons!")
+			end
 		else
 			Board:AddAlert(loc, "DESTROYED")
 		end

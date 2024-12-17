@@ -48,6 +48,7 @@ truelch_EmancipatorMech = Pawn:new{
 	Image = "emancipatorMech",
 	ImageOffset = mechDiversYellow,
 	
+	--SkillList = { "truelch_DualAutocannons", "truelch_StratagemFMW" },
 	SkillList = { "truelch_DualAutocannons", "truelch_StratagemFMW" },
 
 	SoundLocation = "/mech/prime/punch_mech/",
