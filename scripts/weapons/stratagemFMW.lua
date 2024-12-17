@@ -326,15 +326,11 @@ function truelch_Mg43Mode:targeting(point)
 	return points
 end
 
-
-
 function truelch_Mg43Mode:fire(p1, p2, se)
     local damage = SpaceDamage(p2, 0)
-    --damage.sAnimation = "truelch_anim_pod_land" --just to test the anim!
-    --damage.sItem = self.Item --just for test, need to comment it again
     --damage.sImageMark = "combat/blue_stratagem_grenade.png"
-    --damage.sPawn = "truelch_Amg43MachineGunSentry"
-    se:AddArtillery(damage, self.UpShot)
+    --damage.sItem = self.Item --test
+    se:AddArtillery(damage, self.UpShot) --enable this
 
     --Free action
     se:AddScript([[
@@ -360,9 +356,6 @@ truelch_Apw1Mode = truelch_Mg43Mode:new{
 		"\nCall-in a pod containing a APW-1 Anti-Materiel Rifle."..
 		"It shoots projectiles with a minimum range of 2 that deals heavy damage and pull.",
 	aFM_icon = "img/modes/icon_apw1.png",
-
-	--aFM_limited = 1, --no need to re-define this
-
 	Item = "truelch_Item_WeaponPod_Apw1",
 }
 
@@ -374,9 +367,6 @@ truelch_Flam40Mode = truelch_Mg43Mode:new{
 		"\nCall-in a pod containing a FLAM-40 Flamethrower."..
 		"Ignite the target tile and pull inward an adjacent tile.",
 	aFM_icon = "img/modes/icon_flam40.png",
-
-	--aFM_limited = 1, --no need to re-define this
-
 	Item = "truelch_Item_WeaponPod_Flam40",
 }
 
@@ -428,7 +418,7 @@ truelch_MortarSentryMode = truelch_MgSentryMode:new{
 	aFM_name = "Call-in a Mortar Sentry",
 	aFM_desc = "Drop an AA/M-12 Mortar Sentry."..
 		"\n(...)",
-	aFM_icon = "img/modes/icon_apw1.png",
+	aFM_icon = "img/modes/icon_mortar_sentry.png",
 	Pawn = "truelch_Am12MortarSentry_Weapon", --"truelch_Am12MortarSentry_Weapon"
 }
 

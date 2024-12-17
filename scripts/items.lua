@@ -143,17 +143,17 @@ end
 
 --Maybe I'll move it to a separate file, because I *might* also do item drops for the Patriot and Emancipator when they're out of ammo
 truelch_Item_ResupplyPod = {
-	Image = "combat/blue_stratagem_grenade.png",
+	Image = "combat/item_ammo.png", --"combat/blue_stratagem_grenade.png"
 	Damage = SpaceDamage(0),
 	Tooltip = "Item_Truelch_ResupplyPod_Text",
-	Icon = "combat/icons/icon_mine_glow.png",
+	Icon = "combat/icons/icon_mine_glow.png", --"combat/icons/icon_mine_glow.png"
 	UsedImage = ""
 }
 TILE_TOOLTIPS.Item_Truelch_ResupplyPod_Text = {"Supply Pod", "Pick it up to reload your weapons."}
 
 --Maybe I'll move it to a separate file, because I *might* also do item drops for the Patriot and Emancipator when they're out of ammo
 truelch_Item_WeaponPod_Mg43 = {
-	Image = "combat/blue_stratagem_grenade.png",
+	Image = "combat/item_mg43.png",
 	Damage = SpaceDamage(0),
 	Tooltip = "Item_Truelch_WeaponPod_Mg43_Text",
 	Icon = "combat/icons/icon_mine_glow.png",
@@ -162,7 +162,7 @@ truelch_Item_WeaponPod_Mg43 = {
 TILE_TOOLTIPS.Item_Truelch_WeaponPod_Mg43_Text = {"MG-43 Pod", "Pick it up to get a MG-43 Machine Gun."}
 
 truelch_Item_WeaponPod_Apw1 = {
-	Image = "combat/blue_stratagem_grenade.png",
+	Image = "combat/item_apw1.png",
 	Damage = SpaceDamage(0),
 	Tooltip = "Item_Truelch_WeaponPod_Apw1_Text",
 	Icon = "combat/icons/icon_mine_glow.png",
@@ -171,7 +171,7 @@ truelch_Item_WeaponPod_Apw1 = {
 TILE_TOOLTIPS.Item_Truelch_WeaponPod_Apw1_Text = {"APW-1 Pod", "Pick it up to get a APW-1 Anti-Materiel Rifle."}
 
 truelch_Item_WeaponPod_Flam40 = {
-	Image = "combat/blue_stratagem_grenade.png",
+	Image = "combat/item_flam40.png",
 	Damage = SpaceDamage(0),
 	Tooltip = "Item_Truelch_WeaponPod_Flam40_Text",
 	Icon = "combat/icons/icon_mine_glow.png",
@@ -181,7 +181,7 @@ TILE_TOOLTIPS.Item_Truelch_WeaponPod_Flam40_Text = {"FLAM-40 Pod", "Pick it up t
 
 --RS-422 Railgun
 truelch_Item_WeaponPod_Rs422 = {
-	Image = "combat/blue_stratagem_grenade.png",
+	Image = "combat/item_rs422.png",
 	Damage = SpaceDamage(0),
 	Tooltip = "Item_Truelch_WeaponPod_Rs422_Text",
 	Icon = "combat/icons/icon_mine_glow.png",

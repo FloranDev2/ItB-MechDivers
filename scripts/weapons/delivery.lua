@@ -196,12 +196,12 @@ function truelch_DeliveryMode2:fire(p1, p2, se, up1, up2)
 
 	if not Board:IsBlocked(middlePoint, PATH_PROJECTILE) then
 		local damage = SpaceDamage(middlePoint)
-		damage.sImageMark = "combat/icons/icon_resupply.png"
+		damage.sImageMark = "combat/icons/icon_ammo_glow.png"
 		damage.sItem = "truelch_Item_ResupplyPod"
 		se:AddDamage(damage)
 	elseif pawn ~= nil then
 		local damage = SpaceDamage(middlePoint)
-		damage.sImageMark = "combat/icons/icon_resupply.png"
+		damage.sImageMark = "combat/icons/icon_ammo_glow.png"
 		se:AddDamage(damage)
 
 		--Lazy reload
