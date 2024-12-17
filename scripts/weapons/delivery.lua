@@ -245,11 +245,11 @@ truelch_Delivery = aFM_WeaponTemplate:new{
 	--Tip image
 	TipIndex = 0,
 	TipImage = {
-		Unit       = Point(1, 0),
-		Enemy      = Point(2, 1),
-		Friendly   = Point(2, 3),
-		Building   = Point(3, 1),
-		Target     = Point(1, 2),
+		Unit      = Point(1, 0),
+		Enemy     = Point(2, 1),
+		Friendly  = Point(2, 3),
+		Building  = Point(3, 1),
+		Target    = Point(1, 2),
 		Second_Origin = Point(1, 2),
 		Second_Target = Point(3, 2),
 		CustomPawn = "truelch_EagleMech",

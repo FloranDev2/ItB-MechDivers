@@ -123,7 +123,7 @@ truelch_Mg43MachineGun = Skill:new{
         "\n\nThis weapon will be removed at the end of the mission.",
 
 	--Art
-	Icon = "weapons/brute_tankmech.png",
+	Icon = "weapons/truelch_strat_mg43.png",
 	Sound = "/general/combat/explode_small",
 	LaunchSound = "/weapons/modified_cannons",
 	ImpactSound = "/impact/generic/explosion",
@@ -143,13 +143,13 @@ truelch_Mg43MachineGun = Skill:new{
     TipStage = 1,
     TipImage = {
         Unit   = Point(2, 4),
-        Target = Point(2, 2),
+        Target = Point(2, 3),
 
         Enemy  = Point(2, 3),
         Enemy2 = Point(2, 2),
-        Enemy3 = Point(2, 0),
+        Enemy3 = Point(2, 1),
 
-        Building = Point(0, 0),
+        Building = Point(0, 1),
 
         CustomEnemy = "Scarab1",
     }
@@ -157,73 +157,100 @@ truelch_Mg43MachineGun = Skill:new{
 
 
 function truelch_Mg43MachineGun:GetTargetArea(point)
+    --LOG("truelch_Mg43MachineGun:GetTargetArea(point)")
     return Board:GetSimpleReachable(point, INT_MAX, false) --I guess
 end
 
 
 function truelch_Mg43MachineGun:TipImmobile(p1, p2)
-    --From confuse shot
-    --[[
     local ret = SkillEffect()
-    ret.piOrigin = Point(2,3)
-    local damage = SpaceDamage(0)
-    damage.bHide = true
-    damage.sScript = "Board:GetPawn(Point(2,1)):FireWeapon(Point(2,2),1)"
-    ret:AddDamage(damage)
-    damage = SpaceDamage(0)
-    damage.bHide = true
-    damage.fDelay = 1.5
-    ret:AddDamage(damage)
-    local damage = SpaceDamage(p2,0,DIR_FLIP)
-    damage.bHide = true
-    damage.sAnimation = "ExploRepulse3"--"airpush_"..GetDirection(p2 - p1)
-    ret:AddProjectile(damage,"effects/shot_confuse")
-    return ret
-    ]]
-
-    local ret = SkillEffect()
+    local direction = GetDirection(p2 - p1)
 
     --Prepare enemy attack
     local damage = SpaceDamage(0)
     damage.bHide = true
-    damage.sScript = "Board:GetPawn(Point(2,0)):FireWeapon(Point(0,0),1)"
+    damage.sScript = "Board:GetPawn(Point(2,1)):FireWeapon(Point(0,1),1)"
     ret:AddDamage(damage)
 
     --(No move) -> nothing todo
-    Board:AddAlert("No move => 3 shots")
+    Board:AddAlert(p1, "No move -> 3 shots")
 
-    --1st shot
-    
+    ret:AddDelay(0.5)
+
+    --1st shot    
+    damage = SpaceDamage(Point(2, 3), self.Damage, direction)
+    ret:AddProjectile(p1, damage, self.Projectile, FULL_DELAY)
+    --Board:AddAlert(p1, "1st shot (instantly)") --isn't displayed
+
+    ret:AddDelay(1)
 
     --2nd shot
+    damage = SpaceDamage(Point(2, 2), self.Damage, direction)
+    ret:AddProjectile(p1, damage, self.Projectile, FULL_DELAY)
+    --Board:AddAlert(p1, "2nd shot (before enemies turn)") --isn't displayed
+
+    ret:AddDelay(1)
 
     --3rd shot
+    damage = SpaceDamage(Point(2, 1), self.Damage, direction)
+    ret:AddProjectile(p1, damage, self.Projectile, NO_DELAY)
+    --Board:AddAlert(p1, "3rd shot (after enemies turn)") --isn't displayed
 
     return ret
 end
 
 function truelch_Mg43MachineGun:TipHalfMove(p1, p2)
     local ret = SkillEffect()
+    local direction = GetDirection(p2 - p1)
 
     --Prepare enemy attack
+    local damage = SpaceDamage(0)
+    damage.bHide = true
+    damage.sScript = "Board:GetPawn(Point(2,1)):FireWeapon(Point(0,1),1)"
+    ret:AddDamage(damage)
 
     --Half move
+    local mech = Board:GetPawn(p1)
+    mech:SetSpace(Point(3, 4))
+    ret:AddMove(Board:GetPath(Point(3, 4), p1, PATH_GROUND), FULL_DELAY)
+    Board:AddAlert(p1, "Half move -> 2 shots")
 
-    --1st shot
+    ret:AddDelay(0.5)
+
+    --1st shot    
+    damage = SpaceDamage(Point(2, 3), self.Damage, direction)
+    ret:AddProjectile(p1, damage, self.Projectile, FULL_DELAY)
+
+    ret:AddDelay(1)
 
     --2nd shot
+    damage = SpaceDamage(Point(2, 2), self.Damage, direction)
+    ret:AddProjectile(p1, damage, self.Projectile, FULL_DELAY)
+
+    --Enemy attack
 
     return ret
 end
 
 function truelch_Mg43MachineGun:TipFullMove(p1, p2)
     local ret = SkillEffect()
+    local direction = GetDirection(p2 - p1)
 
     --Prepare enemy attack
+    local damage = SpaceDamage(0)
+    damage.bHide = true
+    damage.sScript = "Board:GetPawn(Point(2,1)):FireWeapon(Point(0,1),1)"
+    ret:AddDamage(damage)
 
     --Full move
+    local mech = Board:GetPawn(p1)
+    mech:SetSpace(Point(1, 2))
+    ret:AddMove(Board:GetPath(Point(1, 2), p1, PATH_GROUND), FULL_DELAY)
+    Board:AddAlert(p1, "More than half move -> 1 shot")
 
-    --1 shot
+    --1st shot    
+    damage = SpaceDamage(Point(2, 3), self.Damage, direction)
+    ret:AddProjectile(p1, damage, self.Projectile, FULL_DELAY)
 
     --Enemy attack
 
@@ -231,6 +258,8 @@ function truelch_Mg43MachineGun:TipFullMove(p1, p2)
 end
 
 function truelch_Mg43MachineGun:GetSkillEffect_TipImage(p1, p2)
+    --LOG("truelch_Mg43MachineGun:GetSkillEffect_TipImage -> self.TipStage: "..tostring(self.TipStage))
+
     if self.TipStage == 1 then
         self.TipStage = 2
         return self:TipImmobile(p1, p2)
@@ -239,7 +268,7 @@ function truelch_Mg43MachineGun:GetSkillEffect_TipImage(p1, p2)
         return self:TipHalfMove(p1, p2)
     else
         self.TipStage = 1
-        return self:TipHalfMove(p1, p2)
+        return self:TipFullMove(p1, p2)
     end
 end
 
@@ -259,13 +288,15 @@ function truelch_Mg43MachineGun:GetSkillEffect_Normal(p1, p2)
     end
     ret:AddProjectile(p1, damage, self.Projectile, NO_DELAY)
 
-    if not isThirdShot then
+    if not isThirdShot and isMission() then
         --Save direction:
         ret:AddScript(string.format("truelch_setShootStatus(%s, %s)", Pawn:GetId(), tostring(direction)))
 
+        --[[
         if missionData().mg43ShootStatus[Pawn:GetId()] ~= nil then
-            LOG("status -> %s"..tostring(missionData().mg43ShootStatus[Pawn:GetId()]))
+            LOG("status -> "..tostring(missionData().mg43ShootStatus[Pawn:GetId()]))
         end
+        ]]
 
         --Additional queued shot (OR add to mission data to shoot AFTER enemy turn)
         if missionData().mg43ShootStatus[Pawn:GetId()] == nil then
@@ -290,6 +321,7 @@ function truelch_Mg43MachineGun:GetSkillEffect_Normal(p1, p2)
 end
 
 function truelch_Mg43MachineGun:GetSkillEffect(p1, p2)
+    --LOG("truelch_Mg43MachineGun:GetSkillEffect(p1, p2)")
     if not Board:IsTipImage() then
         return self:GetSkillEffect_Normal(p1, p2)
     else
@@ -297,14 +329,6 @@ function truelch_Mg43MachineGun:GetSkillEffect(p1, p2)
     end
 end
 
-
-
---[[
-    Icon = "weapons/brute_sniper.png",
-    ProjectileArt = "effects/shot_sniper",
-    LaunchSound = "/weapons/raining_volley",
-    ImpactSound = "/impact/generic/explosion",
-]]
 
 --A high-caliber sniper rifle effective over long distances against light vehicle armor. This rifle must be aimed downscope.
 --Sniper: minimum range, PULL, (or confuse if at a certain range), or TC (p2 == p3 => confuse, otherwise pull?)
@@ -345,7 +369,7 @@ function truelch_Apw1AntiMaterielRifle:GetTargetArea(point)
                 ret:push_back(curr)
             end
             
-            if Board:IsValid(p2) or Board:IsBlocked(p2, PATH_PROJECTILE) then
+            if not Board:IsValid(curr) or Board:IsBlocked(curr, PATH_PROJECTILE) then
                 break
             end
         end
@@ -356,11 +380,13 @@ end
 function truelch_Apw1AntiMaterielRifle:GetSkillEffect(p1, p2)
     local ret = SkillEffect()
     local pullDir = GetDirection(p1 - p2)
+    --LOG("pullDir: "..tostring(pullDir))
     local target = GetProjectileEnd(p1, p2)
     local damage = SpaceDamage(target, self.Damage, pullDir)
     ret:AddProjectile(damage, self.ProjectileArt)
     return ret
 end
+
 
 --Flam-40: ignite a tile and pull inward lateral tiles?
 truelch_Flam40Flamethrower = Skill:new{
@@ -464,19 +490,35 @@ truelch_Rs422Railgun = Skill:new{
     --Tip image
     TipIndex = 0,
     TipImage = {
-        Unit   = Point(2, 4),
-        Enemy  = Point(2, 2),
-        Target = Point(2, 2),
-        --Second_Click = Point(3, 2),
+        Unit   = Point(2, 3),
+        Enemy  = Point(2, 1),
+        Enemy2 = Point(3, 3),
+        Target = Point(3, 3),
+        Second_Origin = Point(2, 3),
+        Second_Target = Point(2, 1),
     }
 }
 
-function truelch_Rs422Railgun:GetTargetArea(point)
+function truelch_Rs422Railgun:GetTargetArea_TipImage(point)
+    --LOG("truelch_Rs422Railgun:GetTargetArea_TipImage(point)")
     local ret = PointList()
+    for dir = DIR_START, DIR_END do
+        for i = 1, 7 do
+            local curr = Point(point + DIR_VECTORS[dir] * i)
+            if Board:IsValid(curr) then
+                ret:push_back(curr)
+            end
+        
+            if not Board:IsValid(curr) or Board:IsBlocked(curr, PATH_PROJECTILE) then
+                break
+            end
+        end
+    end
+    return ret
+end
 
-    --LOG("isMission(): "..tostring(isMission()))
-    --LOG("isCharged table: "..tostring(missionData().isCharged))
-    --LOG("isCharged value: "..tostring(missionData().isCharged[Board:GetPawn(point):GetId()]))
+function truelch_Rs422Railgun:GetTargetArea_Normal(point)
+    local ret = PointList()
 
     if isMission() and missionData().isCharged and  missionData().isCharged[Board:GetPawn(point):GetId()] then
         --Charged: projectile
@@ -505,7 +547,43 @@ function truelch_Rs422Railgun:GetTargetArea(point)
     return ret
 end
 
-function truelch_Rs422Railgun:GetSkillEffect(p1, p2)
+
+function truelch_Rs422Railgun:GetTargetArea(point)
+    if not Board:IsTipImage() then
+        return self:GetTargetArea_Normal(point)
+    else
+        return self:GetTargetArea_TipImage(point)
+    end
+end
+
+function truelch_Rs422Railgun:GetSkillEffect_TipImage(p1, p2)
+    --LOG("truelch_Rs422Railgun:GetSkillEffect_TipImage")
+
+    local ret = SkillEffect()
+    local dir = GetDirection(p2 - p1)
+
+    if self.TipIndex == 0 then
+        Board:AddAlert(p1, "Charging...")
+        local damage = SpaceDamage(p2, 0)
+        damage.iPush = dir
+        damage.sAnimation = "airpush_"..dir
+        ret:AddDamage(damage)
+
+        self.TipIndex = 1
+    else
+        Board:AddAlert(p1, "Charged!")
+        local target = GetProjectileEnd(p1, p2)
+        local damage = SpaceDamage(target, self.Damage, dir)
+        ret:AddProjectile(damage, self.ProjectileArt)
+
+        self.TipIndex = 0
+    end
+
+    return ret
+end
+
+function truelch_Rs422Railgun:GetSkillEffect_Normal(p1, p2)
+    --LOG("truelch_Rs422Railgun:GetSkillEffect_Normal")
     local ret = SkillEffect()
     local dir = GetDirection(p2 - p1)
 
@@ -526,6 +604,14 @@ function truelch_Rs422Railgun:GetSkillEffect(p1, p2)
     end
 
     return ret
+end
+
+function truelch_Rs422Railgun:GetSkillEffect(p1, p2)
+    if not Board:IsTipImage() then
+        return self:GetSkillEffect_Normal(p1, p2)
+    else
+        return self:GetSkillEffect_TipImage(p1, p2)
+    end
 end
 
 

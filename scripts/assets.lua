@@ -101,6 +101,8 @@ modApi:appendAsset("img/weapons/truelch_dual_autocannon.png", resourcePath.."img
 modApi:appendAsset("img/weapons/truelch_patriot_weapons.png", resourcePath.."img/weapons/truelch_patriot_weapons.png")
 modApi:appendAsset("img/weapons/truelch_stratagem.png", resourcePath.."img/weapons/truelch_stratagem.png")
 
+modApi:appendAsset("img/weapons/truelch_strat_mg43.png", resourcePath.."img/weapons/truelch_strat_mg43.png")
+
 --Tile icons
 modApi:appendAsset("img/combat/tile_icon/tile_truelch_drop.png", mod.resourcePath.."img/combat/tile_icon/tile_truelch_drop.png")
 	Location["combat/tile_icon/tile_truelch_drop.png"] = Point(-27, 2)

@@ -49,7 +49,7 @@ truelch_EmancipatorMech = Pawn:new{
 	ImageOffset = mechDiversYellow,
 	
 	--SkillList = { "truelch_DualAutocannons", "truelch_StratagemFMW" },
-	SkillList = { "truelch_DualAutocannons", "truelch_StratagemFMW" },
+	SkillList = { "truelch_Apw1AntiMaterielRifle", "truelch_Flam40Flamethrower" },
 
 	SoundLocation = "/mech/prime/punch_mech/",
 	ImpactMaterial = IMPACT_METAL,
