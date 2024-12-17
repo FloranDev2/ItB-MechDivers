@@ -7,7 +7,7 @@ local mechDiversBlack = modApi:getPaletteImageOffset("truelch_MechDiversBlack")
 --trait --->
 local trait = require(scriptPath.."/libs/trait") --unnecessary?
 trait:add{
-    pawnType = "EagleMech",
+    pawnType = "truelch_EagleMech",
     icon = "img/combat/icons/icon_protecc.png",
     icon_offset = Point(0, 0),
     desc_title = "Patriotism",
@@ -30,11 +30,11 @@ for _, file in ipairs(files) do
 end
 
 local a = ANIMS
-a.eagleMech =         a.MechUnit:new{Image = "units/player/eagleMech.png",          PosX = -28, PosY =  -5 }
-a.eagleMecha =        a.MechUnit:new{Image = "units/player/eagleMech_a.png",        PosX = -28, PosY = -10, NumFrames = 4 }
-a.eagleMechw =        a.MechUnit:new{Image = "units/player/eagleMech_w.png",        PosX = -28, PosY =   4 }
-a.eagleMech_broken =  a.MechUnit:new{Image = "units/player/eagleMech_broken.png",   PosX = -28, PosY =  -5 }
-a.eagleMechw_broken = a.MechUnit:new{Image = "units/player/eagleMech_w_broken.png", PosX = -28, PosY =  -5 }
+a.eagleMech =         a.MechUnit:new{Image = "units/player/eagleMech.png",          PosX = -20, PosY =  -5 }
+a.eagleMecha =        a.MechUnit:new{Image = "units/player/eagleMech_a.png",        PosX = -20, PosY = -10, NumFrames = 4 }
+a.eagleMechw =        a.MechUnit:new{Image = "units/player/eagleMech_w.png",        PosX = -20, PosY =   4 }
+a.eagleMech_broken =  a.MechUnit:new{Image = "units/player/eagleMech_broken.png",   PosX = -20, PosY =  -5 }
+a.eagleMechw_broken = a.MechUnit:new{Image = "units/player/eagleMech_w_broken.png", PosX = -20, PosY =  -5 }
 a.eagleMech_ns =      a.MechIcon:new{Image = "units/player/eagleMech_ns.png" }
 
 truelch_EagleMech = Pawn:new{

@@ -7,7 +7,7 @@ local mechDiversBlack = modApi:getPaletteImageOffset("truelch_MechDiversBlack")
 --trait --->
 local trait = require(scriptPath.."/libs/trait") --unnecessary?
 trait:add{
-    pawnType = "PatriotMech",
+    pawnType = "truelch_PatriotMech",
     icon = "img/combat/icons/icon_protecc.png",
     icon_offset = Point(0, 0),
     desc_title = "Patriotism",

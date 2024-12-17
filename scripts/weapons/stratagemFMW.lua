@@ -429,7 +429,7 @@ truelch_MortarSentryMode = truelch_MgSentryMode:new{
 	aFM_desc = "Drop an AA/M-12 Mortar Sentry."..
 		"\n(...)",
 	aFM_icon = "img/modes/icon_apw1.png",
-	Pawn = "truelch_Amg43MachineGunSentry", --"truelch_Am12MortarSentry_Weapon"
+	Pawn = "truelch_Am12MortarSentry_Weapon", --"truelch_Am12MortarSentry_Weapon"
 }
 
 -------------------- MODE 7: A/ARC-3 Tesla Tower --------------------
@@ -438,7 +438,7 @@ truelch_TeslaTowerMode = truelch_MgSentryMode:new{
 	aFM_desc = "Drop an A/ARC-3 Tesla Tower."..
 		"\n(...)",
 	aFM_icon = "img/modes/icon_tesla_tower.png",
-	Pawn = "truelch_Amg43MachineGunSentry", --"truelch_TeslaTower"
+	Pawn = "truelch_TeslaTower", --"truelch_TeslaTower"
 }
 
 -------------------- MODE 8: Guard Dog --------------------
@@ -548,44 +548,6 @@ function truelch_NapalmAirstrikeMode:second_fire(p1, p2, p3)
 		end
 
 	else
-		--LOG("Not shuttle ----------> queued effect")
-    	--Queued effect
-
-    	--V1: real queued effect
-
-    	--[[
-    	--None of queued air strike work...
-		if dir == DIR_UP or dir == DIR_DOWN then
-			--TODO: animation
-			--Wait, AddQueuedAirStrike while regular AddAirstrike (with lowercase "s")... F*CK!!!
-			--ret:AddQueuedReverseAirstrike(p2, self.AirstrikeAnim) --Does that even exist? --> Apparently not lol.
-			--ret:AddQueuedAirStrike(p2, self.AirstrikeAnim) --Oh, it was with with upper case "s", so maybe the above will actually work
-		else
-			--TODO: animation
-			--ret:AddQueuedAirStrike(p2, self.AirstrikeAnim)
-		end
-
-    	--AddQueuedAirStrike
-		--Center
-		local damage = SpaceDamage(p2, 1)
-		damage.iFire = EFFECT_CREATE
-		ret:AddQueuedDamage(damage)
-		--LOG("p2: "..p2:GetString())
-
-		--Forward, left, right
-		local dir = GetDirection(p3 - p2)
-		local dirOffsets = {0, -1, 1} 
-		for _, offset in ipairs(dirOffsets) do
-			local curr = p2 + DIR_VECTORS[(dir + offset)% 4]
-			--LOG("curr: "..curr:GetString())
-			local damage = SpaceDamage(curr, 1)
-			damage.iFire = EFFECT_CREATE
-			ret:AddQueuedDamage(damage)
-		end
-		]]
-
-		--V2: using mission data (yay...)
-		--point, dir, id (0 = Napalm Airstrike)
 		ret:AddScript(string.format("truelch_MechDivers_AddAirstrike(%s, %s, 0)", p2:GetString(), tostring(dir)))
     end
 
@@ -803,25 +765,26 @@ truelch_StratagemFMW = aFM_WeaponTemplate:new{
 	aFM_ModeSwitchDesc = "Click to change mode.",
 
 	--Upgrades
-	Upgrades = 2,
-	UpgradeCost = { 3, 2 },
+	Upgrades = 1,
+	UpgradeCost = { 2 --[[, 3]] },
 }
 
-Weapon_Texts.truelch_StratagemFMW_Upgrade1 = "Veteran Stratagems"
-Weapon_Texts.truelch_StratagemFMW_Upgrade2 = "+1 Stratagem"
+Weapon_Texts.truelch_StratagemFMW_Upgrade1 = "+1 Stratagem"
+--Weapon_Texts.truelch_StratagemFMW_Upgrade2 = "Veteran Stratagems" --Will be done in the future
 
 truelch_StratagemFMW_A = truelch_StratagemFMW:new{
-    UpgradeDescription = "Upgrade the stratagems.",
+	UpgradeDescription = "+1 stratagem acquired at the start of each mission",    
 }
 
+--[[
 truelch_StratagemFMW_B = truelch_StratagemFMW:new{
-    --UpgradeDescription = "Increase by 1 the max amount of stratagem and the stratagems acquired at the start of a mission.",
-    UpgradeDescription = "+1 stratagem acquired at the start of each mission",
+    UpgradeDescription = "Upgrade the stratagems.",
 }
 
 truelch_StratagemFMW_AB = truelch_StratagemFMW:new{
     --Nothing? Can I remove it then?
 }
+]]
 
 function truelch_StratagemFMW:GetTargetArea(point)
 	local pl = PointList()
@@ -941,7 +904,7 @@ local function computeStratagems()
 							end
 
 							local stratIncr = 1 --amount of Stratagem modes added at the start of the mission (+2 with an upgrade)
-							if weapon == "truelch_StratagemFMW_B" or weapon == "truelch_StratagemFMW_AB" then
+							if weapon == "truelch_StratagemFMW_A" or weapon == "truelch_StratagemFMW_AB" then
 								stratIncr = 2
 							end
 
@@ -979,7 +942,7 @@ local function computeStratagems()
 	end
 end
 
-local testMode = false
+local testMode = true
 
 local HOOK_onNextTurn = function(mission)
 	if Game:GetTeamTurn() ~= TEAM_PLAYER then

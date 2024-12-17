@@ -7,7 +7,7 @@ local mechDiversYellow = modApi:getPaletteImageOffset("truelch_MechDiversYellow"
 --trait --->
 local trait = require(scriptPath.."/libs/trait") --unnecessary?
 trait:add{
-    pawnType = "EmancipatorMech",
+    pawnType = "truelch_EmancipatorMech",
     icon = "img/combat/icons/icon_protecc.png",
     icon_offset = Point(0, 0),
     desc_title = "Patriotism",
@@ -35,7 +35,7 @@ a.emancipatorMecha =        a.MechUnit:new{Image = "units/player/emancipatorMech
 a.emancipatorw =        	a.MechUnit:new{Image = "units/player/emancipatorMech_w.png",        PosX = -20, PosY =   4 }
 a.emancipatorMech_broken =  a.MechUnit:new{Image = "units/player/emancipatorMech_broken.png",   PosX = -20, PosY =  -5 }
 a.emancipatorMechw_broken = a.MechUnit:new{Image = "units/player/emancipatorMech_w_broken.png", PosX = -20, PosY =  -5 }
-a.emancipatorMech_ns =      a.MechIcon:new{Image = "units/player/emancipatorMech_ns.png" }
+a.emancipatorMech_ns =      a.MechIcon:new{Image = "units/player/emancipatorMech_ns.png", }
 
 truelch_EmancipatorMech = Pawn:new{
 	Name = "Emancipator Mech",
