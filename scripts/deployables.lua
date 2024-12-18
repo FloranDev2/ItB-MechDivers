@@ -160,8 +160,8 @@ truelch_Am12MortarSentry_Weapon = Skill:new{
 	Class = "Unique",
 
 	--Art
-	Icon = "weapons/deploy_tank.png",
-	UpShot = "effects/shotup_tribomb_missile.png", --TMP
+	Icon = "weapons/ranged_artillery.png",
+	UpShot = "effects/truelch_shotup_mortar.png", --TMP
 
 	--Gameplay
 	CenterDamage = 1,
@@ -209,10 +209,9 @@ function truelch_Am12MortarSentry_Weapon:GetTargetArea(point)
     for dir = DIR_START, DIR_END do
     	for i = 2, 7 do
         	local curr = point + DIR_VECTORS[dir]*i
-
-        	--If I do a weapon managed by the AI
+        	local pawn = Board:GetPawn(curr)
 	        if pawn ~= nil and pawn:IsEnemy() then
-	        	ret:push_back(target)
+	        	ret:push_back(curr)
 	    	end
 	    end
     end
@@ -231,7 +230,8 @@ function truelch_Am12MortarSentry_Weapon:GetSkillEffect(p1, p2)
 
     for dir = DIR_START, DIR_END do
     	local damage = SpaceDamage(p2 + DIR_VECTORS[dir], self.OuterDamage)
-    	damage.sAnimation = "airpush_"..dir
+    	--damage.sAnimation = "airpush_"..dir
+    	damage.sAnimation = "explopush1_"..dir
     	damage.iPush = dir
     	ret:AddDamage(damage)
     end
@@ -250,7 +250,7 @@ truelch_TeslaTower = Pawn:new{
 	Name = "A/ARC-3 Tesla Tower",
 	Health = 1,
 	MoveSpeed = 0,
-	Image = "terraformer3",
+	Image = "SmallTank1",
 	SkillList = { "truelch_TeslaTower_Weapon" },
 	SoundLocation = "/mech/flying/jet_mech/",
 	ImageOffset = mechDiversBlack,
@@ -265,7 +265,7 @@ AddPawn("truelch_TeslaTower")
 truelch_TeslaTower_Weapon = Skill:new{
 	--Infos
 	Name = "Tesla Discharge",
-	Description = "(TODO)",
+	Description = "Chain damage through adjacent targets.",
 	Class = "Unique",
 
 	--Art
@@ -285,6 +285,30 @@ truelch_TeslaTower_Weapon = Skill:new{
 		Enemy3 = Point(3, 1),
 	}
 }
+
+--If I do a weapon managed by the AI
+function truelch_TeslaTower_Weapon:GetTargetScore(p1, p2)
+	local effect = SkillEffect()
+
+	local score = 0
+	if Board:GetPawnTeam(p2) == TEAM_ENEMY then
+		score = score + 100
+	else
+		score = score - 10
+	end
+
+	return score
+end
+
+function truelch_TeslaTower_Weapon:GetTargetArea(point)
+    local ret = PointList()
+
+    for dir = DIR_START, DIR_END do
+    	ret:push_back(point + DIR_VECTORS[dir])
+    end
+
+    return ret
+end
 
 function truelch_TeslaTower_Weapon:GetSkillEffect(p1, p2)
 	local ret = SkillEffect()
@@ -337,3 +361,19 @@ end
 -------------------------------------------------------------------------------------------
 ---------------------------------------- GUARD DOG ----------------------------------------
 -------------------------------------------------------------------------------------------
+
+truelch_GuardDog = Pawn:new{
+	Name = "AX/AR-23 'Guard Dog'",
+	Health = 1,
+	MoveSpeed = 3,
+	Image = "SmallTank1", --TODO
+	SkillList = { "truelch_TeslaTower_Weapon" },
+	SoundLocation = "/mech/flying/jet_mech/",
+	ImageOffset = mechDiversBlack,
+	DefaultTeam = TEAM_PLAYER,
+	ImpactMaterial = IMPACT_METAL,
+	Corpse = false,
+	Neutral = true,
+	Flying = true,
+}
+AddPawn("truelch_GuardDog")

@@ -11,10 +11,12 @@ local resourcePath = mod.resourcePath
 truelch_DeliveryMode1 = {
 	aFM_name = "Strafing run",
 	aFM_desc = "Fly forward, shooting all units and buildings that were under the fly path or adjacent."..
-		"\nDamage is reduced by the amount of units and buildings hit (minimum: 1).",
+		"\nDamage is reduced by the amount of units and buildings hit."..
+		"\nBase damage: 4."..
+		"\nMinimum damage: 1.",
 	aFM_icon = "img/modes/icon_strafe.png",
 
-	BaseDamage = 4,
+	Damage = 4,
 	LeapMaxRange = 3,
 	FrontDamage = false, --not sure about that
 	BackDamage = false, --I'm 95% sure I should keep it disabled
@@ -71,8 +73,8 @@ function truelch_DeliveryMode1:fire(p1, p2, se, up1, up2)
 	se:AddLeap(move, 0.25)
 	
 	--AoE damage. Will never be 4 anyway, for just one unit, it's 3 damage
-	local dmgVsUnits = self.BaseDamage 
-	local dmgVsBuildings = self.BaseDamage
+	local dmgVsUnits = self.Damage 
+	local dmgVsBuildings = self.Damage
 	if up2 then
 		dmgVsUnits = dmgVsUnits + 1
 		dmgVsBuildings = dmgVsBuildings + 1
@@ -221,7 +223,7 @@ end
 truelch_Delivery = aFM_WeaponTemplate:new{
 	--Infos
 	Name = "Delivery",
-	Description = "Drop various playloads.",
+	Description = "Leap in a direction and either bombard nearby tiles (with damage reduced for each unit or building hit) or drop a reloading pod.",
 	Class = "Science",
 	Rarity = 1,
 	PowerCost = 0,
@@ -244,6 +246,7 @@ truelch_Delivery = aFM_WeaponTemplate:new{
 
 	--Tip image
 	TipIndex = 0,
+	Damage = 4, --just for info
 	TipImage = {
 		Unit      = Point(1, 0),
 		Enemy     = Point(2, 1),

@@ -4,9 +4,11 @@ local resourcePath = mod.resourcePath
 --FMW modes icons
 
 --Debug stuff
+--[[
 for i = 1, 8 do
 	modApi:appendAsset("img/modes/icon_mode"..tostring(i)..".png", resourcePath.."img/modes/icon_mode"..tostring(i)..".png")
 end
+]]
 
 modApi:appendAsset("img/modes/icon_resupply.png", resourcePath.."img/modes/icon_resupply.png")
 modApi:appendAsset("img/modes/icon_strafe.png",   resourcePath.."img/modes/icon_strafe.png")
@@ -64,15 +66,15 @@ ANIMS.truelch_anim_pod_land = Animation:new{
 	NumFrames = 24,
 }
 
-modApi:appendAsset("img/effects/truelch_nuke.png", resourcePath.."img/effects/truelch_nuke.png")
-	Location["effects/truelch_nuke.png"] = Point(-20, -40)
+modApi:appendAsset("img/effects/truelch_500kg.png", resourcePath.."img/effects/truelch_500kg.png")
+	Location["effects/truelch_500kg.png"] = Point(-25, -123)
 
-ANIMS.truelch_nuke = Animation:new{
-	Image = "effects/truelch_nuke.png",
-	PosX = -20,
-	PosY = -40,
-	Time = 0.04,
-	NumFrames = 9,
+ANIMS.truelch_500kg = Animation:new{
+	Image = "effects/truelch_500kg.png",
+	PosX = -25,
+	PosY = -123,
+	Time = 0.15,
+	NumFrames = 15,
 }
 
 --Damage mark
@@ -88,6 +90,7 @@ modApi:appendAsset("img/combat/icons/icon_protecc.png", resourcePath.."img/comba
 
 --Artillery shotups
 modApi:appendAsset("img/effects/truelch_shotup_stratagem_ball.png", resourcePath.."img/effects/truelch_shotup_stratagem_ball.png")
+modApi:appendAsset("img/effects/truelch_shotup_mortar.png", resourcePath.."img/effects/truelch_shotup_mortar.png")
 
 --Projectiles
 

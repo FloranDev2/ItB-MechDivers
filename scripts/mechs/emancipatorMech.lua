@@ -11,7 +11,7 @@ trait:add{
     icon = "img/combat/icons/icon_protecc.png",
     icon_offset = Point(0, 0),
     desc_title = "Patriotism",
-    desc_text = "Any damage caused by a Mech Diver to a Building will be redirected to any Mech Diver in the area of effect."
+    desc_text = "Any damage caused during player's turn to a Building will be redirected to any adjacent Mech Diver."
 }
 -- <--- trait
 
@@ -48,8 +48,8 @@ truelch_EmancipatorMech = Pawn:new{
 	Image = "emancipatorMech",
 	ImageOffset = mechDiversYellow,
 	
-	--SkillList = { "truelch_DualAutocannons", "truelch_StratagemFMW" },
-	SkillList = { "truelch_Apw1AntiMaterielRifle", "truelch_Flam40Flamethrower" },
+	SkillList = { "truelch_DualAutocannons", "truelch_StratagemFMW" },
+	--SkillList = { "truelch_Am12MortarSentry_Weapon", "truelch_StratagemFMW" },
 
 	SoundLocation = "/mech/prime/punch_mech/",
 	ImpactMaterial = IMPACT_METAL,

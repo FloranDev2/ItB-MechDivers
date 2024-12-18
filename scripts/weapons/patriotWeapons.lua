@@ -40,7 +40,6 @@ function truelch_PatriotWeaponsMode1:targeting(point)
 end
 
 function truelch_PatriotWeaponsMode1:fire(p1, p2, se, betterKO)
-	--LOG("truelch_PatriotWeaponsMode1:fire(p1: "..p1:GetString()..", p2: "..p2:GetString()..")")
 	local direction = GetDirection(p2 - p1)
 
 	local target = GetProjectileEnd(p1, p2, PATH_PROJECTILE)
@@ -53,7 +52,7 @@ function truelch_PatriotWeaponsMode1:fire(p1, p2, se, betterKO)
 
 	local spaceDamage = SpaceDamage(target, damage)
 
-	if Board:IsDeadly(spaceDamage, Pawn) then
+	if Board:IsDeadly(spaceDamage, Pawn) and betterKO then
 		se:AddProjectile(spaceDamage, self.ProjectileArt)
 		local target2 = GetProjectileEnd(target, target + DIR_VECTORS[direction], PATH_PROJECTILE)
 		local excessDamage = damage
@@ -111,7 +110,6 @@ truelch_PatriotWeaponsMode2 = truelch_PatriotWeaponsMode1:new{
 }
 
 function truelch_PatriotWeaponsMode2:getProjEnd(point, diagDir)	
-	--LOG("truelch_PatriotWeaponsMode2:getProjEnd(point: "..point:GetString()..", diagDir: "..diagDir:GetString()..")")
 	local curr = point
 	for range = 1, self.MaxRange do
 		local testPoint = diagDir*range + point
@@ -119,21 +117,11 @@ function truelch_PatriotWeaponsMode2:getProjEnd(point, diagDir)
     		curr = testPoint
     	end
 		if not Board:IsValid(testPoint) or Board:IsBlocked(testPoint, PATH_PROJECTILE) then
-			--LOG("break")
 			break
 		end
     end
 
-    --LOG(" ---> return curr: "..curr:GetString())
     return curr
-
-    --[[
-    if curr ~= point then
-    	return curr
-	else
-	    return nil --should not happen. Plus, it's not very safe. (still better to return a point outside of terrain than returning nil)
-	end
-	]]
 end
 
 function truelch_PatriotWeaponsMode2:targeting(point)
@@ -173,7 +161,6 @@ function truelch_PatriotWeaponsMode2:targeting(point)
 end
 
 function truelch_PatriotWeaponsMode2:fire(p1, p2, se, betterKO)
-	--LOG("truelch_PatriotWeaponsMode2:fire(p1: "..p1:GetString()..", p2: "..p2:GetString()..")")
 	--Compute offset
 	local diff = p2 - p1
 
@@ -189,11 +176,14 @@ function truelch_PatriotWeaponsMode2:fire(p1, p2, se, betterKO)
 		--LOG("endProj: "..endProj:GetString())
 	    local spaceDamage = SpaceDamage(endProj, 3)
 	    se:AddArtillery(spaceDamage, self.UpShot)
-	    if Board:IsDeadly(spaceDamage, Pawn) then
+	    if Board:IsDeadly(spaceDamage, Pawn) and betterKO then
 		    for dir = DIR_START, DIR_END do
 		    	local curr = endProj + DIR_VECTORS[dir]
-		    	local aoeDamage = SpaceDamage(curr, 1)
-		    	se:AddDamage(aoeDamage)
+		    	local pawn = Board:GetPawn(curr)
+		    	if pawn ~= nil then
+		    		local aoeDamage = SpaceDamage(curr, 1)
+		    		se:AddDamage(aoeDamage)
+		    	end
 		    end
 		end
 	else
@@ -219,32 +209,29 @@ truelch_PatriotWeapons = aFM_WeaponTemplate:new{
 	PowerCost = 1,
 
 	--KO
-	OnKill = "Enhanced effect",
+	OnKill = "Enhanced effect (if upgraded)",
 
 	--Artillery Arc
 	ArtilleryHeight = 0,
 
-    --TwoClick = true,
 	LaunchSound = "/weapons/bomb_strafe",
 
 	--FMW
-	--aFM_ModeList = { "truelch_PatriotWeaponsMode1", --[["truelch_PatriotWeaponsMode2"]] },
 	aFM_ModeList = { "truelch_PatriotWeaponsMode1", "truelch_PatriotWeaponsMode2" },
 	aFM_ModeSwitchDesc = "Click to change mode.",
 
 	--Upgrades
-	Upgrades = 1, --2
-	UpgradeCost = { 2 }, --{ 2, 1 },
+	Upgrades = 1,
+	UpgradeCost = { 1 },
 	RocketEnabled = true, --just for custom tip
-	--RocketEnabled = false, --just for custom tip
 	BetterOnKill = false,
 
 	--Tip image
-	PatriotTipIndex = 1, --this works, unlike using a variable from outside. Why? I HAVE NO IDEA
-	--Enemy_Damaged = Point(2, 2), --this works, but it displays a dead vek (dead anim playing at the very start)
+	PatriotTipIndex = 1, --this works, unlike using a variable from outside. Why? I HAVE NO IDEA	
 	TipImage = {
 		Unit          = Point(2, 3),
 		Target        = Point(2, 2),
+		--Enemy_Damaged = Point(2, 2), --this works, but it displays a dead vek (dead anim playing at the very start)
 		CustomEnemy   = "Firefly1",
 
 		--Minigun
@@ -262,13 +249,14 @@ truelch_PatriotWeapons = aFM_WeaponTemplate:new{
 	}
 }
 
-Weapon_Texts.truelch_PatriotWeapons_Upgrade1 = "Improved On Kill"
+Weapon_Texts.truelch_PatriotWeapons_Upgrade1 = "KO Effect"
 --Weapon_Texts.truelch_PatriotWeapons_Upgrade2 = "Enable Rockets" --not sure about this
+--Weapon_Texts.truelch_PatriotWeapons_Upgrade2 = "+1 Damage" --MAYBE???? (on damage. ALL)
 
 truelch_PatriotWeapons_A = truelch_PatriotWeapons:new{
-    UpgradeDescription = "OR MAYBE JUST ENABLE THE ON KILL EFFECT?!"..
-    	"\nThe KO effect can be repeated? Or keep the damage of the original target?"..
-    	"\nRocket: area damage cannot damage buildings?",
+    UpgradeDescription = "Enables an effect when the primary target dies."..
+    	"\nGatling: shoots another projectile."..
+    	"\nRocket: damage adjacent units.",
     BetterOnKill = true,
 }
 

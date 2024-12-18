@@ -83,35 +83,37 @@ end
 
 --id: 0: Napalm
 --Or I could just pass the mode name?
-function truelch_MechDivers_AddAirstrike(point, dir, id)	
+function truelch_MechDivers_AddAirstrike(point, dir, id)
+	LOG(string.format("truelch_MechDivers_AddAirstrike(point: %s, dir: %s, id: %s)", point:GetString(), tostring(dir), tostring(id)))
 	table.insert(missionData().airstrikes, { point, dir, id })
 end
 
-function truelch_MechDivers_AddOrbitalStrike(point, dir, id)	
+function truelch_MechDivers_AddOrbitalStrike(point, dir, id)
+	LOG(string.format("truelch_MechDivers_AddOrbitalStrike(point: %s, dir: %s, id: %s)", point:GetString(), tostring(dir), tostring(id)))
 	table.insert(missionData().orbitalStrikes, { point, dir, id })
 end
 
 --Happens before Vek actions
 local function resolveAirstrikes()
-	LOG("resolveAirstrikes()")
+	--LOG("resolveAirstrikes()")
 	--Loop
 	for _, airstrike in pairs(missionData().airstrikes) do
 		local se = SkillEffect()
 
-		LOG("-> airstrike")
+		--LOG("----------> airstrike")
 		local point = airstrike[1]
 		local dir   = airstrike[2]
 		local id    = airstrike[3]
 
-		--LOG(string.format(" --- point: %s, dir: %s, id: %s", point:GetString(), tostring(dir), tostring(id)))
+		LOG(string.format(" --- Airstrike: point: %s, dir: %s, id: %s", point:GetString(), tostring(dir), tostring(id)))
 
 		--Airstrike anim
-		se:AddAirstrike(point, "effects/truelch_eagle.png")
-		--se:AddAirstrike(point, "units/mission/bomber_1.png") --I have multiple anims, wtf?
+		se:AddAirstrike(point, "effects/truelch_eagle.png") --I have multiple anims, wtf?
 
 		if id == 0 then
 			--LOG(" --- Napalm airstrike!")
 			----- NAPALM AIRSTRIKE -----
+			LOG("----- NAPALM AIRSTRIKE -----")
 			--Center
 			local damage = SpaceDamage(point, 0)
 			damage.iFire = EFFECT_CREATE
@@ -124,11 +126,12 @@ local function resolveAirstrikes()
 				local damage = SpaceDamage(curr, 0)
 				damage.iFire = EFFECT_CREATE
 				se:AddDamage(damage)
-				Board:AddEffect(se)
+				--Board:AddEffect(se) --oh that's why I had multiple airstrikes anims
 			end
 			--LOG(" --- End")
 		elseif id == 1 then
 			----- SMOKE AIRSTRIKE -----
+			LOG("----- SMOKE AIRSTRIKE -----")
 			--Center
 			local damage = SpaceDamage(point, 0)
 			damage.iSmoke = EFFECT_CREATE
@@ -141,24 +144,41 @@ local function resolveAirstrikes()
 				local damage = SpaceDamage(curr, 0)
 				damage.iSmoke = EFFECT_CREATE
 				se:AddDamage(damage)
-				Board:AddEffect(se)
+				--Board:AddEffect(se) --see above
 			end
 		elseif id == 2 then
 			----- 500KG BOMB -----
+			LOG("----- 500KG BOMB -----")
+			--Airstrike anim
+
+			--Delay
+			se:AddDelay(1)
+
+			--Bomb fall + explosion anim
+			local bombAnim = SpaceDamage(point, 0)
+			bombAnim.sAnimation = "truelch_500kg"
+			se:AddEffect(bombAnim)
+
+			--Delay
+			se:AddDelay(2)
+
 			--Center
 			local damage = SpaceDamage(point, 4)
 			damage.sAnimation = "ExploArt3" --TODO
-			Board:AddEffect(damage)
+			se:AddDamage(damage)
+			--Board:AddEffect(damage)
 
 			--Adjacent
 			for dir = DIR_START, DIR_END do
 				local curr = point + DIR_VECTORS[dir]
 				local damage = SpaceDamage(curr, 2)
 				damage.sAnimation = "ExploArt1" --TODO
-				Board:AddEffect(damage)
+				se:AddDamage(damage)
 			end
 		end
 	end
+
+	Board:AddEffect(se)
 
 	--Clear airstrikes data
 	missionData().airstrikes = {}
@@ -419,7 +439,7 @@ truelch_MortarSentryMode = truelch_MgSentryMode:new{
 	aFM_desc = "Drop an AA/M-12 Mortar Sentry."..
 		"\n(...)",
 	aFM_icon = "img/modes/icon_mortar_sentry.png",
-	Pawn = "truelch_Am12MortarSentry_Weapon", --"truelch_Am12MortarSentry_Weapon"
+	Pawn = "truelch_Am12MortarSentry", --"truelch_Am12MortarSentry_Weapon"
 }
 
 -------------------- MODE 7: A/ARC-3 Tesla Tower --------------------
@@ -597,11 +617,11 @@ end
 -------------------- MODE 11: 500kg Bomb Airstrike --------------------
 truelch_500kgAirstrikeMode = truelch_Mg43Mode:new{
 	aFM_name = "500kg Bomb",
-	aFM_desc = "Deal massive damage in 4 tiles in an cross shape."..
+	aFM_desc = "Call-in for an airstrike, dropping a 500kg bomb on the targeted tile, dealing 4 damage in the center and 2 damage on adjacent tiles."..
 		"\nYou can first target a Shuttle Mech to do the strike instantly."..
 		"\nOtherwise, the strike is released just before the Vek act", --wait, it actually doesn't change anything then?
-	aFM_icon = "img/modes/icon_apw1.png",
-	aFM_twoClick = true,
+	aFM_icon = "img/modes/icon_500kg_airstrike.png",
+	aFM_twoClick = true, --we actually need it for (potential) shuttle move. Maybe I can do a TC exception?
 	MinRange = 1,
 	MaxRange = 3,
 	AirstrikeAnim = "units/mission/bomber_1.png", --TODO
@@ -623,6 +643,9 @@ function truelch_500kgAirstrikeMode:targeting(point)
 	return points
 end
 
+--TC wasn't necessary
+--Oh, it was, for the shuttle move!
+--Maybe I should write a TC exception for the case we don't target shuttle at p2
 function truelch_500kgAirstrikeMode:fire(p1, p2, se)    
     local pawn = Board:GetPawn(p2)
     if pawn ~= nil and pawn:GetType() == "truelch_EagleMech" then
@@ -665,18 +688,20 @@ function truelch_500kgAirstrikeMode:second_fire(p1, p2, p3)
 		ret:AddBounce(p2, 2)
 		ret:AddLeap(move, 0.25)
 
-		--Instant damage effect
+		--Anim
+		local bombAnim = SpaceDamage(p2, 0)
+		bombAnim.sAnimation = "truelch_500kg"
+		ret:AddDamage(bombAnim)
+
+		ret:AddDelay(2)
+
 		--Center
-		local damage = SpaceDamage(p2, 0)
-		damage.iFire = EFFECT_CREATE
+		local damage = SpaceDamage(p2, 4)
 		ret:AddDamage(damage)
 
-		--Forward, left, right		
-		local dirOffsets = {0, -1, 1} 
-		for _, offset in ipairs(dirOffsets) do
-			local curr = p2 + DIR_VECTORS[(dir + offset)% 4]
-			local damage = SpaceDamage(curr, 0)
-			damage.iFire = EFFECT_CREATE
+		for dir = DIR_START, DIR_END do		
+			local curr = p2 + DIR_VECTORS[dir]
+			local damage = SpaceDamage(curr, 2)
 			ret:AddDamage(damage)
 		end
 
@@ -686,6 +711,8 @@ function truelch_500kgAirstrikeMode:second_fire(p1, p2, p3)
 
     return ret
 end
+
+
 
 ---------------------------------------------------------
 -------------------- ORBITAL STRIKES --------------------
@@ -700,6 +727,22 @@ truelch_OrbitalPrecisionStrikeMode = truelch_Mg43Mode:new{
 	aFM_icon = "img/modes/icon_orbital_precision_strike.png",
 	Anim = "", --TODO
 }
+
+function truelch_OrbitalPrecisionStrikeMode:targeting(point)
+	local points = {}
+
+    for dir = DIR_START, DIR_END do
+    	for i = 1, 7 do
+    		local curr = point + DIR_VECTORS[dir]*i
+    		points[#points+1] = curr
+    		if not Board:IsValid(curr) then
+    			break
+    		end
+    	end
+    end
+
+	return points
+end
 
 function truelch_OrbitalPrecisionStrikeMode:fire(p1, p2, se)
 	--dir might not be used
@@ -757,6 +800,15 @@ truelch_StratagemFMW = aFM_WeaponTemplate:new{
 	--Upgrades
 	Upgrades = 1,
 	UpgradeCost = { 2 --[[, 3]] },
+
+	--TipImage
+	TipIndex = 0,
+	TipImage = {
+		Unit   = Point(2, 3),
+		Target = Point(2, 1),
+		Second_Origin = Point(2, 3),
+		Second_Target = Point(2, 1),
+	}
 }
 
 Weapon_Texts.truelch_StratagemFMW_Upgrade1 = "+1 Stratagem"
@@ -776,7 +828,17 @@ truelch_StratagemFMW_AB = truelch_StratagemFMW:new{
 }
 ]]
 
-function truelch_StratagemFMW:GetTargetArea(point)
+function truelch_StratagemFMW:GetTargetArea_TipImage(point)
+	local ret = PointList()
+	for j = 0, 7 do
+		for i = 0, 7 do
+			ret:push_back(Point(i, j))
+		end
+	end
+    return ret
+end
+
+function truelch_StratagemFMW:GetTargetArea_Normal(point)
 	local pl = PointList()
 	local currentMode = _G[self:FM_GetMode(point)]
     
@@ -790,7 +852,61 @@ function truelch_StratagemFMW:GetTargetArea(point)
 	return pl
 end
 
-function truelch_StratagemFMW:GetSkillEffect(p1, p2)
+function truelch_StratagemFMW:GetTargetArea(point)
+	if not Board:IsTipImage() then
+		return self:GetTargetArea_Normal(point)
+	else
+		return self:GetTargetArea_TipImage(point)
+	end
+end
+
+function truelch_StratagemFMW:GetSkillEffect_TipImage(p1, p2)
+	--LOG(string.format("truelch_StratagemFMW:GetSkillEffect_TipImage(p1: %s, p2: %s)", p1:GetString(), p2:GetString()))
+	--V1: Temporary
+	local ret = SkillEffect()
+
+	--It might not work because of the TC logic
+
+	if self.TipIndex == 0 then
+		self.TipIndex = 1
+		--LOG("--------- Step 1")
+		--- Step 1: throw grenade
+	    local damage = SpaceDamage(p2, 1)
+	    ret:AddArtillery(p1, damage, "effects/truelch_shotup_stratagem_ball.png", FULL_DELAY)
+	    
+	    ret:AddDelay(2)
+
+	    local dropAnim = SpaceDamage(p2, 0)
+	    dropAnim.sAnimation = "truelch_anim_pod_land"
+	    ret:AddDamage(dropAnim)
+
+	    Board:AddEffect(ret) --let's try that
+	else
+		self.TipIndex = 0
+		--LOG("--------- Step 2")
+		--- Step2: move
+		ret:AddMove(Board:GetPath(p1, Point(2, 1), PATH_GROUND), FULL_DELAY)
+		ret:AddDelay(2)
+		Board:AddAlert(Point(2, 1), "Acquired a weapon!") --I want to make this happen AFTER move.
+
+		Board:AddEffect(ret) --let's try that
+	end
+	
+	--For later use:
+	--ret:AddAirstrike(point, "effects/truelch_eagle.png")
+
+	--V2 (TODO)
+	--[[
+	if isMission() then
+		--Play the available modes
+	else
+		--Hangar / island view: play random
+	end
+	]]
+	return ret --nope
+end
+
+function truelch_StratagemFMW:GetSkillEffect_Normal(p1, p2)
 	local se = SkillEffect()
 	local currentMode = self:FM_GetMode(p1)
 	
@@ -801,8 +917,18 @@ function truelch_StratagemFMW:GetSkillEffect(p1, p2)
 	return se
 end
 
+
+function truelch_StratagemFMW:GetSkillEffect(p1, p2)
+	--LOG("truelch_StratagemFMW:GetSkillEffect")
+	if not Board:IsTipImage() then
+		return self:GetSkillEffect_Normal(p1, p2)
+	else
+		return self:GetSkillEffect_TipImage(p1, p2)
+	end
+end
+
 function truelch_StratagemFMW:IsTwoClickException(p1, p2)
-	return not _G[self:FM_GetMode(p1)].aFM_twoClick 
+	return not _G[self:FM_GetMode(p1)].aFM_twoClick
 end
 
 function truelch_StratagemFMW:GetSecondTargetArea(p1, p2)

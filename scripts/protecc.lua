@@ -7,7 +7,7 @@ local scriptPath = mod.scriptPath
 ----------------------------------------------- CUSTOM FUNCTIONS -----------------------------------------------
 
 --Should the Eagle Mech be a protecc pawn too or just the Emancipator and the Patriot Mechs?
-local proteccPawns = { "EagleMech", "EmancipatorMech", "PatriotMech" }
+local proteccPawns = { "truelch_EagleMech", "truelch_EmancipatorMech", "truelch_PatriotMech" }
 
 local function isProteccPawn(pawn)
     if pawn == nil then return false end
