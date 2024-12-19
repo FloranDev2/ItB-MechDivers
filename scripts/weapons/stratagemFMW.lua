@@ -495,6 +495,7 @@ truelch_NapalmAirstrikeMode = truelch_Mg43Mode:new{
 	FakeMark = "combat/icons/icon_napalm_airstrike.png",
 }
 
+--[[
 function truelch_NapalmAirstrikeMode:targeting(point)
 	local points = {}
 
@@ -506,6 +507,22 @@ function truelch_NapalmAirstrikeMode:targeting(point)
     			break
     		end
     	end
+    end
+
+	return points
+end
+]]
+
+function truelch_NapalmAirstrikeMode:targeting(point)
+	local points = {}
+
+    for j = -self.Range, self.Range do
+        for i = -self.Range, self.Range do
+            local curr = point + Point(i, j)            
+            if curr ~= point then
+                points[#points+1] = curr
+            end
+        end
     end
 
 	return points
@@ -565,8 +582,8 @@ function truelch_NapalmAirstrikeMode:second_fire(p1, p2, p3)
 		damage.iFire = EFFECT_CREATE
 		ret:AddDamage(damage)
 
-		--Forward, left, right		
-		local dirOffsets = {0, -1, 1} 
+		--Forward, left, right
+		local dirOffsets = {0, -1, 1}
 		for _, offset in ipairs(dirOffsets) do
 			local curr = p2 + DIR_VECTORS[(dir + offset)% 4]
 			local damage = SpaceDamage(curr, 0)

@@ -370,7 +370,7 @@ return {
 		"This weather is democratic.",
 	},
 	Mission_SnowStorm_FrozenMech = {
-		"De... mo... cra... cy",
+		"De... mo... cr... icy",
 		"Fresh freedom!",
 	},
 	

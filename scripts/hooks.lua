@@ -152,7 +152,7 @@ local function HOOK_onNextTurnHook()
 
         --For pawns that dies in a chasm
         for _, pawn in pairs(missionData().deadMechs) do
-            LOG("------------ here")
+            --LOG("------------ here")
             --[[
             --Play anim
             local dropAnim = SpaceDamage(loc, 0)
@@ -198,7 +198,7 @@ local HOOK_onPawnKilled = function(mission, pawn)
             --Check terrain if chasm because in that case my current logic doesn't work
             --if Board:G
             local terrain = Board:GetTerrain(pawn:GetSpace()) --terrain: 9 -> chasm
-            LOG("terrain: "..tostring(terrain))
+            --LOG("terrain: "..tostring(terrain))
             if terrain == 9 then
                 local randPoint = GetRandomPoint()
                 local pawnType = pawn:GetType()
