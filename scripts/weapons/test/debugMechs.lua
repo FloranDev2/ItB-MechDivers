@@ -28,9 +28,10 @@ function truelch_DebugMechs:GetSkillEffect(p1, p2)
 
 	LOG("Mech debug:")
 	for i = 0, 2 do
+		--LOG("i: "..tostring(i))
 		local mech = Board:GetPawn(i)
 		if mech ~= nil then
-			LOG(tostring(i).." -> mech: "..mech:GetMechName().." -> loc:"..mech:GetSpace():GetString())
+			LOG(string.format("i: %s -> mech: %s -> loc: %s", tostring(i), mech:GetMechName(), mech:GetSpace():GetString()))
 			--mech:SetInvisible(false)
 			--ret:AddDamage(SpaceDamage(mech:GetSpace(), -10)) --test
 		else

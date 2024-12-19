@@ -49,18 +49,21 @@ end
 function truelch_TestWeapon:GetSkillEffect(p1, p2)
 	local ret = SkillEffect()
 
+	--DAMAGE_DEATH
+
 	--[[
-	local damage = SpaceDamage(p2, self.Damage)
-	damage.iCrack = EFFECT_CREATE
+	local damage = SpaceDamage(p2, DAMAGE_DEATH)
 	ret:AddDamage(damage)
 	]]
 
-	--[[
 	local damage = SpaceDamage(p2, self.Damage)
 	damage.iCrack = EFFECT_CREATE
 	ret:AddDamage(damage)
-	]]
 
+	local damage = SpaceDamage(p2, self.Damage)
+	damage.iCrack = EFFECT_CREATE
+	ret:AddDamage(damage)
+	
 	--[[
 	local pawn = Board:GetPawn(p2)
 	if pawn ~= nil then

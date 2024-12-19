@@ -120,39 +120,45 @@ local function TestFishFromChasm(pawn)
     Board:AddPawn(pawn, randPoint)
 end
 
+
 local function HOOK_onNextTurnHook()
     if Game:GetTeamTurn() == TEAM_PLAYER and IsPassiveSkill("truelch_Reinforcements_Passive") then
-        --local board_size = Board:GetSize()
-        --LOG("New turn, let's take a look at pawns:")
-        --for j = 0, board_size.y - 1 do
-        --    for i = 0, board_size.x - 1 do
+        --V1
+        --[[
+        LOG("Revive loop:")
+        for _, pawnType in pairs(missionData().deadMechs) do
+            local randPoint = GetRandomPoint()
+            LOG("pawnType type: "..type(pawnType))
+            LOG("pawnType: "..pawnType)
+            local newMech = PAWN_FACTORY:CreatePawn(pawnType)
+            newMech:SetMech() --this doesn't seem to work here
+            Board:SpawnPawn(pawnType, randPoint)
+        end
 
-        --For pawns that dies in a "standard way"
+        --Clear dead mech list (simplest way)
+        missionData().deadMechs = {}
+        ]]
+
+        --V2a
+        --There must be a simpler way to look for Mechs
+        --[[
         for j = 0, 7 do
             for i = 0, 7 do
                 local pawn = Board:GetPawn(Point(i, j))
-                if pawn ~= nil then
-                    LOG(string.format(" -> Pawn: %s", pawn:GetMechName()))
-                    if --[[pawn ~= nil and]] pawn:IsMech() and pawn:IsDead() then
-                        local pawnType = pawn:GetType()
-                        LOG(string.format(" ---> Found a dead pawn: %s", pawn:GetMechName()))
-
-                        --Remove old
-                        Board:RemovePawn(pawn) --doesn't work if the unit died in a chasm
-
-                        --Create new
-                        local randPoint = GetRandomPoint()
-                        local newMech = PAWN_FACTORY:CreatePawn(pawnType)
-                        newMech:SetMech()
-                        Board:SpawnPawn(newMech, randPoint)
-                    end
+                --if pawn ~= nil and pawn:IsMech() and pawn:IsInvisible() then
+                --This is stupid, I can't access a point outside of the terrain with this
+                if pawn ~= nil and pawn:IsMech() and pawn:GetSpace() == Point(-1, -1) then
+                    LOG(" ----------------- here")
+                    local randPoint = GetRandomPoint()
+                    pawn:SetSpace(randPoint)
                 end
             end
         end
+        ]]
 
-        --For pawns that dies in a chasm
+        --V2b
         for _, pawn in pairs(missionData().deadMechs) do
-            LOG("------------ here")
+
             --[[
             --Play anim
             local dropAnim = SpaceDamage(loc, 0)
@@ -195,22 +201,35 @@ local HOOK_onPawnKilled = function(mission, pawn)
             newMech:SetMech()
             Board:SpawnPawn(newMech, randPoint)
         elseif IsPassiveSkill("truelch_Reinforcements_Passive") then
-            --Check terrain if chasm because in that case my current logic doesn't work
-            --if Board:G
-            local terrain = Board:GetTerrain(pawn:GetSpace()) --terrain: 9 -> chasm
-            LOG("terrain: "..tostring(terrain))
-            if terrain == 9 then
-                local randPoint = GetRandomPoint()
-                local pawnType = pawn:GetType()
-                local newMech = PAWN_FACTORY:CreatePawn(pawnType)
-                newMech:SetMech()
-                Board:SpawnPawn(newMech, randPoint)
-                local spawned = Board:GetPawn(randPoint)
-                table.insert(missionData().deadMechs, spawned)
-                spawned:SetSpace(Point(-1, -1))
+            --LOG("------------ unupgaded")
 
-                Board:RemovePawn(pawn)
-            end
+            --TODO: play EXPLO anim
+            local anim = SpaceDamage(pawn:GetSpace(), 0)
+            anim.sAnimation = "img/effects/timetravel.png"
+            Board:AddEffect(anim)
+            
+            Board:RemovePawn(pawn)
+            --V1: Wait for next player turn
+            --Edit: the pawn spawned next turn failed to become a Mech
+            --table.insert(missionData().deadMechs, pawn:GetType())
+
+            --V2: Create it now, but hide it until next turn (or move it to (-1, -1))
+            local randPoint = GetRandomPoint()
+            local pawnType = pawn:GetType()
+            local newMech = PAWN_FACTORY:CreatePawn(pawnType)
+            newMech:SetMech()
+            --LOG("------------------------ just before id")
+            --local id = Board:SpawnPawn(newMech, randPoint) --is the int returned the id of the spawned pawn?
+            --LOG(" ----------- id: "..tostring(id))
+            --local spawned = Board:GetPawn(id)
+
+            Board:SpawnPawn(newMech, randPoint)
+            local spawned = Board:GetPawn(randPoint)
+            --LOG("------------ spawned: "..spawned:GetMechName())
+            table.insert(missionData().deadMechs, spawned) --not really dead, but I understand myself
+
+            --spawned:SetInvisible(true) --it's still there on the board though
+            spawned:SetSpace(Point(-1, -1))
         end
     end
 end

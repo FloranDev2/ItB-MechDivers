@@ -51,6 +51,7 @@ truelch_EagleMech = Pawn:new{
 	ImageOffset = mechDiversBlack,
 	
 	SkillList = { "truelch_Delivery", "truelch_Reinforcements_Passive" },
+	--SkillList = { "truelch_TestWeapon", "truelch_Reinforcements_Passive" },
 
 	--[[
 	"/mech/flying/jet_mech/"	

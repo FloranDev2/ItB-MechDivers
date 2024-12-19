@@ -73,7 +73,7 @@ ANIMS.truelch_500kg = Animation:new{
 	Image = "effects/truelch_500kg.png",
 	PosX = -25,
 	PosY = -123,
-	Time = 0.12,
+	Time = 0.08,
 	NumFrames = 13,
 }
 

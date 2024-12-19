@@ -54,8 +54,8 @@ function mod:init()
 	require(self.scriptPath.."mechs/eagleMech")
 
 	--Test
-	--require(self.scriptPath.."/weapons/test/testWeapon")
-	--require(self.scriptPath.."/weapons/test/debugMechs")
+	require(self.scriptPath.."/weapons/test/testWeapon")
+	require(self.scriptPath.."/weapons/test/debugMechs")
 
 	--Regular weapons
 	require(self.scriptPath.."/weapons/dualAutocannons")
@@ -91,7 +91,7 @@ function mod:init()
 	TILE_TOOLTIPS["orbital_precision_strike"] = {"Orbital Precision Strike", "Anything on this tile will be destroyed AFTER enemy turn."}
 
 	--Custom hangar
-	--require(self.scriptPath.."modifiedHangar"):init(self) --just tmp
+	require(self.scriptPath.."modifiedHangar"):init(self) --just tmp
 end
 
 function mod:load(options, version)
