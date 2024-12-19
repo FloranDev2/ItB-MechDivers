@@ -107,78 +107,91 @@ local function resolveAirstrikes()
 
 		LOG(string.format(" --- Airstrike: point: %s, dir: %s, id: %s", point:GetString(), tostring(dir), tostring(id)))
 
-		--Airstrike anim
-		se:AddAirstrike(point, "effects/truelch_eagle.png") --I have multiple anims, wtf?
+		se:AddSound("/weapons/airstrike") --almost forgot that!
+
+		--Airstrike anim		
+		if dir == 0 or dir == 2 then
+			se:AddReverseAirstrike(point, "effects/truelch_eagle.png")
+		else
+			se:AddAirstrike(point, "effects/truelch_eagle.png")
+		end		
 
 		if id == 0 then
 			--LOG(" --- Napalm airstrike!")
 			----- NAPALM AIRSTRIKE -----
-			LOG("----- NAPALM AIRSTRIKE -----")
+			--LOG("----- NAPALM AIRSTRIKE -----")
+
 			--Center
-			local damage = SpaceDamage(point, 0)
+			local curr = point
+			--LOG("curr: "..curr:GetString())
+			local damage = SpaceDamage(curr, 0)
 			damage.iFire = EFFECT_CREATE
-			Board:AddEffect(damage)
+			se:AddDamage(damage)
+			se:AddBounce(curr, 2)
 
 			--Forward, left, right			
 			local dirOffsets = {0, -1, 1} 
 			for _, offset in ipairs(dirOffsets) do
 				local curr = point + DIR_VECTORS[(dir + offset)% 4]
+				--LOG("curr: "..curr:GetString())
 				local damage = SpaceDamage(curr, 0)
 				damage.iFire = EFFECT_CREATE
 				se:AddDamage(damage)
-				--Board:AddEffect(se) --oh that's why I had multiple airstrikes anims
+				se:AddBounce(curr, 2)
 			end
 			--LOG(" --- End")
 		elseif id == 1 then
 			----- SMOKE AIRSTRIKE -----
-			LOG("----- SMOKE AIRSTRIKE -----")
-			--Center
-			local damage = SpaceDamage(point, 0)
-			damage.iSmoke = EFFECT_CREATE
-			Board:AddEffect(damage)
+			--LOG("----- SMOKE AIRSTRIKE -----")
+			local curr = point
+			--LOG("curr: "..curr:GetString())
+			local damage = SpaceDamage(curr, 0)
+			damage.iSmoke = EFFECT_CREATE				
+			se:AddDamage(damage)
+			se:AddBounce(curr, 2)
 
-			--Forward, left, right			
+			--Forward, left, right
 			local dirOffsets = {0, -1, 1} 
 			for _, offset in ipairs(dirOffsets) do
 				local curr = point + DIR_VECTORS[(dir + offset)% 4]
+				--LOG("curr: "..curr:GetString())
 				local damage = SpaceDamage(curr, 0)
-				damage.iSmoke = EFFECT_CREATE
+				damage.iSmoke = EFFECT_CREATE				
 				se:AddDamage(damage)
-				--Board:AddEffect(se) --see above
+				se:AddBounce(curr, 2)
 			end
 		elseif id == 2 then
 			----- 500KG BOMB -----
-			LOG("----- 500KG BOMB -----")
-			--Airstrike anim
-
+			--LOG("----- 500KG BOMB -----")
 			--Delay
-			se:AddDelay(1)
+			se:AddDelay(0.05)
 
 			--Bomb fall + explosion anim
 			local bombAnim = SpaceDamage(point, 0)
 			bombAnim.sAnimation = "truelch_500kg"
-			se:AddEffect(bombAnim)
+			se:AddDamage(bombAnim)
 
 			--Delay
-			se:AddDelay(2)
+			se:AddDelay(1)
 
 			--Center
 			local damage = SpaceDamage(point, 4)
-			damage.sAnimation = "ExploArt3" --TODO
+			--damage.sAnimation = "ExploArt3" --TODO
 			se:AddDamage(damage)
-			--Board:AddEffect(damage)
+			se:AddBounce(point, 3)
 
 			--Adjacent
 			for dir = DIR_START, DIR_END do
 				local curr = point + DIR_VECTORS[dir]
 				local damage = SpaceDamage(curr, 2)
-				damage.sAnimation = "ExploArt1" --TODO
+				damage.sAnimation = "ExploArt1" --TODO				
 				se:AddDamage(damage)
+				se:AddBounce(point, 1)
 			end
 		end
-	end
 
-	Board:AddEffect(se)
+		Board:AddEffect(se) --this
+	end	
 
 	--Clear airstrikes data
 	missionData().airstrikes = {}
@@ -272,12 +285,15 @@ local function resolveOrbitalStrikes()
 		if id == 0 then
 			----- ORIBTAL PRECISION STRIKE -----
 			--LOG("Orbital precision strike")
+
+			rippleEffect(point) --trying to do the ripple BEFORE
+
 			--Center
 			local damage = SpaceDamage(point, DAMAGE_DEATH)
 			damage.sAnimation = "ExploArt2" --TMP
 			Board:AddEffect(damage)
 
-			rippleEffect(point)
+
 
 		--elseif id == 1 then
 			----- ??? -----
