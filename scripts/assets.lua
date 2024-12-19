@@ -84,6 +84,21 @@ modApi:appendAsset("img/combat/icons/icon_resupply.png", resourcePath.."img/comb
 modApi:appendAsset("img/combat/icons/icon_ammo_glow.png", resourcePath.."img/combat/icons/icon_ammo_glow.png")
 	Location["combat/icons/icon_ammo_glow.png"] = Point(-15, 15)
 
+modApi:appendAsset("img/combat/icons/icon_napalm_airstrike.png", resourcePath.."img/combat/icons/icon_napalm_airstrike.png")
+	Location["combat/icons/icon_napalm_airstrike.png"] = Point(-10, 10)
+
+modApi:appendAsset("img/combat/icons/icon_smoke_airstrike.png", resourcePath.."img/combat/icons/icon_smoke_airstrike.png")
+	Location["combat/icons/icon_smoke_airstrike.png"] = Point(-10, 10)
+
+modApi:appendAsset("img/combat/icons/icon_500kg_outer.png", resourcePath.."img/combat/icons/icon_500kg_outer.png")
+	Location["combat/icons/icon_500kg_outer.png"] = Point(-10, 10)
+
+modApi:appendAsset("img/combat/icons/icon_500kg_inner.png", resourcePath.."img/combat/icons/icon_500kg_inner.png")
+	Location["combat/icons/icon_500kg_inner.png"] = Point(-10, 10)
+
+modApi:appendAsset("img/combat/icons/icon_orbital_precision_strike.png", resourcePath.."img/combat/icons/icon_orbital_precision_strike.png")
+	Location["combat/icons/icon_orbital_precision_strike.png"] = Point(-18, 5)
+
 --Trait icon
 modApi:appendAsset("img/combat/icons/icon_protecc.png", resourcePath.."img/combat/icons/icon_protecc.png")
 	Location["combat/icons/icon_protecc.png"] = Point(-12, 8)
@@ -109,3 +124,13 @@ modApi:appendAsset("img/weapons/truelch_strat_mg43.png", resourcePath.."img/weap
 --Tile icons
 modApi:appendAsset("img/combat/tile_icon/tile_truelch_drop.png", mod.resourcePath.."img/combat/tile_icon/tile_truelch_drop.png")
 	Location["combat/tile_icon/tile_truelch_drop.png"] = Point(-27, 2)
+
+modApi:appendAsset("img/combat/tile_icon/tile_truelch_napalm_airstrike.png", mod.resourcePath.."img/combat/tile_icon/tile_truelch_napalm_airstrike.png")
+	Location["combat/tile_icon/tile_truelch_napalm_airstrike.png"] = Point(-27, 2)
+modApi:appendAsset("img/combat/tile_icon/tile_truelch_smoke_airstrike.png", mod.resourcePath.."img/combat/tile_icon/tile_truelch_smoke_airstrike.png")
+	Location["combat/tile_icon/tile_truelch_smoke_airstrike.png"] = Point(-27, 2)
+modApi:appendAsset("img/combat/tile_icon/tile_truelch_500kg_airstrike.png", mod.resourcePath.."img/combat/tile_icon/tile_truelch_500kg_airstrike.png")
+	Location["combat/tile_icon/tile_truelch_500kg_airstrike.png"] = Point(-27, 2)
+
+modApi:appendAsset("img/combat/tile_icon/tile_truelch_orbital_precision_strike.png", mod.resourcePath.."img/combat/tile_icon/tile_truelch_orbital_precision_strike.png")
+	Location["combat/tile_icon/tile_truelch_orbital_precision_strike.png"] = Point(-27, 2)

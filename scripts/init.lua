@@ -54,7 +54,7 @@ function mod:init()
 	require(self.scriptPath.."mechs/eagleMech")
 
 	--Test
-	require(self.scriptPath.."/weapons/test/testWeapon")
+	--require(self.scriptPath.."/weapons/test/testWeapon")
 	--require(self.scriptPath.."/weapons/test/debugMechs")
 
 	--Regular weapons
@@ -79,8 +79,16 @@ function mod:init()
 	modApi:addWeaponDrop("truelch_Delivery")
 	modApi:addWeaponDrop("truelch_Reinforcements_Passive")
 
-	--Misc
+	--Env tooltips (might move that stuff in a separate file)
+	---> Hell Pods
 	TILE_TOOLTIPS["hell_drop"] = {"Hell Drop", "A Hell Pod will land here soon, killing any unit below."}
+	---> Airstrikes
+	TILE_TOOLTIPS["airstrike_napalm"]     = {"Napalm Airstrike", "This tile will be ignited before enemy turn."}
+	TILE_TOOLTIPS["airstrike_smoke"]      = {"Smoke Airstrike",  "This tile will be smoked before enemy turn."}
+	TILE_TOOLTIPS["airstrike_500_center"] = {"500kg Bomb", "This tile will take 4 damage before enemy turn."}
+	TILE_TOOLTIPS["airstrike_500_outer"]  = {"500kg Bomb", "This tile will take 2 damage before enemy turn."}
+	---> Orbital
+	TILE_TOOLTIPS["orbital_precision_strike"] = {"Orbital Precision Strike", "Anything on this tile will be destroyed AFTER enemy turn."}
 
 	--Custom hangar
 	--require(self.scriptPath.."modifiedHangar"):init(self) --just tmp

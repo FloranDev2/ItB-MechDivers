@@ -71,7 +71,7 @@ local function isStratagemWeapon(weapon)
         weapon = weapon.__Id
     end
     local isStratagemWeapon = string.find(weapon, "truelch_Stratagem") ~= nil
-    LOG("weapon: "..weapon.." -> is stratagem weapon? "..tostring(isStratagemWeapon))
+    --LOG("weapon: "..weapon.." -> is stratagem weapon? "..tostring(isStratagemWeapon))
     --return string.find(weapon, "truelch_Stratagem") ~= nil
     return isStratagemWeapon
 end
@@ -84,12 +84,12 @@ end
 --id: 0: Napalm
 --Or I could just pass the mode name?
 function truelch_MechDivers_AddAirstrike(point, dir, id)
-	LOG(string.format("truelch_MechDivers_AddAirstrike(point: %s, dir: %s, id: %s)", point:GetString(), tostring(dir), tostring(id)))
+	--LOG(string.format("truelch_MechDivers_AddAirstrike(point: %s, dir: %s, id: %s)", point:GetString(), tostring(dir), tostring(id)))
 	table.insert(missionData().airstrikes, { point, dir, id })
 end
 
 function truelch_MechDivers_AddOrbitalStrike(point, dir, id)
-	LOG(string.format("truelch_MechDivers_AddOrbitalStrike(point: %s, dir: %s, id: %s)", point:GetString(), tostring(dir), tostring(id)))
+	--LOG(string.format("truelch_MechDivers_AddOrbitalStrike(point: %s, dir: %s, id: %s)", point:GetString(), tostring(dir), tostring(id)))
 	table.insert(missionData().orbitalStrikes, { point, dir, id })
 end
 
@@ -105,7 +105,7 @@ local function resolveAirstrikes()
 		local dir   = airstrike[2]
 		local id    = airstrike[3]
 
-		LOG(string.format(" --- Airstrike: point: %s, dir: %s, id: %s", point:GetString(), tostring(dir), tostring(id)))
+		--LOG(string.format(" --- Airstrike: point: %s, dir: %s, id: %s", point:GetString(), tostring(dir), tostring(id)))
 
 		se:AddSound("/weapons/airstrike") --almost forgot that!
 
@@ -293,8 +293,6 @@ local function resolveOrbitalStrikes()
 			damage.sAnimation = "ExploArt2" --TMP
 			Board:AddEffect(damage)
 
-
-
 		--elseif id == 1 then
 			----- ??? -----
 		end
@@ -364,7 +362,7 @@ end
 
 function truelch_Mg43Mode:fire(p1, p2, se)
     local damage = SpaceDamage(p2, 0)
-    --damage.sImageMark = "combat/blue_stratagem_grenade.png"
+    damage.sImageMark = "combat/blue_stratagem_grenade.png"
     --damage.sItem = self.Item --test
     se:AddArtillery(damage, self.UpShot) --enable this
 
@@ -494,6 +492,7 @@ truelch_NapalmAirstrikeMode = truelch_Mg43Mode:new{
 	MinRange = 1,
 	MaxRange = 3,
 	AirstrikeAnim = "units/mission/bomber_1.png", --TODO
+	FakeMark = "combat/icons/icon_napalm_airstrike.png",
 }
 
 function truelch_NapalmAirstrikeMode:targeting(point)
@@ -520,9 +519,11 @@ function truelch_NapalmAirstrikeMode:fire(p1, p2, se)
 
     	--Fake damage (just for test)
     	local damage = SpaceDamage(p2, 0)
+    	--damage.sImageMark = "combat/icons/icon_napalm_airstrike.png"
     	se:AddDamage(damage)
     else
 		local damage = SpaceDamage(p2, 0)
+		damage.sImageMark = self.FakeMark
     	se:AddDamage(damage)
     end
 end
@@ -574,6 +575,23 @@ function truelch_NapalmAirstrikeMode:second_fire(p1, p2, p3)
 		end
 
 	else
+		--Fake marks
+
+		--Center
+		local damage = SpaceDamage(p2, 0)		
+		damage.sImageMark = self.FakeMark
+		ret:AddDamage(damage)
+
+		--Forward, left, right		
+		local dirOffsets = {0, -1, 1} 
+		for _, offset in ipairs(dirOffsets) do
+			local curr = p2 + DIR_VECTORS[(dir + offset)% 4]
+			local damage = SpaceDamage(curr, 0)
+			damage.sImageMark = self.FakeMark
+			ret:AddDamage(damage)
+		end
+
+		--Add Airstrike
 		ret:AddScript(string.format("truelch_MechDivers_AddAirstrike(%s, %s, 0)", p2:GetString(), tostring(dir)))
     end
 
@@ -587,10 +605,7 @@ truelch_SmokeAirstrikeMode = truelch_NapalmAirstrikeMode:new{
 		"\nYou can first target a Shuttle Mech to do the strike instantly."..
 		"\nOtherwise, the strike is released just before the Vek act", --wait, it actually doesn't change anything then?
 	aFM_icon = "img/modes/icon_smoke_airstrike.png",
-	--aFM_twoClick = true,
-	--MinRange = 1,
-	--MaxRange = 3,
-	--AirstrikeAnim = "units/mission/bomber_1.png", --TODO
+	FakeMark = "combat/icons/icon_smoke_airstrike.png",
 }
 
 function truelch_SmokeAirstrikeMode:second_fire(p1, p2, p3)
@@ -623,6 +638,22 @@ function truelch_SmokeAirstrikeMode:second_fire(p1, p2, p3)
 		end
 
 	else
+		--Fake marks
+		
+		--Center
+		local damage = SpaceDamage(p2, 0)		
+		damage.sImageMark = self.FakeMark
+		ret:AddDamage(damage)
+
+		--Forward, left, right		
+		local dirOffsets = {0, -1, 1} 
+		for _, offset in ipairs(dirOffsets) do
+			local curr = p2 + DIR_VECTORS[(dir + offset)% 4]
+			local damage = SpaceDamage(curr, 0)
+			damage.sImageMark = self.FakeMark
+			ret:AddDamage(damage)
+		end
+
 		--point, dir, id (1 = Smoke Airstrike)
 		ret:AddScript(string.format("truelch_MechDivers_AddAirstrike(%s, %s, 1)", p2:GetString(), tostring(dir)))
     end
@@ -669,6 +700,7 @@ function truelch_500kgAirstrikeMode:fire(p1, p2, se)
     	se:AddDamage(damage)
     else
 		local damage = SpaceDamage(p2, 0)
+		damage.sImageMark = "combat/icons/icon_500kg_inner.png"
     	se:AddDamage(damage)
     end
 end
@@ -722,6 +754,20 @@ function truelch_500kgAirstrikeMode:second_fire(p1, p2, p3)
 		end
 
 	else
+		--Fake Mark
+
+		--Center
+		local damage = SpaceDamage(p2, 0)
+		damage.sImageMark = "combat/icons/icon_500kg_inner.png"
+		ret:AddDamage(damage)
+
+		for dir = DIR_START, DIR_END do		
+			local curr = p2 + DIR_VECTORS[dir]
+			local damage = SpaceDamage(curr, 0)
+			damage.sImageMark = "combat/icons/icon_500kg_outer.png"
+			ret:AddDamage(damage)
+		end
+
 		ret:AddScript(string.format("truelch_MechDivers_AddAirstrike(%s, %s, 2)", p2:GetString(), tostring(dir)))
     end
 
@@ -761,6 +807,11 @@ function truelch_OrbitalPrecisionStrikeMode:targeting(point)
 end
 
 function truelch_OrbitalPrecisionStrikeMode:fire(p1, p2, se)
+	--Fake Mark	
+	local damage = SpaceDamage(p2, 0)
+	damage.sImageMark = "combat/icons/icon_orbital_precision_strike.png"
+	se:AddDamage(damage)
+
 	--dir might not be used
 	--point, dir, id
 	se:AddScript(string.format("truelch_MechDivers_AddOrbitalStrike(%s, -1, 0)", p2:GetString()))
@@ -1074,7 +1125,7 @@ local function computeStratagems()
 	end
 end
 
-local testMode = true
+local testMode = false
 
 local HOOK_onNextTurn = function(mission)
 	if Game:GetTeamTurn() ~= TEAM_PLAYER then
@@ -1113,7 +1164,7 @@ local HOOK_onMissionUpdate = function(mission)
     end
     ]]
 
-    --Loop
+    --Hell Pods
 	for _, hellPod in pairs(missionData().hellPods) do
     	--Retrieve data
         local loc = hellPod[1]
@@ -1125,7 +1176,74 @@ local HOOK_onMissionUpdate = function(mission)
 		Board:MarkSpaceDesc(loc, "hell_drop")
 	end
 
-	--Also do airstrikes and orbital strikes?
+	--Air strikes
+	for _, airstrike in pairs(missionData().airstrikes) do
+		local point = airstrike[1]
+		local dir   = airstrike[2]
+		local id    = airstrike[3]
+
+		local icon = "combat/tile_icon/tile_truelch_drop.png" --default
+		local desc = "hell_drop" --default
+
+		if id == 0 then
+			--Napalm Airstrike
+
+			--Center
+			Board:MarkSpaceImage(point, "combat/tile_icon/tile_truelch_napalm_airstrike.png", GL_Color(255, 180, 0, 0.75))
+			Board:MarkSpaceDesc(point, "airstrike_napalm")
+
+			--Front, left, right
+			local dirOffsets = {0, -1, 1}
+			for _, offset in ipairs(dirOffsets) do
+				local curr = point + DIR_VECTORS[(dir + offset)% 4]
+				Board:MarkSpaceImage(curr, "combat/tile_icon/tile_truelch_napalm_airstrike.png", GL_Color(255, 180, 0, 0.75))
+				Board:MarkSpaceDesc(curr, "airstrike_napalm")
+			end
+		elseif id == 1 then
+			--Smoke Airstrike
+
+			--Center
+			Board:MarkSpaceImage(point, "combat/tile_icon/tile_truelch_smoke_airstrike.png", GL_Color(255, 180, 0, 0.75))
+			Board:MarkSpaceDesc(point, "airstrike_smoke")
+
+			--Front, left, right
+			local dirOffsets = {0, -1, 1}
+			for _, offset in ipairs(dirOffsets) do
+				local curr = point + DIR_VECTORS[(dir + offset)% 4]
+				Board:MarkSpaceImage(curr, "combat/tile_icon/tile_truelch_smoke_airstrike.png", GL_Color(255, 180, 0, 0.75))
+				Board:MarkSpaceDesc(curr, "airstrike_smoke")
+			end
+		elseif id == 2 then
+			--500kg Bomb
+			icon = "combat/tile_icon/tile_truelch_500kg_airstrike.png"
+			desc = "airstrike_napalm"
+
+			--Center
+			Board:MarkSpaceImage(point, "combat/tile_icon/tile_truelch_500kg_airstrike.png", GL_Color(255, 180, 0, 0.75))
+			Board:MarkSpaceDesc(point, "airstrike_500_center")
+
+			--Outer
+			for dir = DIR_START, DIR_END do
+				local curr = point + DIR_VECTORS[dir]
+				Board:MarkSpaceImage(curr, "combat/tile_icon/tile_truelch_500kg_airstrike.png", GL_Color(255, 180, 0, 0.75))
+				Board:MarkSpaceDesc(curr, "airstrike_500_outer")
+			end
+
+		end
+	end
+
+	--Orbital strikes
+		for _, orbitalStrike in pairs(missionData().orbitalStrikes) do
+			local point = orbitalStrike[1]
+			--local dir = orbitalStrike[2] --not used
+			local id = orbitalStrike[3]
+
+			if id == 0 then
+				--Orbital strike
+				Board:MarkSpaceImage(point, "combat/tile_icon/tile_truelch_orbital_precision_strike.png", GL_Color(255, 180, 0, 0.75))
+				Board:MarkSpaceDesc(point, "orbital_precision_strike")
+			end
+		end
 end
 
 local function debugGameData()

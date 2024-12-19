@@ -652,7 +652,7 @@ local function isMg43(weaponId)
 end
 
 local function destroyAllStratagemWeapons()
-    LOG("destroyAllStratagemWeapons()")
+    --LOG("destroyAllStratagemWeapons()")
     --Look through all Mechs. Remember, respawned Mechs aren't in 0 - 2 index range
     --Need to try this:
     --for _, p in pairs(extract_table(Board:GetPawns(TEAM_MECH))) do
