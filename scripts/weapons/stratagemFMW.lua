@@ -284,14 +284,16 @@ local function resolveOrbitalStrikes()
 
 		if id == 0 then
 			----- ORIBTAL PRECISION STRIKE -----
-			--LOG("Orbital precision strike")
-
-			rippleEffect(point) --trying to do the ripple BEFORE
+			--LOG("Orbital precision strike")			
 
 			--Center
 			local damage = SpaceDamage(point, DAMAGE_DEATH)
-			damage.sAnimation = "ExploArt2" --TMP
+			--damage.sAnimation = "ExploArt2" --TMP
+			damage.sAnimation = "truelch_anim_orbital_laser"
+			damage.sSound = "/weapons/burst_beam"
 			Board:AddEffect(damage)
+
+			rippleEffect(point)
 
 		--elseif id == 1 then
 			----- ??? -----
@@ -363,8 +365,7 @@ end
 function truelch_Mg43Mode:fire(p1, p2, se)
     local damage = SpaceDamage(p2, 0)
     damage.sImageMark = "combat/blue_stratagem_grenade.png"
-    --damage.sItem = self.Item --test
-    se:AddArtillery(damage, self.UpShot) --enable this
+    se:AddArtillery(damage, self.UpShot)
 
     --Free action
     se:AddScript([[
@@ -528,9 +529,11 @@ function truelch_NapalmAirstrikeMode:targeting(point)
 	return points
 end
 
-function truelch_NapalmAirstrikeMode:fire(p1, p2, se)    
-    local pawn = Board:GetPawn(p2)
+function truelch_NapalmAirstrikeMode:fire(p1, p2, se)
+    local damage = SpaceDamage(p2, 0)    
+    se:AddArtillery(damage, self.UpShot, FULL_DELAY) --useless here?
 
+    local pawn = Board:GetPawn(p2)
     if pawn ~= nil and pawn:GetType() == "truelch_EagleMech" then
     	--LOG("------------ is Shuttle Mech!")
 
@@ -564,6 +567,10 @@ end
 function truelch_NapalmAirstrikeMode:second_fire(p1, p2, p3)
 	--LOG("truelch_NapalmAirstrikeMode:second_fire")
     local ret = SkillEffect()
+
+    local damage = SpaceDamage(p2, 0)    
+    ret:AddArtillery(damage, self.UpShot, FULL_DELAY)
+
     local isShuttle = Board:IsPawnSpace(p2) and Board:GetPawn(p2):GetType() == "truelch_EagleMech"
     local dir = GetDirection(p3 - p2)
 
@@ -627,6 +634,10 @@ truelch_SmokeAirstrikeMode = truelch_NapalmAirstrikeMode:new{
 
 function truelch_SmokeAirstrikeMode:second_fire(p1, p2, p3)
     local ret = SkillEffect()
+
+    local damage = SpaceDamage(p2, 0)    
+    ret:AddArtillery(damage, self.UpShot, FULL_DELAY)
+
     local isShuttle = Board:IsPawnSpace(p2) and Board:GetPawn(p2):GetType() == "truelch_EagleMech"
     local dir = GetDirection(p3 - p2)
 
@@ -691,6 +702,7 @@ truelch_500kgAirstrikeMode = truelch_Mg43Mode:new{
 	AirstrikeAnim = "units/mission/bomber_1.png", --TODO
 }
 
+--[[
 function truelch_500kgAirstrikeMode:targeting(point)
 	local points = {}
 
@@ -706,11 +718,30 @@ function truelch_500kgAirstrikeMode:targeting(point)
 
 	return points
 end
+]]
+
+function truelch_NapalmAirstrikeMode:targeting(point)
+	local points = {}
+
+    for j = -self.Range, self.Range do
+        for i = -self.Range, self.Range do
+            local curr = point + Point(i, j)            
+            if curr ~= point then
+                points[#points+1] = curr
+            end
+        end
+    end
+
+	return points
+end
 
 --TC wasn't necessary
 --Oh, it was, for the shuttle move!
 --Maybe I should write a TC exception for the case we don't target shuttle at p2
-function truelch_500kgAirstrikeMode:fire(p1, p2, se)    
+function truelch_500kgAirstrikeMode:fire(p1, p2, se)
+    local damage = SpaceDamage(p2, 0)    
+    se:AddArtillery(damage, self.UpShot, FULL_DELAY)
+
     local pawn = Board:GetPawn(p2)
     if pawn ~= nil and pawn:GetType() == "truelch_EagleMech" then
     	local damage = SpaceDamage(p2, 0)
@@ -741,6 +772,10 @@ end
 function truelch_500kgAirstrikeMode:second_fire(p1, p2, p3)
 	--LOG("truelch_NapalmAirstrikeMode:second_fire")
     local ret = SkillEffect()
+
+	local damage = SpaceDamage(p2, 0)    
+    ret:AddArtillery(damage, self.UpShot, FULL_DELAY)
+
     local isShuttle = Board:IsPawnSpace(p2) and Board:GetPawn(p2):GetType() == "truelch_EagleMech"
     local dir = GetDirection(p3 - p2)
 
@@ -807,6 +842,10 @@ truelch_OrbitalPrecisionStrikeMode = truelch_Mg43Mode:new{
 	Anim = "", --TODO
 }
 
+
+
+
+--[[
 function truelch_OrbitalPrecisionStrikeMode:targeting(point)
 	local points = {}
 
@@ -822,9 +861,13 @@ function truelch_OrbitalPrecisionStrikeMode:targeting(point)
 
 	return points
 end
+]]
 
 function truelch_OrbitalPrecisionStrikeMode:fire(p1, p2, se)
-	--Fake Mark	
+	local damage = SpaceDamage(p2, 0)    
+    se:AddArtillery(damage, self.UpShot, FULL_DELAY)
+
+	--Fake Mark
 	local damage = SpaceDamage(p2, 0)
 	damage.sImageMark = "combat/icons/icon_orbital_precision_strike.png"
 	se:AddDamage(damage)
@@ -1142,7 +1185,7 @@ local function computeStratagems()
 	end
 end
 
-local testMode = false
+local testMode = true
 
 local HOOK_onNextTurn = function(mission)
 	if Game:GetTeamTurn() ~= TEAM_PLAYER then

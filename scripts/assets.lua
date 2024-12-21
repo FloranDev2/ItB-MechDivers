@@ -2,14 +2,6 @@ local mod = mod_loader.mods[modApi.currentMod]
 local resourcePath = mod.resourcePath
 
 --FMW modes icons
-
---Debug stuff
---[[
-for i = 1, 8 do
-	modApi:appendAsset("img/modes/icon_mode"..tostring(i)..".png", resourcePath.."img/modes/icon_mode"..tostring(i)..".png")
-end
-]]
-
 modApi:appendAsset("img/modes/icon_resupply.png", resourcePath.."img/modes/icon_resupply.png")
 modApi:appendAsset("img/modes/icon_strafe.png",   resourcePath.."img/modes/icon_strafe.png")
 
@@ -75,6 +67,17 @@ ANIMS.truelch_500kg = Animation:new{
 	PosY = -123,
 	Time = 0.08,
 	NumFrames = 13,
+}
+
+modApi:appendAsset("img/effects/truelch_anim_orbital_laser.png", resourcePath.."img/effects/truelch_anim_orbital_laser.png")
+	Location["effects/truelch_anim_orbital_laser.png"] = Point(-25, -165)
+
+ANIMS.truelch_anim_orbital_laser = Animation:new{
+	Image = "effects/truelch_anim_orbital_laser.png",
+	PosX = -25,
+	PosY = -165,
+	Time = 0.04,
+	NumFrames = 10,
 }
 
 --Damage mark

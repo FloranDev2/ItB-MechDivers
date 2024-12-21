@@ -1,57 +1,63 @@
---Example from tosx:
---[[
-tosx_Deploy_Fighter = Pawn:new{
-	Name = "Fighter",
-	Health = 1,
-	MoveSpeed = 3,
-	Image = "tosx_Fighter_img",
-	SkillList = { "tosx_Deploy_FighterShot" },
-	SoundLocation = "/mech/flying/jet_mech/",
-	ImageOffset = imageOffset,
-	DefaultTeam = TEAM_PLAYER,
-	ImpactMaterial = IMPACT_METAL,
-	Flying = true,
-	Corpse = false,
-}
-tosx_Deploy_FighterA = tosx_Deploy_Fighter:new{
-	SkillList = { "tosx_Deploy_FighterShot_2" , "tosx_Deploy_FighterShot" },
-}
-tosx_Deploy_FighterB = tosx_Deploy_Fighter:new{
-	SkillList = { "tosx_Deploy_FighterShot_2" },
-}
-tosx_Deploy_FighterAB = tosx_Deploy_Fighter:new{
-	SkillList = { "tosx_Deploy_FighterShot_2" },
-	MoveSpeed = 6,
-}
-]]
+local mod = mod_loader.mods[modApi.currentMod]
+local resourcePath = mod.resourcePath
 
 local mechDiversBlack = modApi:getPaletteImageOffset("truelch_MechDiversBlack")
 
---[[
--- locate our mech assets.
-local deployablePath = path .."img/deployables/" --truelch
+local depPath = resourcePath.."img/deployables/"
 
--- iterate our files and add the assets so the game can find them.
+local files = {
+	"truelch_mg_sentry.png",
+	"truelch_mg_sentry_a.png",
+	"truelch_mg_sentry_death.png",
+	"truelch_mg_sentry_ns.png",
+
+	"truelch_mortar_sentry.png",
+	"truelch_mortar_sentry_a.png",
+	"truelch_mortar_sentry_death.png",
+	"truelch_mortar_sentry_ns.png",
+
+	"truelch_tesla_tower.png",
+	"truelch_tesla_tower_a.png",
+	"truelch_tesla_tower_death.png",
+	"truelch_tesla_tower_ns.png",
+
+	"truelch_guard_dog.png",
+	"truelch_guard_dog_a.png",
+	"truelch_guard_dog_death.png",
+	"truelch_guard_dog_ns.png",
+}
+
 for _, file in ipairs(files) do
-	modApi:appendAsset("img/units/player/"..file, deployablePath..file)
+	modApi:appendAsset("img/units/player/"..file, depPath..file)
 end
 
--- create animations for our mech with our imported files.
--- note how the animations starts searching from /img/
+--- MG SENTY ---
 local a = ANIMS
-a.tatu_scout_drone =	a.MechUnit:new{ Image = "units/player/tatu_scout_drone.png",       PosX = -18, PosY = -8 }
-a.tatu_scout_dronea =	a.MechUnit:new{ Image = "units/player/tatu_scout_drone_a.png",     PosX = -18, PosY = -8, NumFrames = 4 }
-a.tatu_scout_droned =	a.MechUnit:new{ Image = "units/player/tatu_scout_drone_death.png", PosX = -18, PosY = -8, NumFrames = 10, Loop = false, Time = 0.14 }
-a.tatu_scout_drone_ns =	a.MechIcon:new{ Image = "units/player/tatu_scout_drone_ns.png" }
+a.truelch_mg_sentry =    a.MechUnit:new{ Image = "units/player/truelch_mg_sentry.png",       PosX = -18, PosY = -8 }
+a.truelch_mg_sentrya =   a.MechUnit:new{ Image = "units/player/truelch_mg_sentry_a.png",     PosX = -18, PosY = -8, NumFrames = 4 }
+a.truelch_mg_sentryd =   a.MechUnit:new{ Image = "units/player/truelch_mg_sentry_death.png", PosX = -18, PosY = -8, NumFrames = 10, Loop = false, Time = 0.14 }
+a.truelch_mg_sentry_ns = a.MechIcon:new{ Image = "units/player/truelch_mg_sentry_ns.png" }
 
--- make a list of our files.
-local files = {
-	"tatu_scout_drone.png",
-	"tatu_scout_drone_a.png",
-	"tatu_scout_drone_death.png",
-	"tatu_scout_drone_ns.png",
-}
-]]
+--- MORTAR SENTY ---
+local a = ANIMS
+a.truelch_mortar_sentry =    a.MechUnit:new{ Image = "units/player/truelch_mortar_sentry.png",       PosX = -18, PosY = -8 }
+a.truelch_mortar_sentrya =   a.MechUnit:new{ Image = "units/player/truelch_mortar_sentry_a.png",     PosX = -18, PosY = -8, NumFrames = 4 }
+a.truelch_mortar_sentryd =   a.MechUnit:new{ Image = "units/player/truelch_mortar_sentry_death.png", PosX = -18, PosY = -8, NumFrames = 10, Loop = false, Time = 0.14 }
+a.truelch_mortar_sentry_ns = a.MechIcon:new{ Image = "units/player/truelch_mortar_sentry_ns.png" }
+
+--- TESLA TOWER ---
+local a = ANIMS
+a.truelch_tesla_tower =    a.MechUnit:new{ Image = "units/player/truelch_tesla_tower.png",       PosX = -18, PosY = -8 }
+a.truelch_tesla_towera =   a.MechUnit:new{ Image = "units/player/truelch_tesla_tower_a.png",     PosX = -18, PosY = -8, NumFrames = 4 }
+a.truelch_tesla_towerd =   a.MechUnit:new{ Image = "units/player/truelch_tesla_tower_death.png", PosX = -18, PosY = -8, NumFrames = 10, Loop = false, Time = 0.14 }
+a.truelch_tesla_tower_ns = a.MechIcon:new{ Image = "units/player/truelch_tesla_tower_ns.png" }
+
+--- GUARD DOG ---
+local a = ANIMS
+a.truelch_guard_dog =    a.MechUnit:new{ Image = "units/player/truelch_guard_dog.png",       PosX = -18, PosY = -8 }
+a.truelch_guard_doga =   a.MechUnit:new{ Image = "units/player/truelch_guard_dog_a.png",     PosX = -18, PosY = -8, NumFrames = 4 }
+a.truelch_guard_dogd =   a.MechUnit:new{ Image = "units/player/truelch_guard_dog_death.png", PosX = -18, PosY = -8, NumFrames = 10, Loop = false, Time = 0.14 }
+a.truelch_guard_dog_ns = a.MechIcon:new{ Image = "units/player/truelch_guard_dog_ns.png" }
 
 ----------------------------------------------------------------------------------------------------
 ---------------------------------------- MACHINE GUN SENTRY ----------------------------------------
@@ -61,7 +67,8 @@ truelch_Amg43MachineGunSentry = Pawn:new{
 	Name = "A/MG-43 Machine Gun Sentry", --A/G-16 Gatling Sentry --A/AC-8 Autocannon Sentry
 	Health = 1,
 	MoveSpeed = 0,
-	Image = "SmallTank1", --TODO
+	--Image = "MechLeap",
+	Image = "truelch_mg_sentry",
 	SkillList = { "truelch_Amg43MachineGunSentry_Weapon" },
 	SoundLocation = "/mech/flying/jet_mech/",
 	ImageOffset = mechDiversBlack,
@@ -69,6 +76,7 @@ truelch_Amg43MachineGunSentry = Pawn:new{
 	ImpactMaterial = IMPACT_METAL,
 	Corpse = false,
 	Neutral = true, --test!
+	Pushable = false,
 }
 AddPawn("truelch_Amg43MachineGunSentry")
 
@@ -81,7 +89,7 @@ truelch_Amg43MachineGunSentry_Weapon = Skill:new{
 
 	--Art
 	Icon = "weapons/deploy_tank.png",
-	ProjectileArt = "effects/shot_mechtank", --TMP
+	ProjectileArt = "effects/shot_mechtank",
 
 	--Gameplay
 	Damage = 1,
@@ -141,7 +149,8 @@ truelch_Am12MortarSentry = Pawn:new{
 	Name = "A/M-12 Mortar Sentry",
 	Health = 1,
 	MoveSpeed = 0,
-	Image = "SmallTank1", --TODO
+	--Image = "MechNano",
+	Image = "truelch_mortar_sentry",
 	SkillList = { "truelch_Am12MortarSentry_Weapon" },
 	SoundLocation = "/mech/flying/jet_mech/",
 	ImageOffset = mechDiversBlack,
@@ -149,6 +158,7 @@ truelch_Am12MortarSentry = Pawn:new{
 	ImpactMaterial = IMPACT_METAL,
 	Corpse = false,
 	Neutral = true, --test!
+	Pushable = false,
 }
 AddPawn("truelch_Am12MortarSentry")
 
@@ -250,7 +260,8 @@ truelch_TeslaTower = Pawn:new{
 	Name = "A/ARC-3 Tesla Tower",
 	Health = 1,
 	MoveSpeed = 0,
-	Image = "SmallTank1",
+	Image = "truelch_tesla_tower",
+	--Image = "MechScarab",
 	SkillList = { "truelch_TeslaTower_Weapon" },
 	SoundLocation = "/mech/flying/jet_mech/",
 	ImageOffset = mechDiversBlack,
@@ -258,6 +269,7 @@ truelch_TeslaTower = Pawn:new{
 	ImpactMaterial = IMPACT_METAL,
 	Corpse = false,
 	Neutral = true, --test!
+	Pushable = false,
 }
 AddPawn("truelch_TeslaTower")
 
@@ -366,7 +378,8 @@ truelch_GuardDog = Pawn:new{
 	Name = "AX/AR-23 'Guard Dog'",
 	Health = 1,
 	MoveSpeed = 3,
-	Image = "SmallTank1", --TODO
+	Image = "truelch_guard_dog",
+	--Image = "MechJudo",
 	SkillList = { "truelch_TeslaTower_Weapon" },
 	SoundLocation = "/mech/flying/jet_mech/",
 	ImageOffset = mechDiversBlack,
