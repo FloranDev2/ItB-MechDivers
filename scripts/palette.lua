@@ -3,7 +3,8 @@ modApi:addPalette({
 		ID = "truelch_MechDiversYellow",
 		Name = "Mech Divers' Yellow",
 		Image = "img/units/player/emancipatorMech_ns.png", --Emancipator
-		PlateHighlight = { 230, 230, 230 },	--lights
+		--PlateHighlight = { 230, 230, 230 },	--lights
+		PlateHighlight = { 255, 255, 240 },	--lights
 		PlateLight     = { 240, 240,  10 },	--main highlight
 		PlateMid       = { 200, 150,   0 },	--main light
 		PlateDark      = {  125, 75,   0 },	--main mid
@@ -19,7 +20,8 @@ modApi:addPalette({
 		ID = "truelch_MechDiversBlack",
 		Name = "Mech Divers' Black",
 		Image = "img/units/player/patriotMech_ns.png", --Patriot / Eagle
-		PlateHighlight = {  30,  45,  95 },	--lights
+		--PlateHighlight = {  30,  45,  95 },	--lights
+		PlateHighlight = { 255, 255, 240 },	--lights
 		PlateLight     = {  91,  92,  93 }, --main highlight
 		PlateMid       = {  51,  52,  53 }, --main light
 		PlateDark      = {  30,  30,  28 },	--main mid

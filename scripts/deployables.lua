@@ -34,15 +34,15 @@ end
 --- MG SENTY ---
 local a = ANIMS
 a.truelch_mg_sentry =    a.MechUnit:new{ Image = "units/player/truelch_mg_sentry.png",       PosX = -18, PosY = -8 }
-a.truelch_mg_sentrya =   a.MechUnit:new{ Image = "units/player/truelch_mg_sentry_a.png",     PosX = -18, PosY = -8, NumFrames = 4 }
-a.truelch_mg_sentryd =   a.MechUnit:new{ Image = "units/player/truelch_mg_sentry_death.png", PosX = -18, PosY = -8, NumFrames = 10, Loop = false, Time = 0.14 }
+a.truelch_mg_sentrya =   a.MechUnit:new{ Image = "units/player/truelch_mg_sentry_a.png",     PosX = -27, PosY = -15, NumFrames = 4 }
+a.truelch_mg_sentryd =   a.MechUnit:new{ Image = "units/player/truelch_mg_sentry_death.png", PosX = -27, PosY = -15, NumFrames = 11, Loop = false, Time = 0.14 }
 a.truelch_mg_sentry_ns = a.MechIcon:new{ Image = "units/player/truelch_mg_sentry_ns.png" }
 
 --- MORTAR SENTY ---
 local a = ANIMS
 a.truelch_mortar_sentry =    a.MechUnit:new{ Image = "units/player/truelch_mortar_sentry.png",       PosX = -18, PosY = -8 }
-a.truelch_mortar_sentrya =   a.MechUnit:new{ Image = "units/player/truelch_mortar_sentry_a.png",     PosX = -18, PosY = -8, NumFrames = 4 }
-a.truelch_mortar_sentryd =   a.MechUnit:new{ Image = "units/player/truelch_mortar_sentry_death.png", PosX = -18, PosY = -8, NumFrames = 10, Loop = false, Time = 0.14 }
+a.truelch_mortar_sentrya =   a.MechUnit:new{ Image = "units/player/truelch_mortar_sentry_a.png",     PosX = -27, PosY = -15, NumFrames = 4 }
+a.truelch_mortar_sentryd =   a.MechUnit:new{ Image = "units/player/truelch_mortar_sentry_death.png", PosX = -27, PosY = -15, NumFrames = 11, Loop = false, Time = 0.14 }
 a.truelch_mortar_sentry_ns = a.MechIcon:new{ Image = "units/player/truelch_mortar_sentry_ns.png" }
 
 --- TESLA TOWER ---
