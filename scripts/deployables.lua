@@ -49,7 +49,7 @@ a.truelch_mortar_sentry_ns = a.MechIcon:new{ Image = "units/player/truelch_morta
 local a = ANIMS
 a.truelch_tesla_tower =    a.MechUnit:new{ Image = "units/player/truelch_tesla_tower.png",       PosX = -18, PosY = -8 }
 a.truelch_tesla_towera =   a.MechUnit:new{ Image = "units/player/truelch_tesla_tower_a.png",     PosX = -18, PosY = -8, NumFrames = 4 }
-a.truelch_tesla_towerd =   a.MechUnit:new{ Image = "units/player/truelch_tesla_tower_death.png", PosX = -18, PosY = -8, NumFrames = 10, Loop = false, Time = 0.14 }
+a.truelch_tesla_towerd =   a.MechUnit:new{ Image = "units/player/truelch_tesla_tower_death.png", PosX = -25, PosY = -12, NumFrames = 11, Loop = false, Time = 0.14 }
 a.truelch_tesla_tower_ns = a.MechIcon:new{ Image = "units/player/truelch_tesla_tower_ns.png" }
 
 --- GUARD DOG ---
