@@ -33,16 +33,16 @@ end
 
 --- MG SENTY ---
 local a = ANIMS
-a.truelch_mg_sentry =    a.MechUnit:new{ Image = "units/player/truelch_mg_sentry.png",       PosX = -18, PosY = -8 }
-a.truelch_mg_sentrya =   a.MechUnit:new{ Image = "units/player/truelch_mg_sentry_a.png",     PosX = -27, PosY = -15, NumFrames = 4 }
-a.truelch_mg_sentryd =   a.MechUnit:new{ Image = "units/player/truelch_mg_sentry_death.png", PosX = -27, PosY = -15, NumFrames = 11, Loop = false, Time = 0.14 }
+a.truelch_mg_sentry =    a.MechUnit:new{ Image = "units/player/truelch_mg_sentry.png",       PosX = -17, PosY = -11 }
+a.truelch_mg_sentrya =   a.MechUnit:new{ Image = "units/player/truelch_mg_sentry_a.png",     PosX = -26, PosY = -18, NumFrames = 4 }
+a.truelch_mg_sentryd =   a.MechUnit:new{ Image = "units/player/truelch_mg_sentry_death.png", PosX = -26, PosY = -18, NumFrames = 11, Loop = false, Time = 0.14 }
 a.truelch_mg_sentry_ns = a.MechIcon:new{ Image = "units/player/truelch_mg_sentry_ns.png" }
 
 --- MORTAR SENTY ---
 local a = ANIMS
-a.truelch_mortar_sentry =    a.MechUnit:new{ Image = "units/player/truelch_mortar_sentry.png",       PosX = -18, PosY = -8 }
-a.truelch_mortar_sentrya =   a.MechUnit:new{ Image = "units/player/truelch_mortar_sentry_a.png",     PosX = -27, PosY = -15, NumFrames = 4 }
-a.truelch_mortar_sentryd =   a.MechUnit:new{ Image = "units/player/truelch_mortar_sentry_death.png", PosX = -27, PosY = -15, NumFrames = 11, Loop = false, Time = 0.14 }
+a.truelch_mortar_sentry =    a.MechUnit:new{ Image = "units/player/truelch_mortar_sentry.png",       PosX = -17, PosY = -11 }
+a.truelch_mortar_sentrya =   a.MechUnit:new{ Image = "units/player/truelch_mortar_sentry_a.png",     PosX = -26, PosY = -18, NumFrames = 4 }
+a.truelch_mortar_sentryd =   a.MechUnit:new{ Image = "units/player/truelch_mortar_sentry_death.png", PosX = -26, PosY = -18, NumFrames = 11, Loop = false, Time = 0.14 }
 a.truelch_mortar_sentry_ns = a.MechIcon:new{ Image = "units/player/truelch_mortar_sentry_ns.png" }
 
 --- TESLA TOWER ---
@@ -56,7 +56,7 @@ a.truelch_tesla_tower_ns = a.MechIcon:new{ Image = "units/player/truelch_tesla_t
 local a = ANIMS
 a.truelch_guard_dog =    a.MechUnit:new{ Image = "units/player/truelch_guard_dog.png",       PosX = -18, PosY = -8 }
 a.truelch_guard_doga =   a.MechUnit:new{ Image = "units/player/truelch_guard_dog_a.png",     PosX = -18, PosY = -8, NumFrames = 4 }
-a.truelch_guard_dogd =   a.MechUnit:new{ Image = "units/player/truelch_guard_dog_death.png", PosX = -18, PosY = -8, NumFrames = 10, Loop = false, Time = 0.14 }
+a.truelch_guard_dogd =   a.MechUnit:new{ Image = "units/player/truelch_guard_dog_death.png", PosX = -18, PosY = -8, NumFrames = 9, Loop = false, Time = 0.14 }
 a.truelch_guard_dog_ns = a.MechIcon:new{ Image = "units/player/truelch_guard_dog_ns.png" }
 
 ----------------------------------------------------------------------------------------------------
@@ -189,24 +189,30 @@ truelch_Am12MortarSentry_Weapon = Skill:new{
 
 --If I do a weapon managed by the AI
 function truelch_Am12MortarSentry_Weapon:GetTargetScore(p1, p2)
-	local effect = SkillEffect()
-
 	local score = 0
-	if Board:GetPawnTeam(p2) == TEAM_ENEMY then
-		score = score + 100
+	local pawn = Board:GetPawn(p2)
+	if pawn ~= nil then
+		if pawn:IsEnemy() then
+			score = score + 100
+		else
+			score = score - 10
+		end
+	elseif Board:IsBuilding(p2) then
+		score = score - 50
 	end
 
+	--Adjacent
 	for dir = DIR_START, DIR_END do
 		local curr = p2 + DIR_VECTORS[dir]
-		local pawn = Board:GetPawn(curr)
-		if Board:IsBuilding() then
-			score = score - 50
-		elseif pawn ~= nil then
+		pawn = Board:GetPawn(curr)
+		if pawn ~= nil then
 			if pawn:IsEnemy() then
 				score = score + 50
 			else
 				score = score - 10
 			end
+		elseif Board:IsBuilding(curr) then
+			score = score - 50
 		end
 	end
 
@@ -218,11 +224,8 @@ function truelch_Am12MortarSentry_Weapon:GetTargetArea(point)
 
     for dir = DIR_START, DIR_END do
     	for i = 2, 7 do
-        	local curr = point + DIR_VECTORS[dir]*i
-        	local pawn = Board:GetPawn(curr)
-	        if pawn ~= nil and pawn:IsEnemy() then
-	        	ret:push_back(curr)
-	    	end
+    		local curr = point + DIR_VECTORS[dir]*i
+    		ret:push_back(curr)
 	    end
     end
 
@@ -380,7 +383,7 @@ truelch_GuardDog = Pawn:new{
 	MoveSpeed = 3,
 	Image = "truelch_guard_dog",
 	--Image = "MechJudo",
-	SkillList = { "truelch_TeslaTower_Weapon" },
+	SkillList = { "truelch_GuardDog_Weapon" },
 	SoundLocation = "/mech/flying/jet_mech/",
 	ImageOffset = mechDiversBlack,
 	DefaultTeam = TEAM_PLAYER,
@@ -390,3 +393,67 @@ truelch_GuardDog = Pawn:new{
 	Flying = true,
 }
 AddPawn("truelch_GuardDog")
+
+--"Neutral" weapon
+truelch_GuardDog_Weapon = Skill:new{
+	--Infos
+	Name = "AR-23P Liberator Penetrator",
+	Description = "Shoots a projectile at melee range, prioritizing enemies adjacent with Mechs.",
+	Class = "Unique",
+
+	--Art
+	Icon = "weapons/deploy_tank.png",
+	ProjectileArt = "effects/shot_mechtank",
+
+	--Gameplay
+	Damage = 1,
+
+	--Tip image
+	TipImage = {
+		Unit     = Point(1, 2),
+		Friendly = Point(2, 1),
+		Enemy    = Point(1, 1),
+		Target   = Point(1, 1),
+		CustomPawn = "truelch_GuardDog"
+	}
+}
+
+function truelch_GuardDog_Weapon:GetTargetScore(p1, p2)
+	local effect = SkillEffect()
+
+	local score = -10
+
+	--TODO: reduce score if there's a Building behind target
+
+	if Board:GetPawnTeam(p2) == TEAM_ENEMY then
+		score = score + 50
+		for dir = DIR_START, DIR_END do
+			local curr = p2 + DIR_VECTORS[dir]
+			local pawn = Board:GetPawn(curr)
+			if pawn ~= nil and pawn:IsMech() then
+				score = score + 100
+			end
+		end
+	end
+
+	return score
+end
+
+function truelch_GuardDog_Weapon:GetTargetArea(point)
+    local ret = PointList()
+
+    for dir = DIR_START, DIR_END do
+    	ret:push_back(point + DIR_VECTORS[dir])
+    end
+
+    return ret
+end
+
+function truelch_GuardDog_Weapon:GetSkillEffect(p1, p2)
+    local ret = SkillEffect()
+    local dir = GetDirection(p2 - p1)
+    --local target = GetProjectileEnd(p1, p2, PATH_PROJECTILE)
+    local damage = SpaceDamage(p2, self.Damage, dir)
+    ret:AddProjectile(p1, damage, self.ProjectileArt, NO_DELAY)
+    return ret
+end

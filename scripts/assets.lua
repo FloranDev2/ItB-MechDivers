@@ -58,6 +58,18 @@ ANIMS.truelch_anim_pod_land = Animation:new{
 	NumFrames = 24,
 }
 
+--Same, but with the grenade designator that has the light signal thingy
+modApi:appendAsset("img/effects/truelch_anim_pod_land_2.png", resourcePath.."img/effects/truelch_anim_pod_land_2.png")
+	Location["effects/truelch_anim_pod_land_2.png"] = Point(-20, -40)
+
+ANIMS.truelch_anim_pod_land_2 = Animation:new{
+	Image = "effects/truelch_anim_pod_land_2.png",
+	PosX = -25,
+	PosY = -165,
+	Time = 0.08,
+	NumFrames = 24,
+}
+
 modApi:appendAsset("img/effects/truelch_500kg.png", resourcePath.."img/effects/truelch_500kg.png")
 	Location["effects/truelch_500kg.png"] = Point(-25, -123)
 
@@ -109,6 +121,8 @@ modApi:appendAsset("img/combat/icons/icon_protecc.png", resourcePath.."img/comba
 --Artillery shotups
 modApi:appendAsset("img/effects/truelch_shotup_stratagem_ball.png", resourcePath.."img/effects/truelch_shotup_stratagem_ball.png")
 modApi:appendAsset("img/effects/truelch_shotup_mortar.png", resourcePath.."img/effects/truelch_shotup_mortar.png")
+modApi:appendAsset("img/effects/truelch_mg_drone_shotup.png", resourcePath.."img/effects/truelch_mg_drone_shotup.png")
+
 
 --Projectiles
 

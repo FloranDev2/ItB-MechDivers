@@ -288,12 +288,17 @@ local function resolveOrbitalStrikes()
 
 			--Center
 			local damage = SpaceDamage(point, DAMAGE_DEATH)
+			damage.iCrack = EFFECT_CREATE
 			--damage.sAnimation = "ExploArt2" --TMP
 			damage.sAnimation = "truelch_anim_orbital_laser"
 			damage.sSound = "/weapons/burst_beam"
 			Board:AddEffect(damage)
 
 			rippleEffect(point)
+
+			local damage = SpaceDamage(point, DAMAGE_DEATH)
+			--damage.iCrack = EFFECT_CREATE
+			Board:AddEffect(damage)
 
 		--elseif id == 1 then
 			----- ??? -----
@@ -439,7 +444,8 @@ function truelch_MgSentryMode:fire(p1, p2, se)
     se:AddArtillery(damage, self.UpShot, FULL_DELAY)
 
     local dropAnim = SpaceDamage(p2, 0)
-    dropAnim.sAnimation = "truelch_anim_pod_land"
+    --dropAnim.sAnimation = "truelch_anim_pod_land"
+    dropAnim.sAnimation = "truelch_anim_pod_land_2"
     se:AddDamage(dropAnim)
 
     se:AddDelay(1.9)
@@ -469,11 +475,21 @@ truelch_TeslaTowerMode = truelch_MgSentryMode:new{
 -------------------- MODE 8: Guard Dog --------------------
 truelch_GuardDogMode = truelch_MgSentryMode:new{
 	aFM_name = "Release a Guard Dog",
-	aFM_desc = "AX/AR-23 Guard Dog.".. --don't know if '' can work as a replacement to "" inside a string
+	aFM_desc = "AX/AR-23 'Guard Dog'.".. --don't know if '' can work as a replacement to "" inside a string
 		"\n(...)",
 	aFM_icon = "img/modes/icon_guard_dog.png",
-	Pawn = "truelch_Amg43MachineGunSentry", --TODO
+	Pawn = "truelch_GuardDog", --TODO
 }
+
+function truelch_GuardDogMode:fire(p1, p2, se)
+    local damage = SpaceDamage(p2, 0)
+    se:AddArtillery(damage, "effects/truelch_mg_drone_shotup.png", FULL_DELAY)
+
+    local spawn = SpaceDamage(p2, 0)
+    spawn.sPawn = self.Pawn
+    se:AddDamage(spawn)
+end
+
 
 
 
@@ -931,10 +947,10 @@ truelch_StratagemFMW = aFM_WeaponTemplate:new{
 	--TipImage
 	TipIndex = 0,
 	TipImage = {
-		Unit   = Point(2, 3),
-		Target = Point(2, 1),
-		Second_Origin = Point(2, 3),
-		Second_Target = Point(2, 1),
+		Unit   = Point(2, 1),
+		Target = Point(2, 3),
+		Second_Origin = Point(2, 1),
+		Second_Target = Point(2, 3),
 	}
 }
 
@@ -988,49 +1004,38 @@ function truelch_StratagemFMW:GetTargetArea(point)
 end
 
 function truelch_StratagemFMW:GetSkillEffect_TipImage(p1, p2)
-	--LOG(string.format("truelch_StratagemFMW:GetSkillEffect_TipImage(p1: %s, p2: %s)", p1:GetString(), p2:GetString()))
-	--V1: Temporary
 	local ret = SkillEffect()
+	--Nothing?
+	return ret
+end
 
-	--It might not work because of the TC logic
+function truelch_StratagemFMW:GetFinalEffect_TipImage(p1, p2, p3)
+	local ret = SkillEffect()
 
 	if self.TipIndex == 0 then
 		self.TipIndex = 1
-		--LOG("--------- Step 1")
-		--- Step 1: throw grenade
-	    local damage = SpaceDamage(p2, 1)
-	    ret:AddArtillery(p1, damage, "effects/truelch_shotup_stratagem_ball.png", FULL_DELAY)
-	    
-	    ret:AddDelay(2)
-
+		local pawn = Board:GetPawn(Point(2, 3))
+		if pawn ~= nil then
+			pawn:SetSpace(Point(2, 1))
+		end
+    	local damage = SpaceDamage(p2, 0)
+    	damage.sImageMark = "combat/blue_stratagem_grenade.png" --doesn't show up in the tip image
+	    ret:AddArtillery(p1, damage, "effects/truelch_shotup_stratagem_ball.png", FULL_DELAY)    
 	    local dropAnim = SpaceDamage(p2, 0)
-	    dropAnim.sAnimation = "truelch_anim_pod_land"
+	    dropAnim.sAnimation = "truelch_anim_pod_land_2"
 	    ret:AddDamage(dropAnim)
-
-	    Board:AddEffect(ret) --let's try that
-	else
+	elseif self.TipIndex == 1 then
+		self.TipIndex = 2
+		Board:SetItem(p2, "truelch_Item_WeaponPod_Mg43")
+		ret:AddMove(Board:GetPath(p1, Point(2, 3), PATH_GROUND), FULL_DELAY)
+	elseif self.TipIndex == 2 then
 		self.TipIndex = 0
-		--LOG("--------- Step 2")
-		--- Step2: move
-		ret:AddMove(Board:GetPath(p1, Point(2, 1), PATH_GROUND), FULL_DELAY)
-		ret:AddDelay(2)
-		Board:AddAlert(Point(2, 1), "Acquired a weapon!") --I want to make this happen AFTER move.
-
-		Board:AddEffect(ret) --let's try that
+		local pawn = Board:GetPawn(Point(2, 1))
+		pawn:SetSpace(Point(2, 3))
+		Board:AddAlert(Point(2, 3), "WEAPON ACQUIRED") --I want to make this happen AFTER move.
 	end
-	
-	--For later use:
-	--ret:AddAirstrike(point, "effects/truelch_eagle.png")
 
-	--V2 (TODO)
-	--[[
-	if isMission() then
-		--Play the available modes
-	else
-		--Hangar / island view: play random
-	end
-	]]
-	return ret --nope
+	return ret
 end
 
 function truelch_StratagemFMW:GetSkillEffect_Normal(p1, p2)
@@ -1058,18 +1063,26 @@ function truelch_StratagemFMW:IsTwoClickException(p1, p2)
 	return not _G[self:FM_GetMode(p1)].aFM_twoClick
 end
 
+
 function truelch_StratagemFMW:GetSecondTargetArea(p1, p2)
-	local currentShell = _G[self:FM_GetMode(p1)]
-    local pl = PointList()
-    
-	if self:FM_CurrentModeReady(p1) and currentShell.aFM_twoClick then 
-		pl = currentShell:second_targeting(p1, p2)
+
+	if not Board:IsTipImage() then
+		local currentShell = _G[self:FM_GetMode(p1)]
+	    local pl = PointList()
+	    
+		if self:FM_CurrentModeReady(p1) and currentShell.aFM_twoClick then 
+			pl = currentShell:second_targeting(p1, p2)
+		end
+	    
+	    return pl
+	else
+		return self:GetTargetArea_TipImage(point)
 	end
-    
-    return pl 
 end
 
-function truelch_StratagemFMW:GetFinalEffect(p1, p2, p3) 
+
+
+function truelch_StratagemFMW:GetFinalEffect_Normal(p1, p2, p3)
     local se = SkillEffect()
 	local currentShell = _G[self:FM_GetMode(p1)]
 
@@ -1077,7 +1090,15 @@ function truelch_StratagemFMW:GetFinalEffect(p1, p2, p3)
 		se = currentShell:second_fire(p1, p2, p3)  
 	end
     
-    return se 
+    return se
+end
+
+function truelch_StratagemFMW:GetFinalEffect(p1, p2, p3)
+	if not Board:IsTipImage() then
+		return self:GetFinalEffect_Normal(p1, p2, p3)
+	else
+		return self:GetFinalEffect_TipImage(p1, p2, p3)
+	end
 end
 
 

@@ -56,6 +56,7 @@ local function HOOK_onNextTurnHook()
         --Play anim
         local dropAnim = SpaceDamage(loc, 0)
         dropAnim.sAnimation = "truelch_anim_pod_land"
+        --dropAnim.sAnimation = "truelch_anim_pod_land_2"
         effect:AddDamage(dropAnim)
 
         --Delay
@@ -71,7 +72,7 @@ local function HOOK_onNextTurnHook()
         ]]
         --TODO: play sound
         local sfx = SpaceDamage(loc, 0)
-        sfx.sSound = "/ui/battle/mech_drop" --that should be it
+        sfx.sSound = "/ui/battle/mech_drop" --that should be it. It doesn't seem to play a sound...
         effect:AddDamage(sfx)
 
         --Dust

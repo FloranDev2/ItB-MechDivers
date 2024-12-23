@@ -22,7 +22,7 @@ truelch_DualAutocannons = Skill:new{
 
     --Upgrades
     Upgrades = 2,
-    UpgradeCost = { 2, 2 },
+    UpgradeCost = { 2, 3 },
 
     --Tip image
     TipImage = {
