@@ -858,9 +858,6 @@ truelch_OrbitalPrecisionStrikeMode = truelch_Mg43Mode:new{
 	Anim = "", --TODO
 }
 
-
-
-
 --[[
 function truelch_OrbitalPrecisionStrikeMode:targeting(point)
 	local points = {}
@@ -971,7 +968,7 @@ truelch_StratagemFMW_AB = truelch_StratagemFMW:new{
 }
 ]]
 
-function truelch_StratagemFMW:GetTargetArea_TipImage(point)
+function truelch_StratagemFMW:GetTargetArea_TipImage()
 	local ret = PointList()
 	for j = 0, 7 do
 		for i = 0, 7 do
@@ -999,41 +996,69 @@ function truelch_StratagemFMW:GetTargetArea(point)
 	if not Board:IsTipImage() then
 		return self:GetTargetArea_Normal(point)
 	else
-		return self:GetTargetArea_TipImage(point)
+		return self:GetTargetArea_TipImage()
 	end
 end
 
-function truelch_StratagemFMW:GetSkillEffect_TipImage(p1, p2)
+function truelch_StratagemFMW:GetSkillEffect_TipImage()
 	local ret = SkillEffect()
 	--Nothing?
 	return ret
 end
 
-function truelch_StratagemFMW:GetFinalEffect_TipImage(p1, p2, p3)
+function truelch_StratagemFMW:GetFinalEffect_TipImage()
 	local ret = SkillEffect()
 
+	--LOG("truelch_StratagemFMW:GetFinalEffect_TipImage() -> self.TipIndex: "..tostring(self.TipIndex))
+
+	local p1 = Point(2, 1)
+	local p2 = Point(2, 3)
+
 	if self.TipIndex == 0 then
+		--LOG("self.TipIndex == 0 -------------- A")
 		self.TipIndex = 1
+		--LOG("self.TipIndex == 0 -------------- B")
 		local pawn = Board:GetPawn(Point(2, 3))
+		--LOG("self.TipIndex == 0 -------------- C")
 		if pawn ~= nil then
+			--LOG("self.TipIndex == 0 -------------- C bis pawn ~= nil")
 			pawn:SetSpace(Point(2, 1))
+			--LOG("----------------- pawn id: "..tostring(pawn:GetId())) --93?!
 		end
+		--LOG("self.TipIndex == 0 -------------- D")
     	local damage = SpaceDamage(p2, 0)
-    	damage.sImageMark = "combat/blue_stratagem_grenade.png" --doesn't show up in the tip image
+    	--LOG("self.TipIndex == 0 -------------- E")
+    	--damage.sImageMark = "combat/blue_stratagem_grenade.png" --doesn't show up in the tip image
 	    ret:AddArtillery(p1, damage, "effects/truelch_shotup_stratagem_ball.png", FULL_DELAY)    
+	    --LOG("self.TipIndex == 0 -------------- F")
 	    local dropAnim = SpaceDamage(p2, 0)
+	    --LOG("self.TipIndex == 0 -------------- G")
 	    dropAnim.sAnimation = "truelch_anim_pod_land_2"
+	    --LOG("self.TipIndex == 0 -------------- H")
 	    ret:AddDamage(dropAnim)
+	    --LOG("self.TipIndex == 0 -------------- I")
 	elseif self.TipIndex == 1 then
 		self.TipIndex = 2
 		Board:SetItem(p2, "truelch_Item_WeaponPod_Mg43")
 		ret:AddMove(Board:GetPath(p1, Point(2, 3), PATH_GROUND), FULL_DELAY)
 	elseif self.TipIndex == 2 then
+		--LOG("self.TipIndex == 2 -------------- A")
 		self.TipIndex = 0
+		--LOG("self.TipIndex == 2 -------------- B")
 		local pawn = Board:GetPawn(Point(2, 1))
-		pawn:SetSpace(Point(2, 3))
+		if pawn ~= nil then
+			pawn:SetSpace(Point(2, 3))
+		else
+			--LOG("------------- pawn is nil!!")
+		end
+		--LOG("self.TipIndex == 2 -------------- C")
+		
+		--LOG("self.TipIndex == 2 -------------- D")
 		Board:AddAlert(Point(2, 3), "WEAPON ACQUIRED") --I want to make this happen AFTER move.
+		--LOG("self.TipIndex == 2 -------------- E")
 	end
+
+	--LOG("truelch_StratagemFMW:GetFinalEffect_TipImage() - END")
 
 	return ret
 end
@@ -1055,7 +1080,7 @@ function truelch_StratagemFMW:GetSkillEffect(p1, p2)
 	if not Board:IsTipImage() then
 		return self:GetSkillEffect_Normal(p1, p2)
 	else
-		return self:GetSkillEffect_TipImage(p1, p2)
+		return self:GetSkillEffect_TipImage(--[[p1, p2]])
 	end
 end
 
@@ -1076,7 +1101,7 @@ function truelch_StratagemFMW:GetSecondTargetArea(p1, p2)
 	    
 	    return pl
 	else
-		return self:GetTargetArea_TipImage(point)
+		return self:GetTargetArea_TipImage()
 	end
 end
 
@@ -1097,7 +1122,7 @@ function truelch_StratagemFMW:GetFinalEffect(p1, p2, p3)
 	if not Board:IsTipImage() then
 		return self:GetFinalEffect_Normal(p1, p2, p3)
 	else
-		return self:GetFinalEffect_TipImage(p1, p2, p3)
+		return self:GetFinalEffect_TipImage(--[[p1, p2, p3]])
 	end
 end
 
@@ -1206,7 +1231,7 @@ local function computeStratagems()
 	end
 end
 
-local testMode = true
+local testMode = false
 
 local HOOK_onNextTurn = function(mission)
 	if Game:GetTeamTurn() ~= TEAM_PLAYER then
