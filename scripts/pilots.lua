@@ -59,7 +59,7 @@ CreatePilot{
 --Mech Diver
 CreatePilot{
 	Id = "Pilot_Artificial",
-	Personality = "Detritus",
+	Personality = "MechDiver",
 	Rarity = 0,
 	Sex = SEX_MALE,
 	--Maybe I can add my own name id in a separate .csv or by script

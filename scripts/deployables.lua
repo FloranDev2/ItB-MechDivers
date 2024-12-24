@@ -91,6 +91,9 @@ truelch_Amg43MachineGunSentry_Weapon = Skill:new{
 	Icon = "weapons/deploy_tank.png",
 	ProjectileArt = "effects/shot_mechtank",
 
+	LaunchSound = "/weapons/modified_cannons",
+	ImpactSound = "/impact/generic/explosion",
+
 	--Gameplay
 	Damage = 1,
 
@@ -166,12 +169,15 @@ AddPawn("truelch_Am12MortarSentry")
 truelch_Am12MortarSentry_Weapon = Skill:new{
 	--Infos
 	Name = "Mortar",
-	Description = "Artillery strike.",
+	Description = "Artillery strike that damages and pushes adjacent tiles.",
 	Class = "Unique",
 
 	--Art
 	Icon = "weapons/ranged_artillery.png",
-	UpShot = "effects/truelch_shotup_mortar.png", --TMP
+	UpShot = "effects/truelch_shotup_mortar.png",
+
+	LaunchSound = "/weapons/artillery_volley",
+	ImpactSound = "/impact/generic/explosion",
 
 	--Gameplay
 	CenterDamage = 1,
@@ -284,8 +290,9 @@ truelch_TeslaTower_Weapon = Skill:new{
 	Class = "Unique",
 
 	--Art
-	Icon = "weapons/deploy_tank.png",
-	UpShot = "effects/shotup_tribomb_missile.png", --TMP
+	Icon = "weapons/prime_lightning.png",
+
+	LaunchSound = "/weapons/electric_whip",
 
 	--Gameplay
 	Damage = 2,
@@ -405,6 +412,9 @@ truelch_GuardDog_Weapon = Skill:new{
 	Icon = "weapons/deploy_tank.png",
 	ProjectileArt = "effects/shot_mechtank",
 
+	LaunchSound = "/weapons/modified_cannons",
+	ImpactSound = "/impact/generic/explosion",
+
 	--Gameplay
 	Damage = 1,
 
@@ -452,7 +462,6 @@ end
 function truelch_GuardDog_Weapon:GetSkillEffect(p1, p2)
     local ret = SkillEffect()
     local dir = GetDirection(p2 - p1)
-    --local target = GetProjectileEnd(p1, p2, PATH_PROJECTILE)
     local damage = SpaceDamage(p2, self.Damage, dir)
     ret:AddProjectile(p1, damage, self.ProjectileArt, NO_DELAY)
     return ret

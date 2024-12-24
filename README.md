@@ -5,6 +5,11 @@ Let's free Super Earth from these undemocratic Vek!
 
 ## Credits
 Thanks the Discord community for helping me, especially tosx and Metalocif!
+And of course, thanks a lot for tob260, doing some playtesting / QA and also mental support! ;D
+
+## Disclaimer
+This mod is highly experimental. I fixed all issues I knew in vanilla, but it's likely that other mods would crash with this mod, especially with the revive mechanic.
+You've been warned!
 
 ## Description
 

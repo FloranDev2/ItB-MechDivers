@@ -44,7 +44,7 @@ end
 ----------------------------------------------- HOOKS -----------------------------------------------
 
 local function computeDrops(list)
-    LOG("computeDrops (count: "..tostring(#list)..")")
+    --LOG("computeDrops (count: "..tostring(#list)..")")
     --Kill pawns, play anim and spawn items
 
     --for _, hellPod in pairs(missionData().hellPods) do
@@ -56,7 +56,7 @@ local function computeDrops(list)
         local loc = hellPod[1]
         local item = hellPod[2]        
 
-        LOG(" -> loc: "..loc:GetString()..", item: "..item)
+        --LOG(" -> loc: "..loc:GetString()..", item: "..item)
 
         --Play anim
         local dropAnim = SpaceDamage(loc, 0)
@@ -108,7 +108,7 @@ local function computeDrops(list)
 
         --Add effect to the board
         Board:AddEffect(effect)
-        LOG("-------------- Here")
+        --LOG("-------------- Here")
     end
 end
 
@@ -118,7 +118,7 @@ local function HOOK_onNextTurnHook()
         computeDrops(missionData().hellPods)
 
         for _, data in pairs(missionData().hellPods) do
-            LOG("--------- added data to items!")
+            --LOG("--------- added data to items!")
             table.insert(missionData().items, data)
         end
 
@@ -150,11 +150,11 @@ local function HOOK_onNextTurnHook()
 end
 
 local HOOK_onTurnReset = function(mission)
-    LOG("HOOK_onTurnReset")
+    --LOG("HOOK_onTurnReset")
     --computeDrops()
     --computeDrops(missionData().items)
 
-    LOG("TEST SET ITEM")
+    --LOG("TEST SET ITEM")
     --Board:SetItem(Point(0, 0), "truelch_Item_WeaponPod_Mg43") --doesn't work
 
     modApi:runLater(function()

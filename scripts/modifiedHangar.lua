@@ -4,8 +4,9 @@ local this = {}
 local read
 local readEnabled
 
+--In reality, I'm just changing A.I. pilot portrait (to hell diver portrait)
 function this:changeMenuBackground(truelchMod)
-	LOG("----------------------------------- Changing hangar background...")
+	--LOG("----------------------------------- Changing hangar background...")
 	local rootPathOnDisc = truelchMod.resourcePath
 
 	local function appendDir(path) 
@@ -51,7 +52,7 @@ function this:init(truelchMod)
 end
 
 function this:load(truelchMod, options)
-	LOG("modifiedHanager -> load")
+	--LOG("modifiedHanager -> load")
 end
 
 return this

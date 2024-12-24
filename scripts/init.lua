@@ -98,7 +98,7 @@ function mod:load(options, version)
 	--FMW
 	require(self.scriptPath.."fmw/FMW"):load()
 
-	modApi:addSquad(	
+	modApi:addSquad(
 		{
 			id = "truelch_MechDivers",
 			"Mech Divers",

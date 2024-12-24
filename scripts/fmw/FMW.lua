@@ -30,12 +30,12 @@ aFMWF.move = aFM_WeaponTemplate:new{
 }
 
 local function initializeFMStates(m)
-	LOG(" =============================> initializeFMStates")
+	--LOG(" =============================> initializeFMStates")
 	for _, p in pairs(extract_table(Board:GetPawns(TEAM_MECH))) do
 		local p = Board:GetPawn(p)
 		local pId = p:GetId()
 
-		LOG(string.format(" ------ pawn: %s, pId: %s", p:GetMechName(), tostring(pId)))
+		--LOG(string.format(" ------ pawn: %s, pId: %s", p:GetMechName(), tostring(pId)))
 
 		if api:HasSkill(pId) then
 			m.atlas_FMW.Curr[pId] = {}

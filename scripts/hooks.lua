@@ -63,6 +63,54 @@ end
 
 ----------------------------------------------- HOOKS -----------------------------------------------
 
+local function isStratagemWeapon(weapon)
+    if type(weapon) == 'table' then
+        weapon = weapon.__Id
+    end
+    return string.find(weapon, "truelch_Stratagem") ~= nil
+end
+
+local function computeRespawn(pawn)
+    --LOG("computeRespawn()...")
+
+    if pawn == nil then
+        --LOG("... pawn is nil!")
+        return
+    end
+
+    --LOG("... pawn: "..pawn:GetMechName())
+
+    truelch_divers_fmwApi:ForceFMWInit(pawn:GetId())
+
+    --Disable all stratagems (except one?)
+    local weapons = pawn:GetPoweredWeapons()
+    local p = pawn:GetId()
+    for weaponIdx = 1, 3 do
+        local fmw = truelch_divers_fmwApi:GetSkill(p, weaponIdx, false)
+        if fmw ~= nil then
+            local weapon = weapons[weaponIdx]
+            if type(weapon) == 'table' then
+                weapon = weapon.__Id
+            end
+
+            --LOG("weapon: "..tostring(weapon))
+
+            if isStratagemWeapon(weapon) then
+                --LOG("... is stratagem! -> deactivate")
+                --[[
+                for k, mode in pairs(_G[weapon].aFM_ModeList) do
+                    LOG(" -> mode")
+                    fmw:FM_SetActive(p, mode, false) --doesn't work
+                    fmw:FM_DisableMode(p, mode) --test
+                end
+                ]]
+
+                pawn:RemoveWeapon(weaponIdx)
+            end
+        end
+    end
+end
+
 local function HOOK_onNextTurnHook()
     if Game:GetTeamTurn() == TEAM_PLAYER and IsPassiveSkill("truelch_Reinforcements_Passive") then
         --local board_size = Board:GetSize()
@@ -90,7 +138,8 @@ local function HOOK_onNextTurnHook()
                         Board:SpawnPawn(newMech, randPoint)
 
                         --truelch_divers_fmwApi:ForceFMWInit(randPoint)
-                        truelch_divers_fmwApi:ForceFMWInit(newMech:GetId())
+                        --truelch_divers_fmwApi:ForceFMWInit(newMech:GetId())
+                        computeRespawn(newMech)
                     end
                 end
             end
@@ -110,7 +159,8 @@ local function HOOK_onNextTurnHook()
             pawn:SetSpace(randPoint) --this doesn't do a cool drop anim though
 
             --truelch_divers_fmwApi:ForceFMWInit(randPoint)
-            truelch_divers_fmwApi:ForceFMWInit(pawn:GetId())
+            --truelch_divers_fmwApi:ForceFMWInit(pawn:GetId())
+            computeRespawn(pawn)
 
             --drop anim: take a look at candy island's candy goos
             --or lemon's geysers
@@ -131,12 +181,10 @@ local HOOK_onPawnKilled = function(mission, pawn)
     --LOG("------------ HOOK_onPawnKilled")
     if isMission() and pawn:IsMech() then
         if IsPassiveSkill("truelch_Reinforcements_Passive_A") --[[or IsPassiveSkill("truelch_Reinforcements_Passive")]] then
-            --LOG("------------ upgraded")
-
             --TODO: play EXPLO anim
-            local anim = SpaceDamage(pawn:GetSpace(), 0)
-            anim.sAnimation = "img/effects/timetravel.png"
-            Board:AddEffect(anim)
+            --local anim = SpaceDamage(pawn:GetSpace(), 0)
+            --anim.sAnimation = "img/effects/timetravel.png"
+            --Board:AddEffect(anim)
 
             Board:RemovePawn(pawn)
             local randPoint = GetRandomPoint()
@@ -146,7 +194,8 @@ local HOOK_onPawnKilled = function(mission, pawn)
             Board:SpawnPawn(newMech, randPoint)
 
             --truelch_divers_fmwApi:ForceFMWInit(randPoint)
-            truelch_divers_fmwApi:ForceFMWInit(newMech.GetId())
+            --truelch_divers_fmwApi:ForceFMWInit(newMech:GetId())
+            computeRespawn(newMech)
 
         elseif IsPassiveSkill("truelch_Reinforcements_Passive") then
             --Check terrain if chasm because in that case my current logic doesn't work
@@ -162,7 +211,8 @@ local HOOK_onPawnKilled = function(mission, pawn)
                 local spawned = Board:GetPawn(randPoint)
 
                 --truelch_divers_fmwApi:ForceFMWInit(randPoint)
-                truelch_divers_fmwApi:ForceFMWInit(spawned.GetId())
+                --truelch_divers_fmwApi:ForceFMWInit(spawned:GetId())
+                computeRespawn(spawned)
 
                 table.insert(missionData().deadMechs, spawned)
                 spawned:SetSpace(Point(-1, -1))
