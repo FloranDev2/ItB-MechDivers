@@ -30,15 +30,17 @@ aFMWF.move = aFM_WeaponTemplate:new{
 }
 
 local function initializeFMStates(m)
+	LOG(" =============================> initializeFMStates")
 	for _, p in pairs(extract_table(Board:GetPawns(TEAM_MECH))) do
 		local p = Board:GetPawn(p)
 		local pId = p:GetId()
+
+		LOG(string.format(" ------ pawn: %s, pId: %s", p:GetMechName(), tostring(pId)))
 
 		if api:HasSkill(pId) then
 			m.atlas_FMW.Curr[pId] = {}
 			m.atlas_FMW.Limited[pId] = {{}, {}, [50] = {}, [0] = {}}
 			m.atlas_FMW.Disabled[pId] = {false, false, [50] = false, [0] = false}
-			--m.atlas_FMW.IsActive[pId] = {true, true, [50] = true, [0] = true} --truelch
 			m.atlas_FMW.IsActive[pId] = {{}, {}, [50] = {}, [0] = {}} --truelch
 
 			for _, i in pairs({1, 2, 50, 0}) do
@@ -51,7 +53,6 @@ local function initializeFMStates(m)
 					for j = 1, #weapon.aFM_ModeList do
 						local mode = weapon.aFM_ModeList[j]
 						m.atlas_FMW.Limited[pId][i][mode] = _G[mode].aFM_limited or -1
-						--m.atlas_FMW.IsActive[pId][i][mode] = _G[mode].aFM_isActive and true --ideal but less safe and I might not need it
 						m.atlas_FMW.IsActive[pId][i][mode] = true
 					end
 				end

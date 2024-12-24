@@ -3,6 +3,9 @@
 local mod = modApi:getCurrentMod()
 local scriptPath = mod.scriptPath
 
+local truelch_divers_fmwApi = require(scriptPath.."fmw/api") --that's what I needed!
+LOG("hooks - truelch_divers_fmwApi: "..tostring(truelch_divers_fmwApi))
+
 
 ----------------------------------------------- MISSION / GAME FUNCTIONS -----------------------------------------------
 
@@ -60,66 +63,6 @@ end
 
 ----------------------------------------------- HOOKS -----------------------------------------------
 
-local function TestDisappearAppear(pawn)
-    --Disappear effect
-
-    --Appear effect
-
-    --TMP stuff
-    --pawn:SetHealth()
-end
-
-local function TestKillAndRetreat(pawn)
-    pawn:Retreat()
-    pawn:Kill()
-end
-
-local function TestInvisible(pawn)
-    --Board:AddAlert(pawn:GetSpace(), "DEMOCRACY")
-    pawn:SetInvisible(true)
-end
-
---The spawned unit cannot be a Mech. It'd crash the game
-local function TestSpawnPawn(pawn)
-    randPoint = GetRandomPoint()
-    local Tank = PAWN_FACTORY:CreatePawn("TankMech")
-    --Tank:SetMech() --crashes the game!
-    Board:SpawnPawn(Tank, randPoint)
-end
-
-local function TestBackUpStuff(pawn)
-    Board:AddEffect(SpaceDamage(pawn:GetSpace(), -10))
-    local randPoint = GetRandomPoint()
-    if randPoint ~= nil then
-        pawn:SetSpace(randPoint)
-    end
-end
-
-local function TestEnv(pawn)
-    --Env test (doesn't work yet)
-    local randPoint = GetRandomPoint()
-    Board:AddAlert(randPoint, "Env here")
-    ---Board:MarkSpaceImage(randPoint, "combat/tile_icon/tile_truelch_drop.png", GL_Color(255, 226, 88, 0.75))
-    Board:MarkSpaceImage(randPoint, "combat/tile_icon/tile_airstrike.png", GL_Color(255, 226, 88, 0.75))
-    Board:MarkSpaceDesc(randPoint, "air_strike", EFFECT_DEADLY)
-
-end
-
---[[
-Multiple issues though:
-- it won't display health when hovered with the mouse
-- its sprite will be displayed behind some terrain elements while it should be in front
--> These two issues are fixed when backing out
-- The Mech no longer die to chasms until reload
-]]
-local function TestFishFromChasm(pawn)
-    --Fishing mechs from chasms (https://discord.com/channels/417639520507527189/418142041189646336/1311122351651557478)
-    local randPoint = GetRandomPoint()
-    pawn:SetHealth(1)
-    Board:RemovePawn(pawn)
-    Board:AddPawn(pawn, randPoint)
-end
-
 local function HOOK_onNextTurnHook()
     if Game:GetTeamTurn() == TEAM_PLAYER and IsPassiveSkill("truelch_Reinforcements_Passive") then
         --local board_size = Board:GetSize()
@@ -132,10 +75,10 @@ local function HOOK_onNextTurnHook()
             for i = 0, 7 do
                 local pawn = Board:GetPawn(Point(i, j))
                 if pawn ~= nil then
-                    LOG(string.format(" -> Pawn: %s", pawn:GetMechName()))
+                    --LOG(string.format(" -> Pawn: %s", pawn:GetMechName()))
                     if --[[pawn ~= nil and]] pawn:IsMech() and pawn:IsDead() then
                         local pawnType = pawn:GetType()
-                        LOG(string.format(" ---> Found a dead pawn: %s", pawn:GetMechName()))
+                        --LOG(string.format(" ---> Found a dead pawn: %s", pawn:GetMechName()))
 
                         --Remove old
                         Board:RemovePawn(pawn) --doesn't work if the unit died in a chasm
@@ -145,6 +88,9 @@ local function HOOK_onNextTurnHook()
                         local newMech = PAWN_FACTORY:CreatePawn(pawnType)
                         newMech:SetMech()
                         Board:SpawnPawn(newMech, randPoint)
+
+                        --truelch_divers_fmwApi:ForceFMWInit(randPoint)
+                        truelch_divers_fmwApi:ForceFMWInit(newMech:GetId())
                     end
                 end
             end
@@ -162,6 +108,10 @@ local function HOOK_onNextTurnHook()
 
             local randPoint = GetRandomPoint()
             pawn:SetSpace(randPoint) --this doesn't do a cool drop anim though
+
+            --truelch_divers_fmwApi:ForceFMWInit(randPoint)
+            truelch_divers_fmwApi:ForceFMWInit(pawn:GetId())
+
             --drop anim: take a look at candy island's candy goos
             --or lemon's geysers
         end
@@ -194,6 +144,10 @@ local HOOK_onPawnKilled = function(mission, pawn)
             local newMech = PAWN_FACTORY:CreatePawn(pawnType) --this works! And also have the correct palette (idk how, but that's great)
             newMech:SetMech()
             Board:SpawnPawn(newMech, randPoint)
+
+            --truelch_divers_fmwApi:ForceFMWInit(randPoint)
+            truelch_divers_fmwApi:ForceFMWInit(newMech.GetId())
+
         elseif IsPassiveSkill("truelch_Reinforcements_Passive") then
             --Check terrain if chasm because in that case my current logic doesn't work
             --if Board:G
@@ -206,10 +160,14 @@ local HOOK_onPawnKilled = function(mission, pawn)
                 newMech:SetMech()
                 Board:SpawnPawn(newMech, randPoint)
                 local spawned = Board:GetPawn(randPoint)
+
+                --truelch_divers_fmwApi:ForceFMWInit(randPoint)
+                truelch_divers_fmwApi:ForceFMWInit(spawned.GetId())
+
                 table.insert(missionData().deadMechs, spawned)
                 spawned:SetSpace(Point(-1, -1))
 
-                Board:RemovePawn(pawn)
+                Board:RemovePawn(pawn) --if this happens last turn, it might cause a problem?
             end
         end
     end

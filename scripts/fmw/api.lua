@@ -17,6 +17,47 @@ aFM_WeaponTemplate = Skill:new{
 	aFM_ModeSwitchDesc = ""
 }
 
+--Test
+--In case the pawn for this id isn't initialized (respawn!)
+-- p: pawn space or id
+function this:ForceFMWInit(p)
+	LOG("forceFMWInit()...")
+	local p = Board:GetPawn(p)
+	local pId = p:GetId()
+
+	LOG(string.format(" ------ pawn: %s, pId: %s", p:GetMechName(), tostring(pId)))
+
+	local m = GetCurrentMission()
+
+	if m == nil then
+		LOG("... not a mission!")
+	end
+
+	LOG("...ok!")
+
+	if this:HasSkill(pId) then
+		m.atlas_FMW.Curr[pId] = {}
+		m.atlas_FMW.Limited[pId] = {{}, {}, [50] = {}, [0] = {}}
+		m.atlas_FMW.Disabled[pId] = {false, false, [50] = false, [0] = false}
+		m.atlas_FMW.IsActive[pId] = {{}, {}, [50] = {}, [0] = {}} --truelch
+
+		for _, i in pairs({1, 2, 50, 0}) do
+			local weapon = this:GetSkill(pId, i)
+            
+			if weapon then
+				weapon:FM_RegisterHK(pId)
+				m.atlas_FMW.Curr[pId][i] = weapon.aFM_ModeList[1]
+
+				for j = 1, #weapon.aFM_ModeList do
+					local mode = weapon.aFM_ModeList[j]
+					m.atlas_FMW.Limited[pId][i][mode] = _G[mode].aFM_limited or -1
+					m.atlas_FMW.IsActive[pId][i][mode] = true
+				end
+			end
+		end
+	end
+end
+
 -- returns whether or not a pawn has an FM skill
 -- p: pawn space or id
 function this:HasSkill(p)
@@ -213,6 +254,12 @@ function aFM_WeaponTemplate:FM_IsModeSwitchDisabled(p)
 	local m = GetCurrentMission()
 	local pId = Board:GetPawn(p):GetId()
 	local weaponIdx = this:GetSkillIdx(p, self)
+
+	--[[
+	if m.atlas_FMW.Disabled[pId] == nil then
+		forceFMWInit(Board:GetPawn(p):GetSpace())
+	end
+	]]
 
 	return m.atlas_FMW.Disabled[pId][weaponIdx]
 end
