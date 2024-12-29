@@ -706,7 +706,7 @@ function truelch_SmokeAirstrikeMode:second_fire(p1, p2, p3)
 end
 
 -------------------- MODE 11: 500kg Bomb Airstrike --------------------
-truelch_500kgAirstrikeMode = truelch_Mg43Mode:new{
+truelch_500kgAirstrikeMode = truelch_NapalmAirstrikeMode:new{
 	aFM_name = "500kg Bomb",
 	aFM_desc = "Call-in for an airstrike, dropping a 500kg bomb on the targeted tile, dealing 4 damage in the center and 2 damage on adjacent tiles."..
 		"\nYou can first target a Shuttle Mech to do the strike instantly."..
@@ -717,39 +717,6 @@ truelch_500kgAirstrikeMode = truelch_Mg43Mode:new{
 	MaxRange = 3,
 	AirstrikeAnim = "units/mission/bomber_1.png", --TODO
 }
-
---[[
-function truelch_500kgAirstrikeMode:targeting(point)
-	local points = {}
-
-    for dir = DIR_START, DIR_END do
-    	for i = 1, 7 do
-    		local curr = point + DIR_VECTORS[dir]*i
-    		points[#points+1] = curr
-    		if not Board:IsValid(curr) then
-    			break
-    		end
-    	end
-    end
-
-	return points
-end
-]]
-
-function truelch_NapalmAirstrikeMode:targeting(point)
-	local points = {}
-
-    for j = -self.Range, self.Range do
-        for i = -self.Range, self.Range do
-            local curr = point + Point(i, j)            
-            if curr ~= point then
-                points[#points+1] = curr
-            end
-        end
-    end
-
-	return points
-end
 
 --TC wasn't necessary
 --Oh, it was, for the shuttle move!
@@ -850,7 +817,7 @@ end
 --Orbital strikes effects will happen AFTER Vek act.
 
 -------------------- MODE 12: Orbital Strike --------------------
-truelch_OrbitalPrecisionStrikeMode = truelch_Mg43Mode:new{
+truelch_OrbitalPrecisionStrikeMode = truelch_NapalmAirstrikeMode:new{
 	aFM_name = "Orbital Precision Strike",
 	aFM_desc = "Command a precision orbital strike that'll kill anything below."..
 		"\nOrbital strikes happen after enemy turn, so you'll need to anticipate enemies' movement!",
@@ -1231,7 +1198,7 @@ local function computeStratagems()
 	end
 end
 
-local testMode = false
+local testMode = true
 
 local HOOK_onNextTurn = function(mission)
 	if Game:GetTeamTurn() ~= TEAM_PLAYER then

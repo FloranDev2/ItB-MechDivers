@@ -33,9 +33,10 @@ local function protecc(pawn, skillEffect)
     local damageRedirected = 0
 
     for i = 1, skillEffect.effect:size() do
-        local spaceDamage = skillEffect.effect:index(i);
-        --LOG("spaceDamage.loc: "..spaceDamage.loc:GetString())
+        local spaceDamage = skillEffect.effect:index(i)
+        
         if spaceDamage.iDamage > 0 and Board:IsBuilding(spaceDamage.loc) then
+            LOG(string.format("sd -> loc: %s, damage: %s", spaceDamage.loc:GetString(), tostring(spaceDamage.iDamage)))
             local proteccPawn = nil
 
             for dir = DIR_START, DIR_END do

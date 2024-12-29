@@ -4,7 +4,7 @@ local mod = modApi:getCurrentMod()
 local scriptPath = mod.scriptPath
 
 local truelch_divers_fmwApi = require(scriptPath.."fmw/api") --that's what I needed!
-LOG("hooks - truelch_divers_fmwApi: "..tostring(truelch_divers_fmwApi))
+--LOG("hooks - truelch_divers_fmwApi: "..tostring(truelch_divers_fmwApi))
 
 
 ----------------------------------------------- MISSION / GAME FUNCTIONS -----------------------------------------------

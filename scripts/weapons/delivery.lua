@@ -64,7 +64,8 @@ function truelch_DeliveryMode1:addLateralPoints(list, point, p1, p2, dmgVsUnits,
 end
 
 function truelch_DeliveryMode1:fire(p1, p2, se, up1, up2)
-	--LOG("truelch_DeliveryMode1:fire(p1: "..p1:GetString()..", p2:"..p2:GetString()..")")
+	--LOG("--- truelch_DeliveryMode1:fire(p1: "..p1:GetString()..", p2:"..p2:GetString()..") ---")
+	LOG(string.format("truelch_DeliveryMode1:fire(p1: %s, p2: %s, up1: %s, up2: %s)", p1:GetString(), p2:GetString(), tostring(up1), tostring(up2)))
 	local dir = GetDirection(p2 - p1)
 	local move = PointList()
 	move:push_back(p1)
@@ -131,6 +132,8 @@ function truelch_DeliveryMode1:fire(p1, p2, se, up1, up2)
 			dmgVsUnits, dmgVsBuildings, minDmgVsUnits, minDmgVsBuildings)
 	end
 
+	LOG("Before apply damage loop -> dmgVsBuildings: "..tostring(dmgVsBuildings)..", min dmg vs buildings: "..tostring(minDmgVsBuildings))
+
 	--Apply damage
 	local prevLoc
 	for _, point in ipairs(list) do
@@ -142,6 +145,7 @@ function truelch_DeliveryMode1:fire(p1, p2, se, up1, up2)
 		end
 
 		local spaceDamage = SpaceDamage(point, dmg)
+		LOG(string.format("spaceDamage -> point: %s, dmg: %s", point:GetString(), tostring(dmg)))
 		spaceDamage.sAnimation = "ExploRaining1"
 		spaceDamage.sSound = "/general/combat/stun_explode"
 		se:AddDamage(spaceDamage)
@@ -250,12 +254,17 @@ truelch_Delivery = aFM_WeaponTemplate:new{
 	TipImage = {
 		Unit      = Point(1, 0),
 		Enemy     = Point(2, 1),
+
 		Friendly  = Point(2, 3),
+		--Enemy2    = Point(2, 3),
+
 		Building  = Point(3, 1),
+		Building2 = Point(3, 3),
 		Target    = Point(1, 2),
 		Second_Origin = Point(1, 2),
 		Second_Target = Point(3, 2),
 		CustomPawn = "truelch_EagleMech",
+		--CustomFriendly = "truelch_EagleMech", --doesn't work. I wanted to avoid showing Patriotism in this preview, could be confusing.
 	}
 }
 
@@ -328,6 +337,7 @@ function truelch_Delivery:GetSkillEffect_Normal(p1, p2)
 end
 
 function truelch_Delivery:GetSkillEffect(p1, p2)
+	LOG("truelch_Delivery:GetSkillEffect -> up1: "..tostring(self.Up1)..", up2: "..tostring(self.Up2))
 	return self:GetSkillEffect_Normal(p1, p2)
 	--[[
 	if not Board:IsTipImage() then
