@@ -145,7 +145,7 @@ function truelch_DeliveryMode1:fire(p1, p2, se, up1, up2)
 		end
 
 		local spaceDamage = SpaceDamage(point, dmg)
-		LOG(string.format("spaceDamage -> point: %s, dmg: %s", point:GetString(), tostring(dmg)))
+		--LOG(string.format("spaceDamage -> point: %s, dmg: %s", point:GetString(), tostring(dmg)))
 		spaceDamage.sAnimation = "ExploRaining1"
 		spaceDamage.sSound = "/general/combat/stun_explode"
 		se:AddDamage(spaceDamage)
@@ -200,7 +200,9 @@ function truelch_DeliveryMode2:fire(p1, p2, se, up1, up2)
 
 	local pawn = Board:GetPawn(middlePoint)
 
-	if not Board:IsBlocked(middlePoint, PATH_PROJECTILE) then
+	if not Board:IsBlocked(middlePoint, PATH_PROJECTILE) and
+			not Board:IsTerrain(p2, TERRAIN_LAVA) and
+			not Board:IsTerrain(p2, TERRAIN_WATER) then
 		local damage = SpaceDamage(middlePoint)
 		damage.sImageMark = "combat/icons/icon_ammo_glow.png"
 		damage.sItem = "truelch_Item_ResupplyPod"
@@ -209,13 +211,6 @@ function truelch_DeliveryMode2:fire(p1, p2, se, up1, up2)
 		local damage = SpaceDamage(middlePoint)
 		damage.sImageMark = "combat/icons/icon_ammo_glow.png"
 		se:AddDamage(damage)
-
-		--Lazy reload
-		--se:AddScript([[
-		--	Board:AddAlert(]]..middlePoint:GetString()..[[, "RELOADED")
-		--	pawn:ResetUses()
-		--]])
-
 		--(Way) better reload: (oh also, I really need to get started on using string format!)
 		se:AddScript([[truelch_ItemReload(]]..tostring(pawn:GetId())..[[, 1)]])
 	end
@@ -254,6 +249,22 @@ truelch_Delivery = aFM_WeaponTemplate:new{
 	TipImage = {
 		Unit      = Point(1, 0),
 		Enemy     = Point(2, 1),
+		Enemy2    = Point(3, 3),
+		Building  = Point(3, 1),
+		Building2 = Point(2, 3),
+		Friendly  = Point(0, 0),
+		Target    = Point(1, 2),
+		CustomPawn = "truelch_EagleMech",
+	}
+
+	--[[
+	For some reason, with FMW, using Second_Origin and Second_Target
+	will use a non-upgraded version of the weapon for the second use.
+	]]
+	--[[
+	TipImage = {
+		Unit      = Point(1, 0),
+		Enemy     = Point(2, 1),
 
 		Friendly  = Point(2, 3),
 		--Enemy2    = Point(2, 3),
@@ -266,6 +277,7 @@ truelch_Delivery = aFM_WeaponTemplate:new{
 		CustomPawn = "truelch_EagleMech",
 		--CustomFriendly = "truelch_EagleMech", --doesn't work. I wanted to avoid showing Patriotism in this preview, could be confusing.
 	}
+	]]
 }
 
 Weapon_Texts.truelch_Delivery_Upgrade1 = "Building Damage"
@@ -288,8 +300,17 @@ truelch_Delivery_AB = truelch_Delivery:new{
 
 
 -------------------- GET TARGET AREA --------------------
+function truelch_Delivery:GetTargetArea_TipImage()
+	local ret = PointList()
+	for j = 0, 7 do
+		for i = 0, 7 do
+			ret:push_back(Point(i, j))
+		end
+	end
+	return ret
+end
 
-function truelch_Delivery:GetTargetArea(point)
+function truelch_Delivery:GetTargetArea_Normal(point)
 	local pl = PointList()
 	local currentMode = _G[self:FM_GetMode(point)]
     
@@ -303,25 +324,187 @@ function truelch_Delivery:GetTargetArea(point)
 	return pl
 end
 
--------------------- TIP IMAGE --------------------
-
-function truelch_Delivery:GIE_TI0(p1, p2)
-	local ret = SkillEffect()
-	return ret
-end
-
-function truelch_Delivery:GIE_TI1(p1, p2)
-	local ret = SkillEffect()
-	return ret
-end
-
-function truelch_Delivery:GetSkillEffect_TipImage(p1, p2)
-	if self.TipIndex == 1 then
-		self.TipIndex = 0
-		return self:GIE_TI1(p1, p2)
+function truelch_Delivery:GetTargetArea(point)
+	if not Board:IsTipImage() then
+		return self:GetTargetArea_Normal(point)
 	else
+		return self:GetTargetArea_TipImage()
+	end
+end
+
+-------------------- TIP IMAGE --------------------
+--(1, 0) -> (1, 2) -> (3, 2)
+function truelch_Delivery:GSE_TI0()
+	LOG("truelch_Delivery:GSE_TI0 - START")
+
+	local se = SkillEffect()
+
+	--Mech
+	local mech = nil
+	for j = 0, 7 do
+		for i = 0, 7 do
+			local pawn = Board:GetPawn(Point(i, j))
+			if pawn ~= nil and pawn:GetType() == "truelch_EagleMech" then
+				LOG("Found mech!")
+				mech = pawn
+			end
+		end
+	end
+
+	if mech == nil then
+		LOG("[0] Mech not found!")
+		return nil
+	else
+		--LOG("[0] Mech found at: "..mech:GetSpace())
+		LOG("[0] Mech found!...")
+		LOG("[0] ...At: "..mech:GetSpace():GetString())
+	end
+
+	--Friend
+	local friend = Board:GetPawn(Point(-1, -1))
+	if friend == nil then
+		for j = 0, 7 do
+			for i = 0, 7 do
+				local pawn = Board:GetPawn(Point(i, j))				
+				if pawn ~= nil and pawn:IsMech() and pawn:GetType() ~= "truelch_EagleMech" then
+					LOG(" -> "..Point(i, j):GetString().." -> pawn: "..pawn:GetType())
+					LOG("Found friend!")
+					friend = pawn
+				end
+			end
+		end
+	end
+
+	if friend == nil then
+		LOG("[0] Friend not found!")
+		return se
+	else
+		--LOG("[0] Mech found at: "..mech:GetSpace())
+		LOG("[0] Friend found!...")
+		LOG("[0] ...At: "..friend:GetSpace():GetString())
+	end
+	
+	--Set up
+	local p1 = Point(1, 0)
+	local p2 = Point(1, 2)
+	mech:SetSpace(p1)
+	friend:SetSpace(Point(-1, -1))
+	--friend:SetSpace(Point(0, 0))
+	--friend:SetInvisible(true)
+
+	Board:AddAlert(Point(2, 3), "Strafing run")
+
+	--Effect
+	truelch_DeliveryMode1:fire(p1, p2, se, self.Up1, self.Up2)
+
+	LOG("truelch_Delivery:GSE_TI0 - END")
+
+	return se
+end
+
+function truelch_Delivery:GSE_TI1()
+	LOG("truelch_Delivery:GSE_TI1 - START")
+
+	local se = SkillEffect()
+
+	local mech = nil
+	for j = 0, 7 do
+		for i = 0, 7 do
+			local pawn = Board:GetPawn(Point(i, j))
+			--LOG(" -> "..Point(i, j):GetString())
+			if pawn ~= nil and pawn:GetType() == "truelch_EagleMech" then
+				LOG("Found mech!")
+				mech = pawn
+				break
+			end
+		end
+	end
+
+	if mech == nil then
+		LOG("[1] Mech not found!")
+		return se
+	end
+	
+	--Set up
+	local p1 = Point(1, 2)
+	local p2 = Point(3, 2)
+	mech:SetSpace(p1)
+	local enemy = Board:GetPawn(Point(2, 1))
+	if self.Up2 then
+		enemy:SetHealth(1)
+	else
+		enemy:SetHealth(2)
+	end
+
+	--Effect
+	truelch_DeliveryMode1:fire(p1, p2, se, self.Up1, self.Up2)
+
+	LOG("truelch_Delivery:GSE_TI1 - END")
+
+	return se
+end
+
+function truelch_Delivery:GIE_TI2()
+	LOG("truelch_Delivery:GSE_TI2 - START")
+
+	local se = SkillEffect()
+
+	local mech = nil
+	for j = 0, 7 do
+		for i = 0, 7 do
+			local pawn = Board:GetPawn(Point(i, j))
+			if pawn ~= nil and pawn:GetType() == "truelch_EagleMech" then
+				mech = pawn
+			end
+		end
+	end
+
+	local friend = Board:GetPawn(Point(-1, -1))
+	if friend == nil then
+		for j = 0, 7 do
+			for i = 0, 7 do
+				local pawn = Board:GetPawn(Point(i, j))
+				--LOG(" -> "..Point(i, j):GetString())
+				if pawn ~= nil and pawn:IsMech() and pawn:GetType() ~= "truelch_EagleMech" then
+					LOG("Found mech!")
+					friend = pawn
+				end
+			end
+		end
+	end
+
+	if mech == nil or friend == nil then
+		LOG("[0] Mech or friend not found!")
+		return se
+	end
+	
+	--Set up
+	local p1 = Point(1, 3)
+	local p2 = Point(1, 1)
+	mech:SetSpace(p1)
+	friend:SetSpace(Point(1, 2))
+
+	Board:AddAlert(Point(2, 3), "Supply drop")
+
+	--Effect
+	truelch_DeliveryMode2:fire(p1, p2, se, self.Up1, self.Up2)
+
+	LOG("truelch_Delivery:GSE_TI2 - END")
+
+	return se
+end
+
+function truelch_Delivery:GetSkillEffect_TipImage()
+	LOG("truelch_Delivery:GetSkillEffect_TipImage()")
+	if self.TipIndex == 0 then
 		self.TipIndex = 1
-		return self:GIE_TI0(p1, p2)
+		return self:GSE_TI0()
+	elseif self.TipIndex == 1 then
+		self.TipIndex = 2
+		return self:GSE_TI1()
+	elseif self.Index == 2 then
+		self.TipIndex = 0
+		return self:GIE_TI2()
 	end
 end
 
@@ -337,15 +520,15 @@ function truelch_Delivery:GetSkillEffect_Normal(p1, p2)
 end
 
 function truelch_Delivery:GetSkillEffect(p1, p2)
-	LOG("truelch_Delivery:GetSkillEffect -> up1: "..tostring(self.Up1)..", up2: "..tostring(self.Up2))
-	return self:GetSkillEffect_Normal(p1, p2)
-	--[[
+	--LOG("truelch_Delivery:GetSkillEffect -> up1: "..tostring(self.Up1)..", up2: "..tostring(self.Up2))
+	--LOG(" -> test: "..tostring(self))
+	--return self:GetSkillEffect_Normal(p1, p2)
+
 	if not Board:IsTipImage() then
 		return self:GetSkillEffect_Normal(p1, p2)
 	else
 		return self:GetSkillEffect_TipImage(p1, p2)
 	end
-	]]
 end
 
 return this
