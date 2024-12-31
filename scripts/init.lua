@@ -1,8 +1,8 @@
 local mod = {
-	id = "truelch_MechDivers",
-	name = "Mech Divers",
+	id = "truelch_MechDivers", --let's avoid errors and keep this id
+	name = "Hell Breachers", --Name's change suggested by Generic and it won the poll!
 	icon = "img/mod_icon.png",
-	version = "1.0.0",
+	version = "1.1.0",
 	modApiVersion = "2.9.2",
 	--gameVersion = "1.2.88",
     dependencies = {
@@ -25,10 +25,7 @@ function mod:init()
 	require(self.scriptPath.."libs/artilleryArc") --weaponArmed is imported by artilleryArc
 	require(self.scriptPath.."libs/boardEvents")
 	require(self.scriptPath.."libs/trait")
-	require(self.scriptPath.."libs/weaponArmed") --even though it's imported by artilleryArc, I'll need it for QTE's too
-
-	--Test
-	--require(self.scriptPath.."test_qte") --omg it works lmao
+	--require(self.scriptPath.."libs/weaponArmed") --even though it's imported by artilleryArc, I'll need it for QTE's too
 
 	--FMW
 	self.FMW_hotkeyConfigTitle = "Mode Selection Hotkey" -- title of hotkey config in mod config
@@ -38,10 +35,6 @@ function mod:init()
 	--Items
 	require(self.scriptPath.."items")
 	require(self.scriptPath.."deployables") --deployable pawns
-
-	--Drop Env
-	--I won't use custom event because I want the drop effect to happen AFTER enemies act, not before
-	--require(self.scriptPath.."dropEnv")
 
 	--Hooks
 	require(self.scriptPath.."hellpods")
@@ -101,12 +94,12 @@ function mod:load(options, version)
 	modApi:addSquad(
 		{
 			id = "truelch_MechDivers",
-			"Mech Divers",
+			"Hell Breachers", --Name's change suggested by Generic and it won the poll!
 			"truelch_PatriotMech",
 			"truelch_EmancipatorMech",
 			"truelch_EagleMech",
 		},
-		"Mech Divers",
+		"Hell Breachers",
 		"A cup of Liber-Tea.\nLet's free Super Earth from these undemocratic Vek!",
 		self.resourcePath.."img/squad_icon.png"
 	)

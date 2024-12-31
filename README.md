@@ -1,4 +1,5 @@
-# ItB-MechDivers (v1.0.0)
+# Hell Breachers (v1.1.0)
+(previously named Mech Divers)
 
 A cup of Liber-Tea.
 Let's free Super Earth from these undemocratic Vek!
@@ -35,7 +36,37 @@ Reinforcements call down new Mechs piloted by rooky pilots when a Mech is destro
 This mod is likely to break with other mods since it does some "experimental stuff", especially with the Mechs' reinforcement mechanic, which REMOVES the destroyed Mech and create a new Mech.
 This new Mech has a new id, so any mod that assumes that Mechs are Pawns with ids ranging from 0 to 2 will break with this.
 
+## Known bugs / incompatibilies with other mods
+Pilot pot luck has an error with my mod (...)
+
+
 ## Versions
+
+### v1.1.0
+Squad's name changed to Hell Breachers (was Mech Divers). This was proposed by Generic and won the poll!
+
+#### Gameplay changes
+
+Patriot Mech:
+- Reduced damage of Machine Gun (and Rocket Pod??) by 1
+- Added a 1-core upgrade to increase ALL damage by 1 (including rocket pod area of effect when KO upgrade is enabled)
+
+- Eagle Mech:
+	- No longer have Patriotism trait (both to increase poor use of Delivery's Strafing run mode and prevent a bug with Patriotism)
+	- Delivery's base range reduced from 3 to 2
+	- Delivery's range upgrade will effectively increase its range (from 2 to 3)
+	- New: with delivery's range upgrade, the Supply Drop can drop up to 2 supply (between start and end point)
+
+#### Improvements / polishing
+- Delivery tip image improved:
+	- Will display the Delivery's Supply drop mode
+	- Won't display incorrect information anymore
+- [WIP] 500kg Bomb has more impactful effect (thx Metalocif for the suggestion!): added a Board Shake, some Bounce and better outer explosion effects.
+- Added tosx' Frozen Hulks as bots in "Remember Malevelon Creek" achievement calculation
+
+#### Bug fixes
+- Patriotism redirected damage wasn't reset everytime it was evaluating a damage, resulting in new redirected damage being higher than expected
+- [WIP] Airstrikes and Orbital strikes will be able to target an occupied tile (as it should be)
 
 ### v1.0.0
 Release!

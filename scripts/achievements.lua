@@ -138,6 +138,8 @@ local function achievementData()
 end
 
 --- MISC FUNCTIONS ---
+--Units that are bot but don't have DefaultFaction == FACTION_BOTS:
+moreBots = { "tosx_mission_IceHulk" }
 function isBot(pawn)
 	if pawn == nil then
 		return false
@@ -145,6 +147,13 @@ function isBot(pawn)
 
 	if _G[pawn:GetType()].DefaultFaction == FACTION_BOTS then
 		return true
+	end
+
+	for _, bot in ipairs(moreBots) do
+		if pawn:GetType() == bot then
+			LOG(pawn:GetType().." is counted as a bot!")
+			return true
+		end
 	end
 
 	return false
