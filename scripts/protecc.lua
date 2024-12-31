@@ -7,7 +7,7 @@ local scriptPath = mod.scriptPath
 ----------------------------------------------- CUSTOM FUNCTIONS -----------------------------------------------
 
 --Should the Eagle Mech be a protecc pawn too or just the Emancipator and the Patriot Mechs?
-local proteccPawns = { "truelch_EagleMech", "truelch_EmancipatorMech", "truelch_PatriotMech" }
+local proteccPawns = { --[["truelch_EagleMech",]] "truelch_EmancipatorMech", "truelch_PatriotMech" }
 
 local function isProteccPawn(pawn)
     if pawn == nil then return false end
@@ -30,13 +30,14 @@ local function protecc(pawn, skillEffect)
         return
     end
 
-    local damageRedirected = 0
+    --local damageRedirected = 0
 
     for i = 1, skillEffect.effect:size() do
+        local damageRedirected = 0
         local spaceDamage = skillEffect.effect:index(i)
         
         if spaceDamage.iDamage > 0 and Board:IsBuilding(spaceDamage.loc) then
-            --LOG(string.format("sd -> loc: %s, damage: %s", spaceDamage.loc:GetString(), tostring(spaceDamage.iDamage)))
+            LOG(string.format("sd -> loc: %s, damage: %s", spaceDamage.loc:GetString(), tostring(spaceDamage.iDamage)))
             local proteccPawn = nil
 
             for dir = DIR_START, DIR_END do

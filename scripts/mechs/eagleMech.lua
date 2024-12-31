@@ -5,6 +5,7 @@ local mod = modApi:getCurrentMod()
 local mechDiversBlack = modApi:getPaletteImageOffset("truelch_MechDiversBlack")
 
 --trait --->
+--[[
 local trait = require(scriptPath.."/libs/trait") --unnecessary?
 trait:add{
     pawnType = "truelch_EagleMech",
@@ -13,6 +14,7 @@ trait:add{
     desc_title = "Patriotism",
     desc_text = "Any damage caused during player's turn to a Building will be redirected to any adjacent Mech Diver."
 }
+]]
 -- <--- trait
 
 local files = {

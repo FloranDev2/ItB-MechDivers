@@ -69,7 +69,7 @@ function truelch_DeliveryMode1:addLateralPoints(list, point, p1, p2, dmgVsUnits,
 end
 
 function truelch_DeliveryMode1:fire(p1, p2, se, up1, up2)
-	LOG("--- truelch_DeliveryMode1:fire(p1: "..p1:GetString()..", p2:"..p2:GetString()..") ---")
+	--LOG("--- truelch_DeliveryMode1:fire(p1: "..p1:GetString()..", p2:"..p2:GetString()..") ---")
 	--LOG(string.format("truelch_DeliveryMode1:fire(p1: %s, p2: %s, up1: %s, up2: %s)", p1:GetString(), p2:GetString(), tostring(up1), tostring(up2)))
 	local dir = GetDirection(p2 - p1)
 	local move = PointList()
@@ -112,7 +112,7 @@ function truelch_DeliveryMode1:fire(p1, p2, se, up1, up2)
 		--Hard stop to avoid infinite loop. Hopefully it will never happen
 		whileLimit = whileLimit - 1
 		if whileLimit == 0 then
-			LOG("--------- END: hard limit (not nice!)")
+			--LOG("--------- END: hard limit (not nice!)")
 			cond = false
 		end
 	end
@@ -193,7 +193,7 @@ end
 ]]
 
 function truelch_DeliveryMode2:fire(p1, p2, se, up1, up2)
-	LOG(string.format("truelch_DeliveryMode2:fire(p1: %s, p2: %s, up1: %s, up2: %s", p1:GetString(), p2:GetString(), tostring(up1), tostring(up2)))
+	--LOG(string.format("truelch_DeliveryMode2:fire(p1: %s, p2: %s, up1: %s, up2: %s", p1:GetString(), p2:GetString(), tostring(up1), tostring(up2)))
 
 	local dir = GetDirection(p2 - p1)
 	
@@ -458,7 +458,7 @@ function truelch_Delivery:GSE_TI1()
 	if self.Up2 then
 		enemy:SetHealth(1)
 		p2 = Point(4, 2)
-		LOG(" ----------- GIE_TI1: UP 2!!!")
+		--LOG(" ----------- GIE_TI1: UP 2!!!")
 	else
 		enemy:SetHealth(2)
 	end
@@ -509,7 +509,7 @@ function truelch_Delivery:GIE_TI2()
 	local p1 = Point(1, 3)
 	local p2 = Point(1, 1)
 	if self.Up2 then
-		LOG(" ----------- GIE_TI2: UP 2!!!")
+		--LOG(" ----------- GIE_TI2: UP 2!!!")
 		p2 = Point(1, 0)
 	end
 	mech:SetSpace(p1)

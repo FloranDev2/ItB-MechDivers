@@ -11,7 +11,7 @@ trait:add{
     icon = "img/combat/icons/icon_protecc.png",
     icon_offset = Point(0, 0),
     desc_title = "Patriotism",
-    desc_text = "Any damage caused during player's turn to a Building will be redirected to any adjacent Mech Diver."
+    desc_text = "Any damage caused during player's turn to a Building will be redirected to any adjacent Patriot Mech."
 }
 -- <--- trait
 
