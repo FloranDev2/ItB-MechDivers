@@ -129,7 +129,7 @@ function truelch_DualAutocannons:GetSkillEffect(p1, p2)
     local ret = SkillEffect()
     local direction = GetDirection(p2 - p1)
 
-    LOG("truelch_DualAutocannons: "..tostring(self))
+    --LOG("truelch_DualAutocannons: "..tostring(self))
 
     local left  = p1 - DIR_VECTORS[(direction + 1)% 4]
     local right = p1 + DIR_VECTORS[(direction + 1)% 4]

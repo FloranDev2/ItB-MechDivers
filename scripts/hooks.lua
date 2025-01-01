@@ -181,6 +181,7 @@ local HOOK_onPawnKilled = function(mission, pawn)
     --LOG("------------ HOOK_onPawnKilled")
     if isMission() and pawn:IsMech() then
         if IsPassiveSkill("truelch_Reinforcements_Passive_A") --[[or IsPassiveSkill("truelch_Reinforcements_Passive")]] then
+            LOG("HOOK_onPawnKilled -> truelch_Reinforcements_Passive_A")
             --TODO: play EXPLO anim
             --local anim = SpaceDamage(pawn:GetSpace(), 0)
             --anim.sAnimation = "img/effects/timetravel.png"
@@ -198,8 +199,8 @@ local HOOK_onPawnKilled = function(mission, pawn)
             computeRespawn(newMech)
 
         elseif IsPassiveSkill("truelch_Reinforcements_Passive") then
+            LOG("HOOK_onPawnKilled -> truelch_Reinforcements_Passive")
             --Check terrain if chasm because in that case my current logic doesn't work
-            --if Board:G
             local terrain = Board:GetTerrain(pawn:GetSpace()) --terrain: 9 -> chasm
             --LOG("terrain: "..tostring(terrain))
             if terrain == 9 then

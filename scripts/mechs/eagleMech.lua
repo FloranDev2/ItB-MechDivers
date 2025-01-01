@@ -4,6 +4,7 @@ local mechPath = resourcePath .."img/mechs/"
 local mod = modApi:getCurrentMod()
 local mechDiversBlack = modApi:getPaletteImageOffset("truelch_MechDiversBlack")
 
+--In version 1.1.0, I'm trying without this trait on the Eagle Mech (might revert, idk yet)
 --trait --->
 --[[
 local trait = require(scriptPath.."/libs/trait") --unnecessary?
@@ -53,7 +54,6 @@ truelch_EagleMech = Pawn:new{
 	ImageOffset = mechDiversBlack,
 	
 	SkillList = { "truelch_Delivery", "truelch_Reinforcements_Passive" },
-	--SkillList = { "truelch_TestWeapon", "truelch_Reinforcements_Passive" },
 
 	--[[
 	"/mech/flying/jet_mech/"	

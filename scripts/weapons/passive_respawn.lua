@@ -13,74 +13,71 @@ truelch_Reinforcements_Passive = PassiveSkill:new{
 	Icon = "weapons/truelch_reinforcement_passive.png",
 
 	--Upgrades
-	--Upgrades = 1,
-	--UpgradeCost = { 1 },
+	Upgrades = 1,
+	UpgradeCost = { 1 },
+	FastRespawn = false, --for tip image
 
 	--Passive
 	Passive = "truelch_Reinforcements_Passive",
 
 	--Tip image
-	--TipImageRespawns = { Point(0, 0), Point(2, 2) },
+	TipIndex = 0,
 	TipImage = {
 		Unit = Point(2, 3),
 		CustomPawn = "truelch_EagleMech",
-		Target = Point(0, 0), --maybe this was the thing I needed?
+		Target = Point(2, 2),
 		Friendly = Point(1, 1),
-		Friendly2 = Point(2, 1),
 	}
 }
 
---[[
 Weapon_Texts.truelch_Reinforcements_Passive_Upgrade1 = "Faster respawn"
 
 truelch_Reinforcements_Passive_A = truelch_Reinforcements_Passive:new{
 	UpgradeDescription = "Reinforcements come now instantly!",
+	FastRespawn = true,
 	Passive = "truelch_Reinforcements_Passive_A", --test
 }
-]]
 
-function truelch_Reinforcements_Passive:GetSkillEffect(p1, p2)
-	--LOG(string.format("truelch_Reinforcements_Passive:GetSkillEffect(p1: %s, p2: %s)", p1:GetString(), p2:GetString()))
-	LOG("truelch_Reinforcements_Passive:GetSkillEffect()")
-
+function truelch_Reinforcements_Passive:GSE0(p1, p2)
 	local ret = SkillEffect()
 
-	--Kill mechs
-	--local damage = SpaceDamage(Point(1, 1), DAMAGE_DEATH)
-	local damage = SpaceDamage(Point(1, 1), 3)
-	--damage.bHide = true
+	--Dead mech(s)
+	local damage = SpaceDamage(Point(1, 1), DAMAGE_DEATH)
+	damage.bHide = true
 	ret:AddDamage(damage)
-
-	--local damage = SpaceDamage(Point(2, 1), DAMAGE_DEATH)
-	local damage = SpaceDamage(Point(2, 1), 3)
-	--damage.bHide = true
-	ret:AddDamage(damage)
-
-	--[[
-	--Respawns
-    for _, respawn in pairs(self.TipImageRespawns) do
-    	LOG("respawn: "..respawn:GetString())
-    	--Drop Anim
-		local dropAnim = SpaceDamage(respawn, 0)
-        dropAnim.sAnimation = "truelch_anim_pod_land"
-        ret:AddDamage(dropAnim)
-
-        ret:AddDelay(2) --enough?
-
-        ret:AddScript("Board:StartShake(0.5)")
-
-        for dir = DIR_START, DIR_END do
-            local curr = respawn + DIR_VECTORS[dir]
-            local dust = SpaceDamage(curr, 0)
-            dust.sAnimation = "airpush_"..dir --is it the one use for Mechs' deployment?
-            ret:AddDamage(dust)
-        end
-
-        local damage = SpaceDamage(respawn, 0)
-        damage.sPawn = "truelch_PatriotMech"
-        ret:AddDamage(damage)
-    end
-    ]]
 
 	return ret
+end
+
+function truelch_Reinforcements_Passive:GSE1(p1, p2)
+	local ret = SkillEffect()
+
+	Board:GetPawn(Point(1, 1)):SetHealth(0)
+
+	if self.FastRespawn then
+		Board:AddAlert(Point(2, 3), "Same turn")		
+	else
+		Board:AddAlert(Point(2, 3), "New turn")
+	end
+
+	ret:AddDelay(2)
+
+    local pawnType = Board:GetPawn(Point(1, 1)):GetType() --or this? Edit: at least this works
+    local newMech = PAWN_FACTORY:CreatePawn(pawnType) --this works! And also have the correct palette (idk how, but that's great)
+    newMech:SetMech()
+    Board:SpawnPawn(newMech, Point(1, 2))
+
+	return ret
+end
+
+function truelch_Reinforcements_Passive:GetSkillEffect(p1, p2)
+	LOG("truelch_Reinforcements_Passive:GetSkillEffect -> fast respawn: "..tostring(self.FastRespawn))
+
+	if self.TipIndex == 0 then
+		self.TipIndex = 1
+		return self:GSE0(p1, p2)
+	else
+		self.TipIndex = 0
+		return self:GSE1(p1, p2)
+	end
 end

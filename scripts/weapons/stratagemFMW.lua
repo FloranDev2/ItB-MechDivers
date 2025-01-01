@@ -172,7 +172,10 @@ local function resolveAirstrikes()
 			se:AddDamage(bombAnim)
 
 			--Delay
-			se:AddDelay(1)
+			se:AddDelay(0.5)
+
+			--Board shake
+			se:AddBoardShake(2)
 
 			--Center
 			local damage = SpaceDamage(point, 4)
@@ -184,9 +187,11 @@ local function resolveAirstrikes()
 			for dir = DIR_START, DIR_END do
 				local curr = point + DIR_VECTORS[dir]
 				local damage = SpaceDamage(curr, 2)
-				damage.sAnimation = "ExploArt1" --TODO				
+				--damage.sAnimation = "ExploArt1"
+				--Does it have a dir?
+				damage.sAnimation = "exploout2_" --Replacement proposed by Metalocif
 				se:AddDamage(damage)
-				se:AddBounce(point, 1)
+				se:AddBounce(curr, 1)
 			end
 		end
 
@@ -776,16 +781,23 @@ function truelch_500kgAirstrikeMode:second_fire(p1, p2, p3)
 		bombAnim.sAnimation = "truelch_500kg"
 		ret:AddDamage(bombAnim)
 
-		ret:AddDelay(2)
+		ret:AddDelay(0.5)
+
+		--Board shake
+		ret:AddBoardShake(2)
 
 		--Center
 		local damage = SpaceDamage(p2, 4)
 		ret:AddDamage(damage)
+		ret:AddBounce(p2, 3)
 
-		for dir = DIR_START, DIR_END do		
+		--Adjacent
+		for dir = DIR_START, DIR_END do
 			local curr = p2 + DIR_VECTORS[dir]
 			local damage = SpaceDamage(curr, 2)
+			damage.sAnimation = "exploout2_"..dir
 			ret:AddDamage(damage)
+			ret:AddBounce(curr, 1)
 		end
 
 	else
@@ -817,11 +829,13 @@ end
 --Orbital strikes effects will happen AFTER Vek act.
 
 -------------------- MODE 12: Orbital Strike --------------------
+--truelch_OrbitalPrecisionStrikeMode = truelch_NapalmAirstrikeMode:new{
 truelch_OrbitalPrecisionStrikeMode = truelch_NapalmAirstrikeMode:new{
 	aFM_name = "Orbital Precision Strike",
 	aFM_desc = "Command a precision orbital strike that'll kill anything below."..
 		"\nOrbital strikes happen after enemy turn, so you'll need to anticipate enemies' movement!",
 	aFM_icon = "img/modes/icon_orbital_precision_strike.png",
+	aFM_twoClick = false,
 	Anim = "", --TODO
 }
 

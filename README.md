@@ -61,12 +61,12 @@ Patriot Mech:
 - Delivery tip image improved:
 	- Will display the Delivery's Supply drop mode
 	- Won't display incorrect information anymore
-- [WIP] 500kg Bomb has more impactful effect (thx Metalocif for the suggestion!): added a Board Shake, some Bounce and better outer explosion effects.
+- 500kg Bomb has more impactful effect (thx Metalocif for the suggestion!): added a Board Shake and better outer explosion effects + timing.
 - Added tosx' Frozen Hulks as bots in "Remember Malevelon Creek" achievement calculation
 
 #### Bug fixes
 - Patriotism redirected damage wasn't reset everytime it was evaluating a damage, resulting in new redirected damage being higher than expected
-- [WIP] Airstrikes and Orbital strikes will be able to target an occupied tile (as it should be)
+- Airstrikes and Orbital strikes will be able to target an occupied tile (as it should be)
 
 ### v1.0.0
 Release!
