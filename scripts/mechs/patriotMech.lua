@@ -34,7 +34,7 @@ a.patriotMech =         a.MechUnit:new{Image = "units/player/patriotMech.png",  
 a.patriotMecha =        a.MechUnit:new{Image = "units/player/patriotMech_a.png",        PosX = -21, PosY = -10, NumFrames = 4 }
 a.patriotMechw =        a.MechUnit:new{Image = "units/player/patriotMech_w.png",        PosX = -21, PosY =   4 }
 a.patriotMech_broken =  a.MechUnit:new{Image = "units/player/patriotMech_broken.png",   PosX = -21, PosY = -10 }
-a.patriotMechw_broken = a.MechUnit:new{Image = "units/player/patriotMech_w_broken.png", PosX = -21, PosY =  -5 }
+a.patriotMechw_broken = a.MechUnit:new{Image = "units/player/patriotMech_w_broken.png", PosX = -24, PosY =   7 }
 a.patriotMech_ns =      a.MechIcon:new{Image = "units/player/patriotMech_ns.png" }
 
 truelch_PatriotMech = Pawn:new{
