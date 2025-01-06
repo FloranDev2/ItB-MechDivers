@@ -6,13 +6,12 @@ local scriptPath = mod.scriptPath
 local resourcePath = mod.resourcePath
 
 local this = {}
+
 local read
 local readEnabled
 
---local test = Point(1, 2) + nil
-
 --In reality, I'm just changing A.I. pilot portrait (to hell diver portrait)
-function this:changeMenuBackground(truelchMod)
+function this:replaceAssets(truelchMod)
 	--LOG("----------------------------------- Changing hangar background...")
 	local rootPathOnDisc = truelchMod.resourcePath
 
@@ -69,29 +68,72 @@ function this:changeMenuBackground(truelchMod)
 end
 
 function this:init(truelchMod)
-	--[[
+	--LOG("replaceFiles -> init")
+
+	--- READ FILE ---
+	--https://www.tutorialspoint.com/lua/lua_file_io.htm
+	--opens a file in read
+	file = io.open(truelchMod.scriptPath.."/truelchSave/mySave.lua" , "r+")
+
+	--sets the default input file as test.lua
+	io.input(file)
+
+	--prints the first line of the file
+	read = io.read()
+	--LOG("----------------------------------- read: "..tostring(read))
+
+	--closes the open file
+	io.close(file)
+
+	readEnabled = read == "true"
+
+	--LOG("----------------------------------- readEnabled: "..tostring(readEnabled))
+
+	--- MOD OPTION ---
 	modApi:addGenerationOption(
-		"DisplayCustomWotPMenu",
-		titleTxt,
-		tipTxt,
+		"option_replace_ai_with_rookie",
+		"A.I. Unit reskin",
+		"Replace the A.I. Unit with a nameless Hell Breacher rookie pilot.",
 		{
-			enabled = false
+			enabled = true
 		}
 	)
-	]]
 
-	--- PLAY CUSTOM BACKGROUND ---
-	--[[
-	if readEnabled and achvOk then
-		this:changeMenuBackground(truelchMod)
+	if readEnabled then
+		this:replaceAssets(truelchMod)
 	end
-	]]
 
-	this:changeMenuBackground(truelchMod)
 end
 
 function this:load(truelchMod, options)
-	--LOG("modifiedHanager -> load")
+	--LOG("replaceFiles -> load")
+	--Oh crap, I need to (re)implement my custom save system... *sigh*
+
+	--LOG("----------------------------------- [LOAD] replaceFiles.load(options: "..tostring(options)..")")
+
+	local enabled = options["option_replace_ai_with_rookie"].enabled --nil value
+
+	--- WRITE FILE ---
+	--https://www.tutorialspoint.com/lua/lua_file_io.htm
+	--open
+	file = io.open(truelchMod.scriptPath.."/truelchSave/mySave.lua" , "w+")
+
+	--LOG("----------------------------------- file: "..tostring(file))
+
+	--sets the default output file as test.lua (I guess it's needed to write?)
+	io.output(file)
+
+	--write
+	if enabled then
+		--LOG("----------------------------------- write true")
+		io.write("true")
+	else
+		--LOG("----------------------------------- write false")
+		io.write("false")
+	end
+
+	--close
+	io.close(file)
 end
 
 return this

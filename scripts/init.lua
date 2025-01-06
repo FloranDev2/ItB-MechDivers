@@ -83,8 +83,8 @@ function mod:init()
 	---> Orbital
 	TILE_TOOLTIPS["orbital_precision_strike"] = {"Orbital Precision Strike", "Anything on this tile will be destroyed AFTER enemy turn."}
 
-	--Custom hangar
-	require(self.scriptPath.."replaceFiles"):init(self) --just tmp
+	--A.I. Unit portraits. (I can't change A.I. Unit's name unfortunately...)
+	require(self.scriptPath.."truelchSave/replaceFiles"):init(self)
 end
 
 function mod:load(options, version)
@@ -104,7 +104,7 @@ function mod:load(options, version)
 		self.resourcePath.."img/squad_icon.png"
 	)
 
-	--require(self.scriptPath.."modifiedHangar"):load(self, options) --just tmp
+	require(self.scriptPath.."truelchSave/replaceFiles"):load(self, options)
 end
 
 return mod
