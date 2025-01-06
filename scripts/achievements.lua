@@ -2,7 +2,7 @@ local mod = modApi:getCurrentMod()
 local squad = "truelch_MechDivers"
 
 -- --- CONSTANT VARIABLES --- --
-local DEAD_MECHS_GOAL = 6
+--local DEAD_MECHS_GOAL = 6
 local ROBOTS_KILL_GOAL = 10
 
 -- -- ADD ACHIEVEMENTS --- --
@@ -17,7 +17,8 @@ local achievements = {
 	truelch_RespawnAbuse = modApi.achievements:add{
 		id = "truelch_RespawnAbuse",
 		name = "Extraordinary Patriotism",
-		tooltip = "Have "..tostring(DEAD_MECHS_GOAL).." Mechs die in a mission.",
+		--tooltip = "Have "..tostring(DEAD_MECHS_GOAL).." Mechs die in a mission.",
+		tooltip = "Have a new Mech spawn for each mission of your run.",
 		image = mod.resourcePath.."img/achievements/truelch_RespawnAbuse.png",
 		squad = squad,
 	},
@@ -30,11 +31,7 @@ local achievements = {
 	}
 }
 
--- --- SOME VARS ---
---No need to store that in mission/game/achievement data since it's resolved "instantly"
-local scorpsomeKillCount = 0
-
--- --- HELPER FUNCTIONS ---
+--- HELPER FUNCTIONS ---
 local function isGame()
 	return true
 		and Game ~= nil
@@ -63,7 +60,7 @@ local function isSquad()
 		and GAME.additionalSquadData.squad == squad
 end
 
--- --- COMPLETE ACHIEVEMENT --- --
+--- COMPLETE ACHIEVEMENT ---
 function truelch_completeDropKill(isDebug)
 	if isDebug then
 		LOG("truelch_completeDropKill()")
@@ -98,7 +95,21 @@ function truelch_completeKillRobots(isDebug)
 end
 
 
--- --- DATA ---
+--- DATA ---
+local function missionData()
+    local mission = GetCurrentMission()
+
+    if mission.truelch_MechDivers == nil then
+        mission.truelch_MechDivers = {}
+    end
+
+    if mission.truelch_MechDivers.isRespawnUsed == nil then
+        mission.truelch_MechDivers.isRespawnUsed = false
+    end
+
+    return mission.truelch_MechDivers
+end
+
 local function gameData()
 	if GAME.truelch_MechDivers == nil then
 		GAME.truelch_MechDivers = {}
@@ -113,7 +124,6 @@ end
 
 local function achievementData()
 	--using mission will cause an error on island menu while looking in achievements tooltips
-	--local mission = GetCurrentMission()
 	local game = gameData()
 
 	if game.truelch_MechDivers == nil then
@@ -125,12 +135,18 @@ local function achievementData()
 	end
 
 	--Initializing other data here
+	--[[
 	if game.truelch_MechDivers.achievementData.mechsKilled == nil then
 		game.truelch_MechDivers.achievementData.mechsKilled = 0
 	end
+	]]
 
 	if game.truelch_MechDivers.achievementData.botsKilled == nil then
 		game.truelch_MechDivers.achievementData.botsKilled = 0
+	end
+
+	if game.truelch_MechDivers.achievementData.isRespawnAchvStillOk == nil then
+		game.truelch_MechDivers.achievementData.isRespawnAchvStillOk = true
 	end
 
 	--Return
@@ -167,8 +183,16 @@ achievements.truelch_RespawnAbuse.getTooltip = function(self)
 	local status = ""
 
 	--No need to check if we're in a mission
-	if --[[isGame() and]] isMission() and not achievements.truelch_RespawnAbuse:isComplete() then
+	--[[
+	if isMission() and not achievements.truelch_RespawnAbuse:isComplete() then
 		status = "\nMartyrs: "..tostring(achievementData().mechsKilled.." / "..tostring(DEAD_MECHS_GOAL))
+	end
+	]]
+
+	--Can also be helpful to know if the passive if up even though you're not looking for the achievement.
+	if isMission() --[[and not achievements.truelch_RespawnAbuse:isComplete()]] then
+		status = status.."\nHas Mech respawned this mission? "..tostring(missionData().isRespawnUsed)
+		status = status.."\nIs this achievement still doable? "..tostring(achievementData().isRespawnAchvStillOk)
 	end
 
 	result = result..status
@@ -204,14 +228,17 @@ local HOOK_onPawnKilled = function(mission, pawn)
 		end
 	end
 
+	--[[
 	if pawn:IsMech() then
 		achievementData().mechsKilled = achievementData().mechsKilled + 1
 		if achievementData().mechsKilled >= DEAD_MECHS_GOAL then
 			truelch_completeRespawnAbuse()
 		end
 	end
+	]]
 end
 
+--[[
 local HOOK_onMissionStarted = function(mission)
 	local exit = false
 		or isSquad() == false
@@ -235,6 +262,7 @@ local HOOK_onNextPhaseCreated = function(prevMission, nextMission)
 
 	achievementData().mechsKilled = 0
 end
+]]
 
 
 local HOOK_onMissionEnded = function(mission)
@@ -245,10 +273,8 @@ local HOOK_onMissionEnded = function(mission)
 		return
 	end
 
-	--Check mechs killed
-	if achievementData().mechsKilled >= DEAD_MECHS_GOAL then
-
-	end
+	--Compute
+	achievementData().isRespawnAchvStillOk = achievementData().isRespawnAchvStillOk and missionData().isRespawnUsed
 end
 
 -- --- EVENTS --- --
@@ -263,13 +289,17 @@ modApi.events.onGameVictory:subscribe(function(difficulty, islandsSecured, squad
 	if achievementData().botsKilled >= ROBOTS_KILL_GOAL then
 		truelch_completeKillRobots()
 	end
+
+	if achievementData().isRespawnAchvStillOk then
+		truelch_completeRespawnAbuse()
+	end
 end)
 
 --Inspired from my previous work:
 local function EVENT_onModsLoaded()
 	modapiext:addPawnKilledHook(HOOK_onPawnKilled)
-	modApi:addMissionStartHook(HOOK_onMissionStarted)
-	modApi:addMissionNextPhaseCreatedHook(HOOK_onNextPhaseCreated)
+	--modApi:addMissionStartHook(HOOK_onMissionStarted)
+	--modApi:addMissionNextPhaseCreatedHook(HOOK_onNextPhaseCreated)
 	modApi:addMissionEndHook(HOOK_onMissionEnded)
 end
 

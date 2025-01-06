@@ -35,6 +35,10 @@ local function missionData()
         mission.truelch_MechDivers.deadMechs = {}
     end
 
+    if mission.truelch_MechDivers.isRespawnUsed == nil then
+        mission.truelch_MechDivers.isRespawnUsed = false
+    end
+
     return mission.truelch_MechDivers
 end
 
@@ -60,8 +64,6 @@ local function GetRandomPoint()
         return nil
     end
 end
-
------------------------------------------------ HOOKS -----------------------------------------------
 
 local function isStratagemWeapon(weapon)
     if type(weapon) == 'table' then
@@ -111,6 +113,8 @@ local function computeRespawn(pawn)
     end
 end
 
+----------------------------------------------- HOOKS -----------------------------------------------
+
 local function HOOK_onNextTurnHook()
     if Game:GetTeamTurn() == TEAM_PLAYER and IsPassiveSkill("truelch_Reinforcements_Passive") then
         --local board_size = Board:GetSize()
@@ -124,22 +128,29 @@ local function HOOK_onNextTurnHook()
                 local pawn = Board:GetPawn(Point(i, j))
                 if pawn ~= nil then
                     --LOG(string.format(" -> Pawn: %s", pawn:GetMechName()))
-                    if --[[pawn ~= nil and]] pawn:IsMech() and pawn:IsDead() then
-                        local pawnType = pawn:GetType()
-                        --LOG(string.format(" ---> Found a dead pawn: %s", pawn:GetMechName()))
+                    if pawn:IsMech() and pawn:IsDead() then
+                        if not missionData().isRespawnUsed then
+                            local pawnType = pawn:GetType()
+                            --LOG(string.format(" ---> Found a dead pawn: %s", pawn:GetMechName()))
 
-                        --Remove old
-                        Board:RemovePawn(pawn) --doesn't work if the unit died in a chasm
+                            --Remove old
+                            Board:RemovePawn(pawn) --doesn't work if the unit died in a chasm
 
-                        --Create new
-                        local randPoint = GetRandomPoint()
-                        local newMech = PAWN_FACTORY:CreatePawn(pawnType)
-                        newMech:SetMech()
-                        Board:SpawnPawn(newMech, randPoint)
+                            --Create new
+                            local randPoint = GetRandomPoint()
+                            local newMech = PAWN_FACTORY:CreatePawn(pawnType)
+                            newMech:SetMech()
+                            Board:SpawnPawn(newMech, randPoint)
 
-                        --truelch_divers_fmwApi:ForceFMWInit(randPoint)
-                        --truelch_divers_fmwApi:ForceFMWInit(newMech:GetId())
-                        computeRespawn(newMech)
+                            --truelch_divers_fmwApi:ForceFMWInit(randPoint)
+                            --truelch_divers_fmwApi:ForceFMWInit(newMech:GetId())
+                            computeRespawn(newMech)
+
+                            --New: respawn limited to 1 per mission
+                            missionData().isRespawnUsed = true
+                        else
+                            --TODO: some feedback here?
+                        end
                     end
                 end
             end
@@ -181,7 +192,7 @@ local HOOK_onPawnKilled = function(mission, pawn)
     --LOG("------------ HOOK_onPawnKilled")
     if isMission() and pawn:IsMech() then
         if IsPassiveSkill("truelch_Reinforcements_Passive_A") --[[or IsPassiveSkill("truelch_Reinforcements_Passive")]] then
-            LOG("HOOK_onPawnKilled -> truelch_Reinforcements_Passive_A")
+            --LOG("HOOK_onPawnKilled -> truelch_Reinforcements_Passive_A")
             --TODO: play EXPLO anim
             --local anim = SpaceDamage(pawn:GetSpace(), 0)
             --anim.sAnimation = "img/effects/timetravel.png"
@@ -199,7 +210,7 @@ local HOOK_onPawnKilled = function(mission, pawn)
             computeRespawn(newMech)
 
         elseif IsPassiveSkill("truelch_Reinforcements_Passive") then
-            LOG("HOOK_onPawnKilled -> truelch_Reinforcements_Passive")
+            --LOG("HOOK_onPawnKilled -> truelch_Reinforcements_Passive")
             --Check terrain if chasm because in that case my current logic doesn't work
             local terrain = Board:GetTerrain(pawn:GetSpace()) --terrain: 9 -> chasm
             --LOG("terrain: "..tostring(terrain))

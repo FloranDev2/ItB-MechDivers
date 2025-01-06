@@ -34,7 +34,7 @@ a.emancipatorMech =         a.MechUnit:new{Image = "units/player/emancipatorMech
 a.emancipatorMecha =        a.MechUnit:new{Image = "units/player/emancipatorMech_a.png",        PosX = -20, PosY = -10, NumFrames = 6 }
 a.emancipatorMechw =        a.MechUnit:new{Image = "units/player/emancipatorMech_w.png",        PosX = -20, PosY =   4 }
 a.emancipatorMech_broken =  a.MechUnit:new{Image = "units/player/emancipatorMech_broken.png",   PosX = -20, PosY = -10 }
-a.emancipatorMechw_broken = a.MechUnit:new{Image = "units/player/emancipatorMech_w_broken.png", PosX = -20, PosY =  -5 }
+a.emancipatorMechw_broken = a.MechUnit:new{Image = "units/player/emancipatorMech_w_broken.png", PosX = -24, PosY =   7 }
 a.emancipatorMech_ns =      a.MechIcon:new{Image = "units/player/emancipatorMech_ns.png", }
 
 truelch_EmancipatorMech = Pawn:new{

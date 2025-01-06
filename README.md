@@ -56,6 +56,7 @@ Patriot Mech:
 	- Delivery's base range reduced from 3 to 2
 	- Delivery's range upgrade will effectively increase its range (from 2 to 3)
 	- New: with delivery's range upgrade, the Supply Drop can drop up to 2 supply (between start and end point)
+	- Reinforcements passive can only respawn a Mech once per mission (technical limitation I couldn't solve)
 
 #### Improvements / polishing
 - Delivery tip image improved:
@@ -67,6 +68,9 @@ Patriot Mech:
 #### Bug fixes
 - Patriotism redirected damage wasn't reset everytime it was evaluating a damage, resulting in new redirected damage being higher than expected
 - Airstrikes and Orbital strikes will be able to target an occupied tile (as it should be)
+
+#### Other changes
+- Since Reinforcements passive can only respawn one Mech per mission, I've change the "Extraordinary" Patriotism achievement requirement to: "Have a new Mech spawn for each mission of your run."
 
 ### v1.0.0
 Release!

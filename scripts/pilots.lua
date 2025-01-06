@@ -37,6 +37,7 @@ CreatePilot{
 	Rarity = 0,
 	Cost = 1,
 	Portrait = "npcs/truelch_mechDiver",
+	--Name = "Test", --V3
 	Voice = "/voice/detritus",
 }
 
@@ -45,15 +46,13 @@ modApi:addPilotDrop{id = "Pilot_MechDiver", recruit = true }
 
 --- "A.I. pilot" replacement -> Newbie Mech Diver ---
 
---Original
+--Stupid test
+--_G["Pilot_Artificial"].Name = "Some Cool Name" --doesn't work
+
+
 --[[
-CreatePilot{
-	Id = "Pilot_Artificial",
-	Personality = "Artificial",
-	Rarity = 0,
-	Name = "Pilot_Artificial_Name",
-	Voice = "/voice/ai",
-}
+_G["truelch_mech_diver"] = {} --V2
+_G["truelch_mech_diver"].Name = "Some Cool Name" --V2
 ]]
 
 --Mech Diver
@@ -63,8 +62,34 @@ CreatePilot{
 	Rarity = 0,
 	Sex = SEX_MALE,
 	--Maybe I can add my own name id in a separate .csv or by script
+	--Into the Breach/scripts/personalities/pilots.csv
+
 	--Name = "Mech Diver", --Doesn't work
-	Name = "Pilot_Artificial_Name", --Into the Breach/scripts/personalities/pilots.csv
+	--Name = "Pilot_Artificial_Name", --V1 (doesn't work)
+	--Name = "truelch_mech_diver", --V2
+	--Name = "Pilot_MechDiver", --V3
 
 	Voice = "/voice/archive",
 }
+
+
+local function HOOK_PreMissionAvailable(mission)
+	--_G["Pilot_Artificial"].Name = "Some Cool Name" --V1 (doesn't work)
+
+	--_G["truelch_mech_diver"] = {} --V2 (doesn't work)
+	--_G["truelch_mech_diver"].Name = "Some Cool Name" --V2 (doesn't work)
+
+	--_G["Pilot_Artificial"].Name = "Pilot_MechDiver" --V3 (doesn't work)
+end
+
+local function EVENT_onModsLoaded()
+	modApi:addPreMissionAvailableHook(HOOK_PreMissionAvailable)
+
+	--Metalo's suggestion:
+	--modApi.modLoaderDictionary["Pilot_Artificial"].Name = "Test1"
+	--modApi.modLoaderDictionary["Pilot_Artificial_Name"] = "Test2"
+
+	
+end
+
+modApi.events.onModsLoaded:subscribe(EVENT_onModsLoaded)

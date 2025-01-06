@@ -84,7 +84,7 @@ function mod:init()
 	TILE_TOOLTIPS["orbital_precision_strike"] = {"Orbital Precision Strike", "Anything on this tile will be destroyed AFTER enemy turn."}
 
 	--Custom hangar
-	require(self.scriptPath.."modifiedHangar"):init(self) --just tmp
+	require(self.scriptPath.."replaceFiles"):init(self) --just tmp
 end
 
 function mod:load(options, version)

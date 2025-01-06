@@ -1183,24 +1183,28 @@ local function computeStratagems()
 								--TODO: max amount of stratagems
 								--LOG("i: "..tostring(i).." / stratIncr: "..tostring(stratIncr)..", list size: "..tostring(#list))
 
-								local randIndex = math.random(#list)
-								--LOG("randIndex: "..tostring(randIndex))
-								local randMode = list[randIndex][1]
-								local index = list[randIndex][2]
+								if #list >= 1 then
+									local randIndex = math.random(#list)
+									--LOG("randIndex: "..tostring(randIndex))
+									local randMode = list[randIndex][1]
+									local index = list[randIndex][2]
 
-								--Enable
-								fmw:FM_SetActive(p, randMode, true)
+									--Enable
+									fmw:FM_SetActive(p, randMode, true)
 
-								--Set mode to the last added
-								fmw:FM_SetMode(p, randMode)
+									--Set mode to the last added
+									fmw:FM_SetMode(p, randMode)
 
-								table.remove(list, randIndex)
+									table.remove(list, randIndex)
 
-								--Add to game data
-								if gameData().stratagems[p] == nil then
-									gameData().stratagems[p] = {}
-								end							
-								table.insert(gameData().stratagems[p], randMode)
+									--Add to game data
+									if gameData().stratagems[p] == nil then
+										gameData().stratagems[p] = {}
+									end							
+									table.insert(gameData().stratagems[p], randMode)
+								else
+									LOG("Cannot add more stratagems!")
+								end
 							end
 
 							--Board:AddAlert(pawn:GetSpace(), tostring(truelch_statagemNames[index]).." added")

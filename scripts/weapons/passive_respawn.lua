@@ -8,7 +8,7 @@ So getting mechs by looping from 0 to 2 doesn't work anymore!
 truelch_Reinforcements_Passive = PassiveSkill:new{
 	--Infos
 	Name = "Reinforcements",
-	Description = "Everytime a Mech dies, drop a new Mech randomly on the map.",
+	Description = "The first time a Mech is destroyed, drop a new Mech randomly on the map the next turn.",
 	PowerCost = 1,
 	Icon = "weapons/truelch_reinforcement_passive.png",
 
