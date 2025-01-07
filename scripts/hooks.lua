@@ -39,6 +39,10 @@ local function missionData()
         mission.truelch_MechDivers.isRespawnUsed = false
     end
 
+    if mission.truelch_MechDivers.secPartCheck == nil then
+        mission.truelch_MechDivers.secPartCheck = false
+    end
+
     return mission.truelch_MechDivers
 end
 
@@ -115,6 +119,8 @@ end
 
 ----------------------------------------------- HOOKS -----------------------------------------------
 
+
+
 local function HOOK_onNextTurnHook()
     if Game:GetTeamTurn() == TEAM_PLAYER and IsPassiveSkill("truelch_Reinforcements_Passive") then
         --local board_size = Board:GetSize()
@@ -189,6 +195,22 @@ Ok so idk if I should move that to:
 After 3 deaths or so, the Mechs no longer respawn.
 ]]
 local HOOK_onPawnKilled = function(mission, pawn)
+    if missionData().secPartCheck then
+        for _, id in ipairs(extract_table(Board:GetPawns(TEAM_PLAYER))) do
+            local pawn = Board:GetPawn(id):GetType()
+            if pawn ~= nil and panw:IsMech() then
+                LOG(string.format("mech: %s, at: %s, id: %s", pawn:GetType(), pawn:GetSpace():GetString(), tostring(pawn:GetId())))
+                if pawn:GetSpace() == Point(-1, -1) then
+                    local newPos = GetRandomPoint()
+                    LOG(" -> relocated to: "..newPos:GetSpace():GetString())
+                    pawn:SetSpace(newPos)
+                end
+            end
+        end
+        missionData().secPartCheck = false
+        return
+    end
+
     --LOG("------------ HOOK_onPawnKilled")
     if isMission() and pawn:IsMech() then
         if IsPassiveSkill("truelch_Reinforcements_Passive_A") --[[or IsPassiveSkill("truelch_Reinforcements_Passive")]] then
@@ -235,12 +257,21 @@ local HOOK_onPawnKilled = function(mission, pawn)
     end
 end
 
+local HOOK_onMissionNextPhaseCreated = function(prevMission, nextMission)
+    --LOG("HOOK_onMissionNextPhaseCreated - Left mission " .. prevMission.ID .. ", going into " .. nextMission.ID)
+    --No unit yet at this moment
+    missionData().secPartCheck = true
+end
+
+
 
 ----------------------------------------------- HOOKS / EVENTS SUBSCRIPTION -----------------------------------------------
 
 local function EVENT_onModsLoaded()
     modApi:addNextTurnHook(HOOK_onNextTurnHook)
     modapiext:addPawnKilledHook(HOOK_onPawnKilled)
+    modApi:addMissionNextPhaseCreatedHook(HOOK_onMissionNextPhaseCreated)
+
 end
 
 modApi.events.onModsLoaded:subscribe(EVENT_onModsLoaded)

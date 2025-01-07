@@ -340,7 +340,7 @@ truelch_Apw1AntiMaterielRifle = Skill:new{
         "\nMinimum range: 2.",
 
     --Art
-    Icon = "weapons/brute_sniper.png", --TMP
+    Icon = "weapons/truelch_strat_apw1.png",
     Sound = "/general/combat/explode_small",
     LaunchSound = "/weapons/raining_volley",
     ImpactSound = "/impact/generic/explosion",
@@ -396,7 +396,7 @@ truelch_Flam40Flamethrower = Skill:new{
     Description = "Ignite a target and pull inward an adjacent tile.\nRange: 2 - 4.",
 
     --Art
-    Icon = "weapons/prime_flamethrower.png",
+    Icon = "weapons/truelch_strat_flam40.png",
     --Sound = "/general/combat/explode_small",
     LaunchSound = "/weapons/artillery_volley",
     ImpactSound = "/impact/generic/explosion",
