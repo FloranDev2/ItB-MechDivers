@@ -12,7 +12,7 @@ truelch_DualAutocannons = Skill:new{
 	LaunchSound = "/weapons/modified_cannons",
 	ImpactSound = "/impact/generic/explosion",
     ShortRangeProjectileArt = "effects/shot_mechtank", --damage
-    LongRangeProjectileArt = "effects/shot_mechtank", --harmless
+    LongRangeProjectileArt = "effects/truelch_weak_shot", --harmless
 
     --Gameplay
     Dual = false,
@@ -121,7 +121,7 @@ function truelch_DualAutocannons:Shot(ret, start, dir)
     else
         --Long range
         local damage = SpaceDamage(target, self.LongRangeDamage, dir)
-        ret:AddProjectile(start, damage, self.ShortRangeProjectileArt, NO_DELAY) --thx tosx! (the delay is also mandatory)
+        ret:AddProjectile(start, damage, self.LongRangeProjectileArt, NO_DELAY) --thx tosx! (the delay is also mandatory)
     end
 end
 

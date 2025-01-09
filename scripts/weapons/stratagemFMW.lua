@@ -357,14 +357,17 @@ function truelch_Mg43Mode:targeting(point)
 			end
 
             local isItem = Board:GetItem(curr) == nil
-            
+
             if curr ~= point and
             	Board:IsValid(curr) and
             	not Board:IsBlocked(curr, PATH_PROJECTILE) and
                 not Board:IsPod(curr) and
-                isItem == false and
+                isItem == false and --not Board:IsPod(point) --same?
+                not Board:IsTerrain(curr, TERRAIN_HOLE) and
+                not Board:IsTerrain(curr, TERRAIN_WATER) and --works with lava? and acid water?
+                not Board:IsTerrain(curr, TERRAIN_LAVA) and
                 isHellPodPoint == false then
-                points[#points+1] = curr
+                	points[#points+1] = curr
             end
         end
     end
@@ -936,7 +939,7 @@ Weapon_Texts.truelch_StratagemFMW_Upgrade1 = "+1 Stratagem"
 --Weapon_Texts.truelch_StratagemFMW_Upgrade2 = "Veteran Stratagems" --Will be done in the future
 
 truelch_StratagemFMW_A = truelch_StratagemFMW:new{
-	UpgradeDescription = "+1 stratagem acquired at the start of each mission",    
+	UpgradeDescription = "+1 stratagem acquired at the start of each mission",
 }
 
 --[[

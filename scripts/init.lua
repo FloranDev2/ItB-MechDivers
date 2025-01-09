@@ -72,6 +72,11 @@ function mod:init()
 	modApi:addWeaponDrop("truelch_Delivery")
 	modApi:addWeaponDrop("truelch_Reinforcements_Passive")
 
+	modApi:addWeaponDrop("truelch_Mg43MachineGun")
+	modApi:addWeaponDrop("truelch_Apw1AntiMaterielRifle")
+	modApi:addWeaponDrop("truelch_Flam40Flamethrower")
+	modApi:addWeaponDrop("truelch_Rs422Railgun")
+
 	--Env tooltips (might move that stuff in a separate file)
 	---> Hell Pods
 	TILE_TOOLTIPS["hell_drop"] = {"Hell Drop", "A Hell Pod will land here soon, killing any unit below."}

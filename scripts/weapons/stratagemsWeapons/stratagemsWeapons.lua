@@ -31,6 +31,11 @@ end
 local function missionData()
     local mission = GetCurrentMission()
 
+    if mission == nil then
+        LOG("Current mission is nil!")
+        return mission        
+    end
+
     if mission.truelch_MechDivers == nil then
         mission.truelch_MechDivers = {}
     end
@@ -119,8 +124,8 @@ truelch_Mg43MachineGun = Skill:new{
     Class = "",
     Description = "Shoot a pushing projectile dealing 1 damage."..
         "\nShoot again just before the Vek act if the Mech moved less than half its move (rounded down)."..
-        "\nShoot a third projectile at the end of Vek turn if the Mech was immobile.".. --BRRRRRRT
-        "\n\nThis weapon will be removed at the end of the mission.",
+        "\nShoot a third projectile at the start of next turn if the Mech was immobile.",
+        --.."\n\nThis weapon will be removed at the end of the mission.", --was true only for weapons acquire in hell pods
 
 	--Art
 	Icon = "weapons/truelch_strat_mg43.png",
@@ -133,9 +138,11 @@ truelch_Mg43MachineGun = Skill:new{
 	--Gameplay
     Limited = 6, --funnily enough, shots fired by queued attack and 3rd shot also consume this
 	Damage = 1,
-    Push = 1,
-    QueuedDamage = 1,
-    QueuedPush = 1,
+    FullAuto = false,
+
+    --Upgrades
+    Upgrades = 1,
+    UpgradeCost = { 1 },
 
     --Tip image
     --Gonna do it reverse to show the full effect without having to wait one year...
@@ -155,6 +162,18 @@ truelch_Mg43MachineGun = Skill:new{
     }
 }
 
+Weapon_Texts.truelch_Mg43MachineGun_Upgrade1 = "Full Auto"
+
+truelch_Mg43MachineGun_A = truelch_Mg43MachineGun:new{
+    UpgradeDescription = "Each following projectile get +1 Damage.",
+    FullAuto = true,
+    TipImage = {
+        Unit   = Point(2, 4),
+        Target = Point(2, 3),
+        Enemy  = Point(2, 3),
+        CustomEnemy = "BeetleBoss",
+    }
+}
 
 function truelch_Mg43MachineGun:GetTargetArea(point)
     --LOG("truelch_Mg43MachineGun:GetTargetArea(point)")
@@ -166,35 +185,57 @@ function truelch_Mg43MachineGun:TipImmobile(p1, p2)
     local ret = SkillEffect()
     local direction = GetDirection(p2 - p1)
 
-    --Prepare enemy attack
-    local damage = SpaceDamage(0)
-    damage.bHide = true
-    damage.sScript = "Board:GetPawn(Point(2,1)):FireWeapon(Point(0,1),1)"
-    ret:AddDamage(damage)
-
     --(No move) -> nothing todo
     Board:AddAlert(p1, "No move -> 3 shots")
 
-    ret:AddDelay(0.5)
+    if self.FullAuto == false then
+        --Prepare enemy attack
+        local damage = SpaceDamage(0)
+        damage.bHide = true
+        damage.sScript = "Board:GetPawn(Point(2,1)):FireWeapon(Point(0,1),1)"
+        ret:AddDamage(damage)
 
-    --1st shot    
-    damage = SpaceDamage(Point(2, 3), self.Damage, direction)
-    ret:AddProjectile(p1, damage, self.Projectile, FULL_DELAY)
-    --Board:AddAlert(p1, "1st shot (instantly)") --isn't displayed
+        ret:AddDelay(0.5)
 
-    ret:AddDelay(1)
+        --1st shot    
+        damage = SpaceDamage(Point(2, 3), self.Damage, direction)
+        ret:AddProjectile(p1, damage, self.Projectile, FULL_DELAY)
+        --Board:AddAlert(p1, "1st shot (instantly)") --isn't displayed
 
-    --2nd shot
-    damage = SpaceDamage(Point(2, 2), self.Damage, direction)
-    ret:AddProjectile(p1, damage, self.Projectile, FULL_DELAY)
-    --Board:AddAlert(p1, "2nd shot (before enemies turn)") --isn't displayed
+        ret:AddDelay(1)
 
-    ret:AddDelay(1)
+        --2nd shot
+        local dmg2 = self.Damage
+        if self.FullAuto == true then dmg2 = dmg2 + 1 end
+        damage = SpaceDamage(Point(2, 2), dmg2, direction)
+        ret:AddProjectile(p1, damage, self.Projectile, FULL_DELAY)
+        --Board:AddAlert(p1, "2nd shot (before enemies turn)") --isn't displayed
 
-    --3rd shot
-    damage = SpaceDamage(Point(2, 1), self.Damage, direction)
-    ret:AddProjectile(p1, damage, self.Projectile, NO_DELAY)
-    --Board:AddAlert(p1, "3rd shot (after enemies turn)") --isn't displayed
+        ret:AddDelay(1)
+
+        --3rd shot    
+        local dmg3 = self.Damage
+        if self.FullAuto == true then dmg3 = dmg3 + 2 end
+        damage = SpaceDamage(Point(2, 1), dmg3, direction)
+        ret:AddProjectile(p1, damage, self.Projectile, NO_DELAY)
+        --Board:AddAlert(p1, "3rd shot (after enemies turn)") --isn't displayed
+    else
+        --1st shot    
+        damage = SpaceDamage(Point(2, 3), self.Damage, direction)
+        ret:AddProjectile(p1, damage, self.Projectile, FULL_DELAY)
+        ret:AddDelay(1)
+
+        --2nd shot
+        local dmg2 = self.Damage
+        damage = SpaceDamage(Point(2, 2), self.Damage + 1, direction)
+        ret:AddProjectile(p1, damage, self.Projectile, FULL_DELAY)
+        ret:AddDelay(1)
+
+        --3rd shot    
+        local dmg3 = self.Damage
+        damage = SpaceDamage(Point(2, 1), self.Damage + 2, direction)
+        ret:AddProjectile(p1, damage, self.Projectile, NO_DELAY)
+    end
 
     return ret
 end
@@ -279,14 +320,8 @@ function truelch_Mg43MachineGun:GetSkillEffect_Normal(p1, p2)
     local direction = GetDirection(p2 - p1)
     local target = GetProjectileEnd(p1, p2)
     
-    --Regular shot
-    local damage = nil
-    if self.Push == 1 then
-        damage = SpaceDamage(target, self.Damage, direction)
-    else
-        damage = SpaceDamage(target, self.Damage)
-    end
-    ret:AddProjectile(p1, damage, self.Projectile, NO_DELAY)
+    --
+    local dmg = self.Damage
 
     if not isThirdShot and isMission() then
         --Save direction:
@@ -306,15 +341,19 @@ function truelch_Mg43MachineGun:GetSkillEffect_Normal(p1, p2)
         local shots = missionData().mg43ShootStatus[Pawn:GetId()][1]
 
         if shots >= 2 then
-            local queuedDamage = nil
-            if self.QueuedPush == 1 then
-                queuedDamage = SpaceDamage(target, self.QueuedDamage, direction)
-            else
-                queuedDamage = SpaceDamage(target, self.QueuedDamage)
-            end
+            local queuedDamage = SpaceDamage(target, self.Damage, direction)
             ret:AddQueuedProjectile(queuedDamage, self.Projectile)
         end
+    else
+        --is third shot
+        if self.FullAuto then
+            dmg = 3
+        end
     end
+
+    --Regular shot
+    local damage = SpaceDamage(target, dmg, direction)
+    ret:AddProjectile(p1, damage, self.Projectile, NO_DELAY)
 
     --Return
     return ret
@@ -345,12 +384,18 @@ truelch_Apw1AntiMaterielRifle = Skill:new{
     LaunchSound = "/weapons/raining_volley",
     ImpactSound = "/impact/generic/explosion",
     ProjectileArt = "effects/shot_sniper",
+    SniperProjArt = "effects/shot_sniper",
     Explosion = "",
 
     --Gameplay
     Limited = 2,
     MinRange = 2,
     Damage = 2,
+    Snipe = false,
+
+    --Upgrades
+    Upgrades = 1,
+    UpgradeCost = { 2 },
 
     --Tip image
     TipImage = {
@@ -358,6 +403,13 @@ truelch_Apw1AntiMaterielRifle = Skill:new{
         Target = Point(2, 1),
         Enemy  = Point(2, 1),
     }
+}
+
+Weapon_Texts.truelch_Apw1AntiMaterielRifle_Upgrade1 = "Steady shot"
+
+truelch_Apw1AntiMaterielRifle_A = truelch_Apw1AntiMaterielRifle:new{
+    UpgradeDescription = "For each tile between you and the closest enemy, get +1 damage",
+    Snipe = true,
 }
 
 function truelch_Apw1AntiMaterielRifle:GetTargetArea(point)
@@ -380,10 +432,32 @@ end
 function truelch_Apw1AntiMaterielRifle:GetSkillEffect(p1, p2)
     local ret = SkillEffect()
     local pullDir = GetDirection(p1 - p2)
-    --LOG("pullDir: "..tostring(pullDir))
     local target = GetProjectileEnd(p1, p2)
-    local damage = SpaceDamage(target, self.Damage, pullDir)
-    ret:AddProjectile(damage, self.ProjectileArt)
+
+    local dmg = self.Damage
+    local closestDist = 0
+    if self.Snipe then
+        closestDist = 16
+        for _, id in ipairs(extract_table(Board:GetPawns(TEAM_ENEMY))) do
+            local enemy = Board:GetPawn()
+            if enemy ~= nil then --certainly unnecessary
+                local dist = p1:Manhattan()
+                if dist < closestDist then
+                    closestDist = dist
+                end
+            end
+        end
+    end
+    dmg = dmg + closestDist
+
+    local projArt = self.ProjectileArt
+    if dmg >= 4 then --totally arbitrary
+        projArt = self.SniperProjArt
+
+    end
+
+    local damage = SpaceDamage(target, dmg, pullDir)
+    ret:AddProjectile(damage, projArt)
     return ret
 end
 
@@ -411,12 +485,35 @@ truelch_Flam40Flamethrower = Skill:new{
     MinRange = 2,
     MaxRange = 4,
 
+    SecRange = 1,
+    SecIgnite = false,
+
+    --Upgrades
+    Upgrades = 1,
+    UpgradeCost = { 1 },
+
     --Tip image
     TipImage = {
         Unit   = Point(2, 4),
         Enemy  = Point(3, 2),
         Target = Point(2, 2),
         Second_Click = Point(3, 2),
+    }
+}
+
+Weapon_Texts.truelch_Flam40Flamethrower_Upgrade1 = "Enhanced Combustion"
+
+truelch_Flam40Flamethrower_A = truelch_Flam40Flamethrower:new{
+    UpgradeDescription = "You can pull from any distance. The other targeted tile is also ignited.",
+    SecRange = 7,
+    SecIgnite = true,
+    --Artillery Arc
+    ArtilleryHeight = 1, --maybe this will fix the arc for upgraded version?
+    TipImage = {
+        Unit   = Point(2, 4),
+        Enemy  = Point(4, 2),
+        Target = Point(2, 2),
+        Second_Click = Point(4, 2),
     }
 }
 
@@ -450,9 +547,15 @@ function truelch_Flam40Flamethrower:GetSecondTargetArea(p1, p2)
     local ret = PointList()
 
     for dir = DIR_START, DIR_END do
-        local curr = p2 + DIR_VECTORS[dir]
-        if Board:IsValid(curr) then
-            ret:push_back(curr)
+        for i = 1, self.SecRange do
+            local curr = p2 + DIR_VECTORS[dir]*i
+            if Board:IsValid(curr) then
+                ret:push_back(curr)
+            end
+
+            if not Board:IsValid(curr) or Board:IsBlocked(curr, PATH_PROJECTILE) then
+                break
+            end
         end
     end
 
@@ -464,8 +567,24 @@ function truelch_Flam40Flamethrower:GetFinalEffect(p1, p2, p3)
     local direction = GetDirection(p2 - p3)
     local damage = SpaceDamage(p3, 0)
     damage.iPush = direction
-    damage.sAnimation = "airpush_"..direction
-    ret:AddDamage(damage)
+    if self.SecIgnite then
+        local secFire = SpaceDamage(p3, 0)
+        secFire.iFire = 1
+        ret:AddDamage(secFire)
+    end    
+
+    if p2:Manhattan(p3) == 1 then
+        local push = SpaceDamage(p3, 0)
+        push.sAnimation = "airpush_"..direction
+        push.iPush = direction
+        ret:AddDamage(push)
+    else
+        local anim = SpaceDamage(p3, 0)
+        anim.sAnimation = "airpush_"..direction
+        ret:AddDamage(anim)
+        ret:AddCharge(Board:GetSimplePath(p3, p2), FULL_DELAY)
+    end
+    
     return ret
 end
 
@@ -478,14 +597,21 @@ truelch_Rs422Railgun = Skill:new{
     Description = "Charges a powerful projectile that'll be released next turn.\nCharging the attack push back an adjacent tile.",
 
     --Art
-    Icon = "weapons/brute_sniper.png",
+    Icon = "weapons/truelch_strat_rs422.png",
     --Sound = "/general/combat/explode_small",
     LaunchSound = "/weapons/artillery_volley",
     ImpactSound = "/impact/generic/explosion",
     ProjectileArt = "effects/shot_sniper",
+    UnsafeProjArt = "effects/shot_sniper",
 
     --Gameplay
     Damage = 3,
+    SelfDamage = 0,
+    Unsafe = false,
+
+    --Upgrades
+    Upgrades = 1,
+    UpgradeCost = { 2 },
 
     --Tip image
     TipIndex = 0,
@@ -497,6 +623,16 @@ truelch_Rs422Railgun = Skill:new{
         Second_Origin = Point(2, 3),
         Second_Target = Point(2, 1),
     }
+}
+
+Weapon_Texts.truelch_Rs422Railgun_Upgrade1 = "Unsafe mode"
+
+truelch_Rs422Railgun_A = truelch_Rs422Railgun:new{
+    --Or: allow to use the weapon without charging, with self-damage
+    UpgradeDescription = "Increase damage by 2 and add 1 self damage.",
+    Damage = 5,
+    SelfDamage = 1,
+    Unsafe = true,
 }
 
 function truelch_Rs422Railgun:GetTargetArea_TipImage(point)
@@ -574,7 +710,17 @@ function truelch_Rs422Railgun:GetSkillEffect_TipImage(p1, p2)
         Board:AddAlert(p1, "Charged!")
         local target = GetProjectileEnd(p1, p2)
         local damage = SpaceDamage(target, self.Damage, dir)
-        ret:AddProjectile(damage, self.ProjectileArt)
+
+        local projArt = self.ProjectileArt
+        if self.Unsafe then
+            projArt = self.UnsafeProjArt
+        end
+
+        ret:AddProjectile(damage, projArt)
+
+        --Self damage
+        local selfDamage = SpaceDamage(p1, self.SelfDamage)
+        ret:AddDamage(selfDamage)
 
         self.TipIndex = 0
     end
@@ -591,9 +737,18 @@ function truelch_Rs422Railgun:GetSkillEffect_Normal(p1, p2)
         --Charged
         local target = GetProjectileEnd(p1, p2)
         local damage = SpaceDamage(target, self.Damage, dir)
-        ret:AddProjectile(damage, self.ProjectileArt)
+
+        local projArt = self.ProjectileArt
+        if self.Unsafe then
+            projArt = self.UnsafeProjArt
+        end
+
+        ret:AddProjectile(damage, projArt)
         ret:AddScript(string.format("truelch_setCharged(%s, false)", tostring(Pawn:GetId())))
 
+        --Self damage
+        local selfDamage = SpaceDamage(p1, self.SelfDamage)
+        ret:AddDamage(selfDamage)
     else
         --Not charged
         local damage = SpaceDamage(p2, 0)
@@ -630,7 +785,9 @@ local function isStratagemWeapon(weaponId)
     end
 
     for _, stratagemWeapon in pairs(stratagemWeapons) do
-        if weaponId == stratagemWeapon then
+        --if weaponId == stratagemWeapon then
+        if string.find(weaponId, stratagemWeapon) ~= nil then
+            LOG("----------- Found -> weaponId: "..weaponId..", stratagemWeapon: "..stratagemWeapon)
             return true
         end
     end
@@ -643,8 +800,10 @@ local function isMg43(weaponId)
         weaponId = weaponId.__Id
     end
 
+    --LOG("isMg43(weaponId: "..weaponId..")")
     --Need to improve that if I do upgrade versions of the weapon!
-    if weaponId == "truelch_mg43MachineGun" then
+    if weaponId == "truelch_Mg43MachineGun" or weaponId == "truelch_Mg43MachineGun_A" then
+        --LOG(" ---------> true!")
         return true
     end
 
@@ -665,7 +824,7 @@ local function destroyAllStratagemWeapons()
                 local weapons = pawn:GetPoweredWeapons()
                 for k = 1, 3 do
                     if isStratagemWeapon(weapons[k]) then
-                        LOG("---------------> Is stratagem weapon!!! -> REMOVE")
+                        --LOG("---------------> Is stratagem weapon!!! -> REMOVE")
                         pawn:RemoveWeapon(k)
                     end
                 end
@@ -687,6 +846,7 @@ local function HOOK_onNextTurnHook()
                     --{ shots, dir }
                     local shots = missionData().mg43ShootStatus[pawn:GetId()][1]
                     local dir = missionData().mg43ShootStatus[pawn:GetId()][2]
+                    --LOG(string.format("shots: %s, dir: %s", tostring(shots), tostring(dir)))
                     local weapons = pawn:GetPoweredWeapons()
                     for k = 1, 3 do
                         local weapon = weapons[k]
@@ -723,10 +883,8 @@ local HOOK_onSkillEnd = function(mission, pawn, weaponId, p1, p2)
 
             --Attempt to fix the nil value below --->
             if missionData().mg43ShootStatus[pawn:GetId()] == nil then --this seems to be the one I needed
-                --LOG("[A] missionData().mg43ShootStatus[pawn:GetId()] == nil")
                 missionData().mg43ShootStatus[pawn:GetId()] = { 3, -1 } --safe init again
             elseif missionData().mg43ShootStatus[pawn:GetId()][1] == nil then
-                --LOG("[B] missionData().mg43ShootStatus[pawn:GetId()][1] == nil")
                 missionData().mg43ShootStatus[pawn:GetId()] = { 3, -1 } --safe init again
             end
             -- <--- Attempt to fix the nil value below
@@ -742,8 +900,10 @@ local HOOK_onSkillEnd = function(mission, pawn, weaponId, p1, p2)
     end
 
     if isMg43(weaponId) then
+        LOG(" ---> is mg 43")
         local dir = GetDirection(p2 - p1)
         missionData().mg43ShootStatus[pawn:GetId()][2] = dir
+        LOG(string.format("create shoot status for mg43: %s", save_table(missionData().mg43ShootStatus[pawn:GetId()])))
     end
 end
 

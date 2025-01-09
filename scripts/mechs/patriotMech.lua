@@ -48,7 +48,8 @@ truelch_PatriotMech = Pawn:new{
 	Image = "patriotMech",
 	ImageOffset = mechDiversBlack,
 	
-	SkillList = { "truelch_PatriotWeapons", "truelch_StratagemFMW" },
+	--SkillList = { "truelch_PatriotWeapons", "truelch_StratagemFMW" },
+	SkillList = { "truelch_Rs422Railgun", "truelch_StratagemFMW" },
 
 	SoundLocation = "/mech/prime/punch_mech/",
 	ImpactMaterial = IMPACT_METAL,

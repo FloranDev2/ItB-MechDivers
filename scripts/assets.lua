@@ -123,8 +123,11 @@ modApi:appendAsset("img/effects/truelch_shotup_stratagem_ball.png", resourcePath
 modApi:appendAsset("img/effects/truelch_shotup_mortar.png", resourcePath.."img/effects/truelch_shotup_mortar.png")
 modApi:appendAsset("img/effects/truelch_mg_drone_shotup.png", resourcePath.."img/effects/truelch_mg_drone_shotup.png")
 
-
 --Projectiles
+modApi:appendAsset("img/effects/truelch_weak_shot_R.png", resourcePath.."img/effects/truelch_weak_shot_R.png")
+modApi:appendAsset("img/effects/truelch_weak_shot_U.png", resourcePath.."img/effects/truelch_weak_shot_U.png")
+modApi:appendAsset("img/effects/truelch_strong_sniper_R.png", resourcePath.."img/effects/truelch_strong_sniper_R.png")
+modApi:appendAsset("img/effects/truelch_strong_sniper_U.png", resourcePath.."img/effects/truelch_strong_sniper_U.png")
 
 --Airstrikes
 modApi:appendAsset("img/effects/truelch_eagle.png", resourcePath.."img/effects/truelch_eagle.png")
@@ -139,6 +142,8 @@ modApi:appendAsset("img/weapons/truelch_stratagem.png", resourcePath.."img/weapo
 modApi:appendAsset("img/weapons/truelch_strat_mg43.png", resourcePath.."img/weapons/truelch_strat_mg43.png")
 modApi:appendAsset("img/weapons/truelch_strat_apw1.png", resourcePath.."img/weapons/truelch_strat_apw1.png")
 modApi:appendAsset("img/weapons/truelch_strat_flam40.png", resourcePath.."img/weapons/truelch_strat_flam40.png")
+modApi:appendAsset("img/weapons/truelch_strat_rs422.png", resourcePath.."img/weapons/truelch_strat_rs422.png")
+
 
 --Tile icons
 modApi:appendAsset("img/combat/tile_icon/tile_truelch_drop.png", mod.resourcePath.."img/combat/tile_icon/tile_truelch_drop.png")
