@@ -44,6 +44,11 @@ local function missionData()
         mission.truelch_MechDivers.beforeItemRecov = {}
     end
 
+    --[1] Pawn id   [2] Weapon index (of the stratagem weapon to remove)
+    --if mission.truelch_MechDivers.stratWeapsToRemove == nil then
+	--	mission.truelch_MechDivers.stratWeapsToRemove = {}
+    --end
+
     return mission.truelch_MechDivers
 end
 
@@ -63,8 +68,6 @@ for _, elem in pairs(beforeItemRecov) do
 	LOG("elem[1]: "..tostring(elem[1])) --"A"
 end
 ]]
-
-
 
 -------------------- MISC FUNCTIONS --------------------
 
@@ -197,14 +200,19 @@ function TryAddWeapon(loc, weapon, msg)
 
 	if pawn == nil then return end
 
+	LOG("TryAddWeapon(pawn: "..pawn:GetMechName()..", health: "..tostring(pawn:GetHealth()))
+
 	if not pawn:IsEnemy() then
 		if #pawn:GetPoweredWeapons() < 3 then
-			pawn:AddWeapon(weapon)
+			pawn:AddWeapon(weapon)			
 			Board:AddAlert(loc, msg)
+			--Save that weapon for removal at the end of the mission
+			--table.insert(missionData().stratWeapsToRemove, {})
 		else
 			--Replace the 3rd weapon with the new one?
 		end
 	else
+		LOG(" -----> Destroyed")
 		Board:AddAlert(loc, "DESTROYED")
 	end
 end
@@ -225,6 +233,7 @@ BoardEvents.onItemRemoved:subscribe(function(loc, removed_item)
 	local pawn = Board:GetPawn(loc)
 	if pawn == nil then return end
 	local weaponSuffix = "\n(de-select and re-select the Mech to see it)"
+	LOG("BoardEvents.onItemRemoved(removed_item: "..tostring(removed_item))
 	if removed_item == "truelch_Item_ResupplyPod" then
 		if not pawn:IsEnemy() then
 			truelch_ItemReload(pawn:GetId(), 1)

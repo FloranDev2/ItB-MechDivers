@@ -64,6 +64,8 @@ end
 
 -------------------- TEST --------------------
 
+--local testMissionPawn = nil
+
 local truelch_stratagem_flag = false --moved this here
 
 local function isStratagemWeapon(weapon)
@@ -93,6 +95,78 @@ function truelch_MechDivers_AddOrbitalStrike(point, dir, id)
 	table.insert(missionData().orbitalStrikes, { point, dir, id })
 end
 
+function computeNapalmAirstrike(se, point, dir)
+	--Center
+	local curr = point
+	local damage = SpaceDamage(curr, 0)
+	damage.iFire = EFFECT_CREATE
+	se:AddDamage(damage)
+	se:AddBounce(curr, 2)
+
+	--Forward, left, right			
+	local dirOffsets = {0, -1, 1} 
+	for _, offset in ipairs(dirOffsets) do
+		local curr = point + DIR_VECTORS[(dir + offset)% 4]
+		local damage = SpaceDamage(curr, 0)
+		damage.iFire = EFFECT_CREATE
+		se:AddDamage(damage)
+		se:AddBounce(curr, 2)
+	end
+end
+
+function computeSmokeAirstrike(se, point, dir)
+	--Center
+	local curr = point
+	local damage = SpaceDamage(curr, 0)
+	damage.iSmoke = EFFECT_CREATE				
+	se:AddDamage(damage)
+	se:AddBounce(curr, 2)
+
+	--Forward, left, right
+	local dirOffsets = {0, -1, 1} 
+	for _, offset in ipairs(dirOffsets) do
+		local curr = point + DIR_VECTORS[(dir + offset)% 4]
+		local damage = SpaceDamage(curr, 0)
+		damage.iSmoke = EFFECT_CREATE
+		se:AddDamage(damage)
+		se:AddBounce(curr, 2)
+	end
+end
+
+function compute500KgAirstrike(se, point, dir)
+	se:AddDelay(0.05)
+
+	--Bomb fall + explosion anim
+	local bombAnim = SpaceDamage(point, 0)
+	bombAnim.sAnimation = "truelch_500kg"
+	se:AddDamage(bombAnim)
+
+	--Delay
+	se:AddDelay(0.5)
+
+	--Board shake
+	se:AddBoardShake(2)
+
+	--Center
+	local damage = SpaceDamage(point, 4)
+	--damage.sAnimation = "ExploArt3" --TODO
+	se:AddDamage(damage)
+	se:AddBounce(point, 3)
+
+	--Adjacent
+	for dir = DIR_START, DIR_END do
+		local curr = point + DIR_VECTORS[dir]
+		local damage = SpaceDamage(curr, 2)
+		--damage.sAnimation = "ExploArt1"
+		--Does it have a dir?
+		damage.sAnimation = "exploout2_" --Replacement proposed by Metalocif
+		se:AddDamage(damage)
+		se:AddBounce(curr, 1)
+	end
+end
+
+
+
 --Happens before Vek actions
 local function resolveAirstrikes()
 	--LOG("resolveAirstrikes()")
@@ -117,10 +191,11 @@ local function resolveAirstrikes()
 		end		
 
 		if id == 0 then
-			--LOG(" --- Napalm airstrike!")
 			----- NAPALM AIRSTRIKE -----
-			--LOG("----- NAPALM AIRSTRIKE -----")
+			--LOG(" --- Napalm airstrike!")
+			computeNapalmAirstrike(se, point, dir)
 
+			--[[
 			--Center
 			local curr = point
 			--LOG("curr: "..curr:GetString())
@@ -139,10 +214,13 @@ local function resolveAirstrikes()
 				se:AddDamage(damage)
 				se:AddBounce(curr, 2)
 			end
-			--LOG(" --- End")
+			]]
 		elseif id == 1 then
 			----- SMOKE AIRSTRIKE -----
 			--LOG("----- SMOKE AIRSTRIKE -----")
+			computeSmokeAirstrike(se, point, dir)
+
+			--[[
 			local curr = point
 			--LOG("curr: "..curr:GetString())
 			local damage = SpaceDamage(curr, 0)
@@ -160,9 +238,13 @@ local function resolveAirstrikes()
 				se:AddDamage(damage)
 				se:AddBounce(curr, 2)
 			end
+			]]
 		elseif id == 2 then
 			----- 500KG BOMB -----
 			--LOG("----- 500KG BOMB -----")
+			compute500KgAirstrike(se, point, dir)
+
+			--[[
 			--Delay
 			se:AddDelay(0.05)
 
@@ -193,6 +275,7 @@ local function resolveAirstrikes()
 				se:AddDamage(damage)
 				se:AddBounce(curr, 1)
 			end
+			]]
 		end
 
 		Board:AddEffect(se) --this
@@ -202,6 +285,7 @@ local function resolveAirstrikes()
 	missionData().airstrikes = {}
 end
 
+--That one too?
 local function rippleEffect(point)
 	--Ripple effect
 	local ripple = SkillEffect()
@@ -272,6 +356,21 @@ local function rippleEffect(point)
 	Board:AddEffect(ripple)
 end
 
+--Oooh, I think I need the function to NOT be local to be called from an AddScript() function
+--[[local]] function computeOrbitalPrecisionStrike(point)
+	--LOG("computeOrbitalPrecisionStrike")
+	local damage = SpaceDamage(point, DAMAGE_DEATH)
+	damage.iCrack = EFFECT_CREATE
+	damage.sAnimation = "truelch_anim_orbital_laser"
+	damage.sSound = "/weapons/burst_beam"
+	Board:AddEffect(damage)
+
+	rippleEffect(point)
+
+	local damage = SpaceDamage(point, DAMAGE_DEATH)
+	Board:AddEffect(damage)
+end
+
 --Happens AFTER enemies' actions
 local function resolveOrbitalStrikes()
 	--LOG("resolveOrbitalStrikes()")
@@ -289,12 +388,11 @@ local function resolveOrbitalStrikes()
 
 		if id == 0 then
 			----- ORIBTAL PRECISION STRIKE -----
-			--LOG("Orbital precision strike")			
 
+			--[[
 			--Center
 			local damage = SpaceDamage(point, DAMAGE_DEATH)
 			damage.iCrack = EFFECT_CREATE
-			--damage.sAnimation = "ExploArt2" --TMP
 			damage.sAnimation = "truelch_anim_orbital_laser"
 			damage.sSound = "/weapons/burst_beam"
 			Board:AddEffect(damage)
@@ -302,8 +400,9 @@ local function resolveOrbitalStrikes()
 			rippleEffect(point)
 
 			local damage = SpaceDamage(point, DAMAGE_DEATH)
-			--damage.iCrack = EFFECT_CREATE
 			Board:AddEffect(damage)
+			]]
+			computeOrbitalPrecisionStrike(point)
 
 		--elseif id == 1 then
 			----- ??? -----
@@ -376,6 +475,15 @@ function truelch_Mg43Mode:targeting(point)
 end
 
 function truelch_Mg43Mode:fire(p1, p2, se)
+
+	if IsTestMechScenario() then
+		local damage = SpaceDamage(p2, 0)
+    	damage.sImageMark = "combat/blue_stratagem_grenade.png"
+    	damage.sItem = self.Item
+    	se:AddArtillery(damage, self.UpShot)
+		return
+	end
+
     local damage = SpaceDamage(p2, 0)
     damage.sImageMark = "combat/blue_stratagem_grenade.png"
     se:AddArtillery(damage, self.UpShot)
@@ -608,6 +716,9 @@ function truelch_NapalmAirstrikeMode:second_fire(p1, p2, p3)
 		ret:AddLeap(move, 0.25)
 
 		--Instant damage effect
+		computeNapalmAirstrike(ret, p2, dir)
+
+		--[[
 		--Center
 		local damage = SpaceDamage(p2, 0)
 		damage.iFire = EFFECT_CREATE
@@ -621,7 +732,7 @@ function truelch_NapalmAirstrikeMode:second_fire(p1, p2, p3)
 			damage.iFire = EFFECT_CREATE
 			ret:AddDamage(damage)
 		end
-
+		]]
 	else
 		--Fake marks
 
@@ -675,6 +786,9 @@ function truelch_SmokeAirstrikeMode:second_fire(p1, p2, p3)
 		ret:AddLeap(move, 0.25)
 
 		--Instant damage effect
+		computeSmokeAirstrike(p2, dir)
+
+		--[[
 		--Center
 		local damage = SpaceDamage(p2, 0)
 		damage.iSmoke = EFFECT_CREATE
@@ -688,7 +802,7 @@ function truelch_SmokeAirstrikeMode:second_fire(p1, p2, p3)
 			damage.iSmoke = EFFECT_CREATE
 			ret:AddDamage(damage)
 		end
-
+		]]
 	else
 		--Fake marks
 		
@@ -779,6 +893,9 @@ function truelch_500kgAirstrikeMode:second_fire(p1, p2, p3)
 		ret:AddBounce(p2, 2)
 		ret:AddLeap(move, 0.25)
 
+		compute500KgAirstrike(p2, dir)
+
+		--[[
 		--Anim
 		local bombAnim = SpaceDamage(p2, 0)
 		bombAnim.sAnimation = "truelch_500kg"
@@ -802,7 +919,7 @@ function truelch_500kgAirstrikeMode:second_fire(p1, p2, p3)
 			ret:AddDamage(damage)
 			ret:AddBounce(curr, 1)
 		end
-
+		]]
 	else
 		--Fake Mark
 
@@ -861,6 +978,13 @@ end
 ]]
 
 function truelch_OrbitalPrecisionStrikeMode:fire(p1, p2, se)
+
+	if IsTestMechScenario() then
+		se:AddScript(string.format("computeOrbitalPrecisionStrike(%s)", p2:GetString()))
+		se:AddScript(string.format([[Board:AddAlert(%s, "After queued actions")]], p1:GetString()))
+		return
+	end
+
 	local damage = SpaceDamage(p2, 0)    
     se:AddArtillery(damage, self.UpShot, FULL_DELAY)
 
@@ -1243,6 +1367,7 @@ end
 local incr = 0.01
 local alpha = 0.5
 ]]
+
 local HOOK_onMissionUpdate = function(mission)
 	if not isMission() then return end
 
@@ -1352,12 +1477,7 @@ local HOOK_onSkillEnd = function(mission, pawn, weaponId, p1, p2)
     end
 
     local p = pawn:GetId()
-
-    --LOG("=========== BEFORE ===========")
-    --debugGameData()
-
     local weapons = pawn:GetPoweredWeapons()
-
     local fmw
     for weaponIdx = 1, 3 do
     	local fmw = truelch_divers_fmwApi:GetSkill(p, weaponIdx, false)
@@ -1377,10 +1497,38 @@ local HOOK_onSkillEnd = function(mission, pawn, weaponId, p1, p2)
 			end
     	end
 	end
-
-    --LOG("=========== AFTER ===========")
-    --debugGameData()
 end
+
+
+modApi.events.onTestMechEntered:subscribe(function()
+	modApi:runLater(function() --why was it necessary? But I 
+		local pawn = false
+			or Game:GetPawn(0)
+			or Game:GetPawn(1)
+			or Game:GetPawn(2)
+
+		--I didn't even know IsWeaponEquipped was a thing. That'd simplify stuff on my other mods...
+		local points = {}
+		if pawn and pawn:IsWeaponEquipped("truelch_StratagemFMW") then
+			for j = 0, 7 do
+				for i = 0, 7 do
+					local curr = Point(i, j)
+					if not Board:IsBlocked(curr, PATH_PROJECTILE) then						
+						points[#points + 1] = curr						
+						break
+					end
+				end
+			end
+		end
+
+		if #points > 0 then
+			local spawn = SpaceDamage(points[math.random(1, #points)], 0)
+			spawn.sPawn = "truelch_TestScenarioPawn"
+			--spawn.sPawn = "truelch_EagleMech" --so that the player can also test shuttle-compatible skills (cause error with FMW resulting in not being able to change delivery mode)
+			Board:AddEffect(spawn)
+		end
+	end)
+end)
 
 
 local function EVENT_onModsLoaded()

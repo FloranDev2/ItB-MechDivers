@@ -55,8 +55,13 @@ local function missionData()
         mission.truelch_MechDivers.isCharged = {}
     end
 
+    if mission.truelch_MechDivers.stratWeapsToRemove == nil then
+        mission.truelch_MechDivers.stratWeapsToRemove = {}
+    end
+
     return mission.truelch_MechDivers
 end
+
 
 ----------------------------------------------- DEBUG -----------------------------------------------
 --[[
@@ -124,8 +129,8 @@ truelch_Mg43MachineGun = Skill:new{
     Class = "",
     Description = "Shoot a pushing projectile dealing 1 damage."..
         "\nShoot again just before the Vek act if the Mech moved less than half its move (rounded down)."..
-        "\nShoot a third projectile at the start of next turn if the Mech was immobile.",
-        --.."\n\nThis weapon will be removed at the end of the mission.", --was true only for weapons acquire in hell pods
+        "\nShoot a third projectile at the start of next turn if the Mech was immobile."..
+        "\n\nThis weapon will be removed at the end of the mission.",
 
 	--Art
 	Icon = "weapons/truelch_strat_mg43.png",
@@ -139,10 +144,6 @@ truelch_Mg43MachineGun = Skill:new{
     Limited = 6, --funnily enough, shots fired by queued attack and 3rd shot also consume this
 	Damage = 1,
     FullAuto = false,
-
-    --Upgrades
-    Upgrades = 1,
-    UpgradeCost = { 1 },
 
     --Tip image
     --Gonna do it reverse to show the full effect without having to wait one year...
@@ -162,9 +163,19 @@ truelch_Mg43MachineGun = Skill:new{
     }
 }
 
-Weapon_Texts.truelch_Mg43MachineGun_Upgrade1 = "Full Auto"
+truelch_Mg43MachineGun_Shop = truelch_Mg43MachineGun:new{
+    Description = "Shoot a pushing projectile dealing 1 damage."..
+        "\nShoot again just before the Vek act if the Mech moved less than half its move (rounded down)."..
+        "\nShoot a third projectile at the start of next turn if the Mech was immobile.",
 
-truelch_Mg43MachineGun_A = truelch_Mg43MachineGun:new{
+    --Upgrades
+    Upgrades = 1,
+    UpgradeCost = { 1 },
+}
+
+Weapon_Texts.truelch_Mg43MachineGun_Shop_Upgrade1 = "Full Auto"
+
+truelch_Mg43MachineGun_Shop_A = truelch_Mg43MachineGun_Shop:new{
     UpgradeDescription = "Each following projectile get +1 Damage.",
     FullAuto = true,
     TipImage = {
@@ -176,8 +187,7 @@ truelch_Mg43MachineGun_A = truelch_Mg43MachineGun:new{
 }
 
 function truelch_Mg43MachineGun:GetTargetArea(point)
-    --LOG("truelch_Mg43MachineGun:GetTargetArea(point)")
-    return Board:GetSimpleReachable(point, INT_MAX, false) --I guess
+    return Board:GetSimpleReachable(point, INT_MAX, false)
 end
 
 
@@ -315,6 +325,7 @@ end
 
 local isThirdShot = false --test
 function truelch_Mg43MachineGun:GetSkillEffect_Normal(p1, p2)
+    
     --Some vars
     local ret = SkillEffect()
     local direction = GetDirection(p2 - p1)
@@ -326,12 +337,6 @@ function truelch_Mg43MachineGun:GetSkillEffect_Normal(p1, p2)
     if not isThirdShot and isMission() then
         --Save direction:
         ret:AddScript(string.format("truelch_setShootStatus(%s, %s)", Pawn:GetId(), tostring(direction)))
-
-        --[[
-        if missionData().mg43ShootStatus[Pawn:GetId()] ~= nil then
-            LOG("status -> "..tostring(missionData().mg43ShootStatus[Pawn:GetId()]))
-        end
-        ]]
 
         --Additional queued shot (OR add to mission data to shoot AFTER enemy turn)
         if missionData().mg43ShootStatus[Pawn:GetId()] == nil then
@@ -347,12 +352,14 @@ function truelch_Mg43MachineGun:GetSkillEffect_Normal(p1, p2)
     else
         --is third shot
         if self.FullAuto then
+            --LOG("3rd shot and full auto")
             dmg = 3
         end
     end
 
     --Regular shot
     local damage = SpaceDamage(target, dmg, direction)
+    --LOG("truelch_Mg43MachineGun:GetSkillEffect_Normal -> dmg: "..tostring(dmg))
     ret:AddProjectile(p1, damage, self.Projectile, NO_DELAY)
 
     --Return
@@ -376,7 +383,8 @@ truelch_Apw1AntiMaterielRifle = Skill:new{
     Name = "APW-1 Anti-Materiel Rifle",
     Class = "",
     Description = "Shoot a powerful projectile at long range that pulls."..
-        "\nMinimum range: 2.",
+        "\nMinimum range: 2."..
+        "\n\nThis weapon will be removed at the end of the mission.",
 
     --Art
     Icon = "weapons/truelch_strat_apw1.png",
@@ -393,10 +401,6 @@ truelch_Apw1AntiMaterielRifle = Skill:new{
     Damage = 2,
     Snipe = false,
 
-    --Upgrades
-    Upgrades = 1,
-    UpgradeCost = { 2 },
-
     --Tip image
     TipImage = {
         Unit   = Point(2, 4),
@@ -405,9 +409,18 @@ truelch_Apw1AntiMaterielRifle = Skill:new{
     }
 }
 
-Weapon_Texts.truelch_Apw1AntiMaterielRifle_Upgrade1 = "Steady shot"
+truelch_Apw1AntiMaterielRifle_Shop = truelch_Apw1AntiMaterielRifle:new{
+    Description = "Shoot a powerful projectile at long range that pulls."..
+        "\nMinimum range: 2.",
 
-truelch_Apw1AntiMaterielRifle_A = truelch_Apw1AntiMaterielRifle:new{
+    --Upgrades
+    Upgrades = 1,
+    UpgradeCost = { 2 },
+}
+
+Weapon_Texts.truelch_Apw1AntiMaterielRifle_Shop_Upgrade1 = "Steady shot"
+
+truelch_Apw1AntiMaterielRifle_Shop_A = truelch_Apw1AntiMaterielRifle_Shop:new{
     UpgradeDescription = "For each tile between you and the closest enemy, get +1 damage",
     Snipe = true,
 }
@@ -435,19 +448,21 @@ function truelch_Apw1AntiMaterielRifle:GetSkillEffect(p1, p2)
     local target = GetProjectileEnd(p1, p2)
 
     local dmg = self.Damage
-    local closestDist = 0
+    local closestDist = 1
     if self.Snipe then
         closestDist = 16
         for _, id in ipairs(extract_table(Board:GetPawns(TEAM_ENEMY))) do
-            local enemy = Board:GetPawn()
+            --LOG("------------ id: "..tostring(id)..", _: "..tostring(_))
+            local enemy = Board:GetPawn(id)
             if enemy ~= nil then --certainly unnecessary
-                local dist = p1:Manhattan()
+                local dist = p1:Manhattan(enemy:GetSpace())
                 if dist < closestDist then
                     closestDist = dist
                 end
             end
         end
     end
+    local closestDist = closestDist - 1 --not taking the distance but tiles between two pos
     dmg = dmg + closestDist
 
     local projArt = self.ProjectileArt
@@ -467,7 +482,9 @@ truelch_Flam40Flamethrower = Skill:new{
     --Infos
     Name = "FLAM-40 Flamethrower",
     Class = "",
-    Description = "Ignite a target and pull inward an adjacent tile.\nRange: 2 - 4.",
+    Description = "Ignite a target and pull inward an adjacent tile."..
+        "\nRange: 2 - 4."..
+        "\n\nThis weapon will be removed at the end of the mission.",
 
     --Art
     Icon = "weapons/truelch_strat_flam40.png",
@@ -488,10 +505,6 @@ truelch_Flam40Flamethrower = Skill:new{
     SecRange = 1,
     SecIgnite = false,
 
-    --Upgrades
-    Upgrades = 1,
-    UpgradeCost = { 1 },
-
     --Tip image
     TipImage = {
         Unit   = Point(2, 4),
@@ -501,14 +514,22 @@ truelch_Flam40Flamethrower = Skill:new{
     }
 }
 
-Weapon_Texts.truelch_Flam40Flamethrower_Upgrade1 = "Enhanced Combustion"
+truelch_Flam40Flamethrower_Shop = truelch_Flam40Flamethrower:new{
+    Description = "Ignite a target and pull inward an adjacent tile.\nRange: 2 - 4.",
 
-truelch_Flam40Flamethrower_A = truelch_Flam40Flamethrower:new{
+    --Upgrades
+    Upgrades = 1,
+    UpgradeCost = { 1 },
+}
+
+Weapon_Texts.truelch_Flam40Flamethrower_Shop_Upgrade1 = "Enhanced Combustion"
+
+truelch_Flam40Flamethrower_Shop_A = truelch_Flam40Flamethrower_Shop:new{
     UpgradeDescription = "You can pull from any distance. The other targeted tile is also ignited.",
     SecRange = 7,
     SecIgnite = true,
     --Artillery Arc
-    ArtilleryHeight = 1, --maybe this will fix the arc for upgraded version?
+    --ArtilleryHeight = 1, --maybe this will fix the arc for upgraded version? NOPE
     TipImage = {
         Unit   = Point(2, 4),
         Enemy  = Point(4, 2),
@@ -567,11 +588,6 @@ function truelch_Flam40Flamethrower:GetFinalEffect(p1, p2, p3)
     local direction = GetDirection(p2 - p3)
     local damage = SpaceDamage(p3, 0)
     damage.iPush = direction
-    if self.SecIgnite then
-        local secFire = SpaceDamage(p3, 0)
-        secFire.iFire = 1
-        ret:AddDamage(secFire)
-    end    
 
     if p2:Manhattan(p3) == 1 then
         local push = SpaceDamage(p3, 0)
@@ -582,7 +598,14 @@ function truelch_Flam40Flamethrower:GetFinalEffect(p1, p2, p3)
         local anim = SpaceDamage(p3, 0)
         anim.sAnimation = "airpush_"..direction
         ret:AddDamage(anim)
-        ret:AddCharge(Board:GetSimplePath(p3, p2), FULL_DELAY)
+        --ret:AddCharge(Board:GetSimplePath(p3, p2), FULL_DELAY)
+        ret:AddCharge(Board:GetSimplePath(p3, p2), NO_DELAY) --so that the fire on second tile doesn't appear AFTER the charge
+    end
+
+    if self.SecIgnite then --for preview
+        local secFire = SpaceDamage(p3, 0)
+        secFire.iFire = 1
+        ret:AddDamage(secFire)
     end
     
     return ret
@@ -594,7 +617,9 @@ truelch_Rs422Railgun = Skill:new{
     --Infos
     Name = "RS-422 Railgun",
     Class = "",
-    Description = "Charges a powerful projectile that'll be released next turn.\nCharging the attack push back an adjacent tile.",
+    Description = "Charge a powerful projectile that'll be released next turn."..
+        "\nCharging the attack push back an adjacent tile."..
+        "\n\nThis weapon will be removed at the end of the mission.",
 
     --Art
     Icon = "weapons/truelch_strat_rs422.png",
@@ -602,41 +627,42 @@ truelch_Rs422Railgun = Skill:new{
     LaunchSound = "/weapons/artillery_volley",
     ImpactSound = "/impact/generic/explosion",
     ProjectileArt = "effects/shot_sniper",
-    UnsafeProjArt = "effects/shot_sniper",
 
     --Gameplay
     Damage = 3,
     SelfDamage = 0,
-    Unsafe = false,
-
-    --Upgrades
-    Upgrades = 1,
-    UpgradeCost = { 2 },
 
     --Tip image
     TipIndex = 0,
     TipImage = {
         Unit   = Point(2, 3),
-        Enemy  = Point(2, 1),
+        Enemy  = Point(2, 0), --it won't show the push (unlike Point(2, 1), but at least preview won't be hidden by Board Alert)
         Enemy2 = Point(3, 3),
         Target = Point(3, 3),
         Second_Origin = Point(2, 3),
-        Second_Target = Point(2, 1),
+        Second_Target = Point(2, 0),
     }
 }
 
-Weapon_Texts.truelch_Rs422Railgun_Upgrade1 = "Unsafe mode"
+truelch_Rs422Railgun_Shop = truelch_Rs422Railgun:new{
+    Description = "Charge a powerful projectile that'll be released next turn.\nCharging the attack push back an adjacent tile.",
 
-truelch_Rs422Railgun_A = truelch_Rs422Railgun:new{
+    --Upgrades
+    Upgrades = 1,
+    UpgradeCost = { 2 },
+}
+
+Weapon_Texts.truelch_Rs422Railgun_Shop_Upgrade1 = "Unsafe mode"
+
+truelch_Rs422Railgun_Shop_A = truelch_Rs422Railgun_Shop:new{
     --Or: allow to use the weapon without charging, with self-damage
     UpgradeDescription = "Increase damage by 2 and add 1 self damage.",
     Damage = 5,
     SelfDamage = 1,
-    Unsafe = true,
+    ProjectileArt = "effects/truelch_strong_sniper",
 }
 
 function truelch_Rs422Railgun:GetTargetArea_TipImage(point)
-    --LOG("truelch_Rs422Railgun:GetTargetArea_TipImage(point)")
     local ret = PointList()
     for dir = DIR_START, DIR_END do
         for i = 1, 7 do
@@ -698,14 +724,16 @@ function truelch_Rs422Railgun:GetSkillEffect_TipImage(p1, p2)
     local ret = SkillEffect()
     local dir = GetDirection(p2 - p1)
 
-    if self.TipIndex == 0 then
+    --For some reason, upgraded version will swap these...
+    --if self.TipIndex == 0 then
+    if p2 == Point(3, 3) then
         Board:AddAlert(p1, "Charging...")
         local damage = SpaceDamage(p2, 0)
         damage.iPush = dir
         damage.sAnimation = "airpush_"..dir
         ret:AddDamage(damage)
 
-        self.TipIndex = 1
+        --self.TipIndex = 1
     else
         Board:AddAlert(p1, "Charged!")
         local target = GetProjectileEnd(p1, p2)
@@ -722,7 +750,7 @@ function truelch_Rs422Railgun:GetSkillEffect_TipImage(p1, p2)
         local selfDamage = SpaceDamage(p1, self.SelfDamage)
         ret:AddDamage(selfDamage)
 
-        self.TipIndex = 0
+        --self.TipIndex = 0
     end
 
     return ret
@@ -784,13 +812,17 @@ local function isStratagemWeapon(weaponId)
         weaponId = weaponId.__Id
     end
 
+    --LOG("isStratagemWeapon(weaponId:"..tostring(weaponId)..")")
+
     for _, stratagemWeapon in pairs(stratagemWeapons) do
-        --if weaponId == stratagemWeapon then
-        if string.find(weaponId, stratagemWeapon) ~= nil then
-            LOG("----------- Found -> weaponId: "..weaponId..", stratagemWeapon: "..stratagemWeapon)
+        --if weaponId ~= nil and string.find(weaponId, stratagemWeapon) ~= nil then
+        if weaponId == stratagemWeapon then --I go back to this because _Shop and _A are weapons I DON'T want to remove actually
+            --LOG("----------- return true -> weaponId: "..weaponId..", stratagemWeapon: "..stratagemWeapon)
             return true
         end
     end
+
+    --LOG("----------- return false")
 
     return false
 end
@@ -800,9 +832,9 @@ local function isMg43(weaponId)
         weaponId = weaponId.__Id
     end
 
-    --LOG("isMg43(weaponId: "..weaponId..")")
-    --Need to improve that if I do upgrade versions of the weapon!
-    if weaponId == "truelch_Mg43MachineGun" or weaponId == "truelch_Mg43MachineGun_A" then
+    --LOG("isMg43(weaponId: "..tostring(weaponId)..")")
+    
+    if weaponId ~= nil and string.find(weaponId, "truelch_Mg43MachineGun") then --should be compatible with all version (_Shop, _A, etc.)
         --LOG(" ---------> true!")
         return true
     end
@@ -810,6 +842,20 @@ local function isMg43(weaponId)
     return false
 end
 
+--For a given mech
+local function destroyMechStratWeap(pawn)
+    if pawn == nil then return end
+    local weapons = pawn:GetPoweredWeapons()
+    for j = 0, 2 do
+        local k = 3 - j
+        if isStratagemWeapon(weapons[k]) then
+            --LOG(string.format("---------------> %s is stratagem weapon -> REMOVE", weapons[k]))
+            pawn:RemoveWeapon(k)
+        end
+    end
+end
+
+--For all mechs
 local function destroyAllStratagemWeapons()
     --LOG("destroyAllStratagemWeapons()")
     --Look through all Mechs. Remember, respawned Mechs aren't in 0 - 2 index range
@@ -821,13 +867,7 @@ local function destroyAllStratagemWeapons()
         for i = 0, size.x do
             local pawn = Board:GetPawn(Point(i, j))
             if pawn ~= nil and pawn:IsMech() then
-                local weapons = pawn:GetPoweredWeapons()
-                for k = 1, 3 do
-                    if isStratagemWeapon(weapons[k]) then
-                        --LOG("---------------> Is stratagem weapon!!! -> REMOVE")
-                        pawn:RemoveWeapon(k)
-                    end
-                end
+                destroyMechStratWeap(pawn)
             end
         end
     end
@@ -866,6 +906,11 @@ local function HOOK_onNextTurnHook()
 end
 
 local HOOK_onSkillEnd = function(mission, pawn, weaponId, p1, p2)
+    if not isMission() or missionData() == nil then
+        --LOG("HOOK_onSkillEnd --- mission is nil -> return")
+        return
+    end
+
     if type(weaponId) == 'table' then
         weaponId = weaponId.__Id
     end
@@ -900,10 +945,14 @@ local HOOK_onSkillEnd = function(mission, pawn, weaponId, p1, p2)
     end
 
     if isMg43(weaponId) then
-        LOG(" ---> is mg 43")
+        --LOG(" ---> is mg 43")
         local dir = GetDirection(p2 - p1)
+        if missionData() == nil then
+            --LOG("-------- HERE missionData() == nil") --should not happen anymore
+            return
+        end
         missionData().mg43ShootStatus[pawn:GetId()][2] = dir
-        LOG(string.format("create shoot status for mg43: %s", save_table(missionData().mg43ShootStatus[pawn:GetId()])))
+        --LOG(string.format("create shoot status for mg43: %s", save_table(missionData().mg43ShootStatus[pawn:GetId()])))
     end
 end
 
@@ -921,7 +970,6 @@ end
 
 --Maybe it makes more sense to do that at mission start rather than mission end?
 local HOOK_onMissionStarted = function(mission)
-    --LOG("HOOK_onMissionStarted")
     destroyAllStratagemWeapons()
 
     --Reset Mg43 shoot status
@@ -936,26 +984,61 @@ local HOOK_onMissionStarted = function(mission)
     end
 end
 
-local HOOK_onMissionTestStarted = function(mission)
-    --LOG("HOOK_onMissionTestStarted")
-    destroyAllStratagemWeapons()
-end
-
 --Maybe I need to keep this one
 local HOOK_onMissionEnded = function(mission)
-    --LOG("HOOK_onMissionEnded")
     destroyAllStratagemWeapons()
 end
 
---This causes a null ref to Board!
---[[
-local HOOK_onMissionTestEnded = function(mission)
-    LOG("HOOK_onMissionTestEnded")
-    destroyAllStratagemWeapons()
-end
-]]
 
 ----------------------------------------------- HOOKS / EVENTS SUBSCRIPTION -----------------------------------------------
+
+local testMissionPawn = nil
+
+modApi.events.onTestMechEntered:subscribe(function()
+    modApi:runLater(function() --is it necessary?
+        local pawn = false
+            or Game:GetPawn(0)
+            or Game:GetPawn(1)
+            or Game:GetPawn(2)
+
+        --LOG("------------- onTestMechEntered")
+
+        --So that we detect Mechs that aren't in [0 - 2] id range (mechs spawned with Reinforcements)
+        for j = 0, 7 do
+            for i = 0, 7 do
+                local pawn = Board:GetPawn(Point(i, j))
+                if pawn ~= nil and pawn:IsMech() then
+                    --LOG(string.format("%s -> pawn: %s, id: %s", tostring(id), pawn:GetMechName(), pawn:GetId()))
+                    testMissionPawn = pawn
+                end
+            end
+        end
+
+    end)
+end)
+
+
+modApi.events.onTestMechExited:subscribe(function()
+    --LOG("------------- onTestMechExited")
+
+    if testMissionPawn ~= nil then
+        --LOG("------------- testMissionPawn exists :)")
+        destroyMechStratWeap(testMissionPawn)
+    else
+        --LOG("------------- testMissionPawn is nil :(")
+    end
+
+    --[[
+    --This could also work, but I fear that new mechs (reinforcements passive) will not have correct ids
+    LOG("---------------------- Game:GetPawns:")
+    for i = 0, 2 do --need to check with newly spawned mechs
+        local mech = Game:GetPawn(i)
+        if mech ~= nil then
+            --LOG(string.format(""------------- %s mech: %s"", mech:GetId(), mech:GetMechName()))
+        end
+    end
+    ]]
+end)
 
 local function EVENT_onModsLoaded()
     --M43
@@ -965,10 +1048,7 @@ local function EVENT_onModsLoaded()
 
     --Destroy stratagem weapons
     modApi:addMissionStartHook(HOOK_onMissionStarted)
-    modApi:addTestMechEnteredHook(HOOK_onMissionTestStarted)
-
     modApi:addMissionEndHook(HOOK_onMissionEnded)
-    --modApi:addTestMechExitedHook(HOOK_onMissionTestEnded)
 end
 
 modApi.events.onModsLoaded:subscribe(EVENT_onModsLoaded)

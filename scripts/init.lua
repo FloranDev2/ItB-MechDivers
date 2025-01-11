@@ -49,6 +49,7 @@ function mod:init()
 	--Test
 	require(self.scriptPath.."/weapons/test/testWeapon")
 	require(self.scriptPath.."/weapons/test/debugMechs")
+	require(self.scriptPath.."/weapons/test/FMweapon_example")
 
 	--Regular weapons
 	require(self.scriptPath.."/weapons/dualAutocannons")
@@ -65,6 +66,9 @@ function mod:init()
 	--Replacing AI Pilot with Mech Diver recruit pilot
 	require(self.scriptPath.."pilots")
 
+	--Test scenario
+	require(self.scriptPath.."/testScenario/testScenario")
+
 	--Weapon deck
 	modApi:addWeaponDrop("truelch_DualAutocannons")
 	modApi:addWeaponDrop("truelch_PatriotWeapons")
@@ -72,21 +76,21 @@ function mod:init()
 	modApi:addWeaponDrop("truelch_Delivery")
 	modApi:addWeaponDrop("truelch_Reinforcements_Passive")
 
-	modApi:addWeaponDrop("truelch_Mg43MachineGun")
-	modApi:addWeaponDrop("truelch_Apw1AntiMaterielRifle")
-	modApi:addWeaponDrop("truelch_Flam40Flamethrower")
-	modApi:addWeaponDrop("truelch_Rs422Railgun")
+	modApi:addWeaponDrop("truelch_Mg43MachineGun_Shop")
+	modApi:addWeaponDrop("truelch_Apw1AntiMaterielRifle_Shop")
+	modApi:addWeaponDrop("truelch_Flam40Flamethrower_Shop")
+	modApi:addWeaponDrop("truelch_Rs422Railgun_Shop")
 
 	--Env tooltips (might move that stuff in a separate file)
 	---> Hell Pods
-	TILE_TOOLTIPS["hell_drop"] = {"Hell Drop", "A Hell Pod will land here soon, killing any unit below."}
+	TILE_TOOLTIPS["hell_drop"] = {"Hell Drop", "A Hell Pod will land here soon. If there's a unit there, it'll take 1 damage. If the unit dies, the pod will spawn, otherwise it'll be destroyed."}
 	---> Airstrikes
 	TILE_TOOLTIPS["airstrike_napalm"]     = {"Napalm Airstrike", "This tile will be ignited before enemy turn."}
 	TILE_TOOLTIPS["airstrike_smoke"]      = {"Smoke Airstrike",  "This tile will be smoked before enemy turn."}
 	TILE_TOOLTIPS["airstrike_500_center"] = {"500kg Bomb", "This tile will take 4 damage before enemy turn."}
 	TILE_TOOLTIPS["airstrike_500_outer"]  = {"500kg Bomb", "This tile will take 2 damage before enemy turn."}
 	---> Orbital
-	TILE_TOOLTIPS["orbital_precision_strike"] = {"Orbital Precision Strike", "Anything on this tile will be destroyed AFTER enemy turn."}
+	TILE_TOOLTIPS["orbital_precision_strike"] = {"Orbital Precision Strike", "Anything on this tile will be destroyed just before new enemies emerge."}
 
 	--A.I. Unit portraits. (I can't change A.I. Unit's name unfortunately...)
 	require(self.scriptPath.."truelchSave/replaceFiles"):init(self)

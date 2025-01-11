@@ -37,6 +37,10 @@ local function missionData()
         mission.truelch_MechDivers.items = {}
     end
 
+    if mission.truelch_MechDivers.afterKill == nil then
+        mission.truelch_MechDivers.afterKill = {}
+    end
+
     return mission.truelch_MechDivers
 end
 
@@ -53,7 +57,7 @@ local function computeDrops(list)
         local effect = SkillEffect() --so I can have delays
 
         --Retrieve data
-        local loc = hellPod[1]
+        local loc  = hellPod[1]
         local item = hellPod[2]        
 
         --LOG(" -> loc: "..loc:GetString()..", item: "..item)
@@ -88,23 +92,29 @@ local function computeDrops(list)
         end
 
         --Kill damage (regardless of what's under)
+        --NEW: nerfed to 1 damage
         local pawn = Board:GetPawn(loc)
         if pawn ~= nil then            
-            local killSd = SpaceDamage(loc, DAMAGE_DEATH)
+            local killSd = SpaceDamage(loc, DAMAGE_DEATH) --old, but just to test item spawn again
+            --local killSd = SpaceDamage(loc, 1)
             effect:AddDamage(killSd)
 
+            --Kill not guaranteed anymore
+            --[[
             if pawn:IsEnemy() then
                 truelch_completeDropKill()
             end
+            ]]
 
             --Lil' delay (idk if it'd destroy the item otherwise)
             effect:AddDelay(0.5) --doesn't work to prevent item being recovered / destroyed
+        else
+            --No pawn: let's create the item now (otherwise, we wait to see if the pawn dies to create an item)
+            --Add item
+            local spawnItem = SpaceDamage(loc, 0)
+            spawnItem.sItem = item
+            effect:AddDamage(spawnItem)
         end
-
-        --Add item
-        local spawnItem = SpaceDamage(loc, 0)
-        spawnItem.sItem = item
-        effect:AddDamage(spawnItem)
 
         --Add effect to the board
         Board:AddEffect(effect)
@@ -118,49 +128,84 @@ local function HOOK_onNextTurnHook()
         computeDrops(missionData().hellPods)
 
         for _, data in pairs(missionData().hellPods) do
-            --LOG("--------- added data to items!")
             table.insert(missionData().items, data)
         end
 
-        missionData().hellPods = {}
-        --modApi:runLater(function()
-        --[[
-        --So the unit on the loc won't recover (or destroy) the item
-        for _, hellPod in pairs(missionData().hellPods) do
-            --Add item
-            local spawnItem = SpaceDamage(loc, 0)
-            spawnItem.sItem = item
-            effect:AddDamage(spawnItem)
-
-            --Add effect to the board
-            Board:AddEffect(effect)
-        end
-
-        --Clear
-        missionData().hellPods = {}
-        ]]
-
-        --LOG("-------- HERE (modApi:runLater)")
-        --end)
-
-    --elseif Game:GetTeamTurn() == TEAM_ENEMY then
-        --LOG("---------------------- CLEAR")
-        
+        missionData().hellPods = {}    
     end
 end
 
 local HOOK_onTurnReset = function(mission)
-    --LOG("HOOK_onTurnReset")
-    --computeDrops()
-    --computeDrops(missionData().items)
-
-    --LOG("TEST SET ITEM")
-    --Board:SetItem(Point(0, 0), "truelch_Item_WeaponPod_Mg43") --doesn't work
-
     modApi:runLater(function()
-        --Board:SetItem(Point(0, 0), "truelch_Item_WeaponPod_Mg43") --WORKS!!!!
         computeDrops(missionData().items)
     end)
+end
+
+local truelch_delay = 0
+local HOOK_onPawnKilled = function(mission, pawn)
+    --LOG("HOOK_onPawnKilled -> "..pawn:GetMechName().." was killed. Loop: ("..tostring(#missionData().items)..")")
+
+    for _, hellPod in pairs(missionData().items) do --test
+        local loc  = hellPod[1]
+        local item = hellPod[2]
+
+        --LOG(string.format("hellPod: loc: %s, item: %s", loc:GetString(), tostring(item)))
+
+        if loc == pawn:GetSpace() then
+            LOG("pawn killed by drop!")
+            if pawn:IsEnemy() then
+                truelch_completeDropKill()
+            end
+
+            table.insert(missionData().afterKill, hellPod)
+            truelch_delay = 500 --it... works?
+        end
+    end
+end
+
+
+local HOOK_onMissionUpdate = function(mission)
+    if not isMission() then return end
+
+    if truelch_delay > 0 then
+        truelch_delay = truelch_delay - 1
+        --LOG("truelch_delay: "..tostring(truelch_delay)..", is board busy: "..tostring(Board:IsBusy()))
+    end 
+
+    if #missionData().afterKill > 0 and truelch_delay == 0 then
+        local index = 1 --or maybe I could just treat one per frame, the first in the list
+        for _, hellPod in pairs(missionData().afterKill) do
+
+            local loc  = hellPod[1]
+            local item = hellPod[2]
+
+            local pawn = Board:GetPawn(loc)
+            if pawn == nil then
+                LOG("[OK] Good: "..loc:GetString())
+
+                if Board:IsValid(curr) and
+                        not Board:IsBlocked(loc, PATH_PROJECTILE) and
+                        not Board:IsPod(loc) and
+                        not Board:IsTerrain(loc, TERRAIN_HOLE) and
+                        not Board:IsTerrain(loc, TERRAIN_WATER) and
+                        not Board:IsTerrain(loc, TERRAIN_LAVA) then
+                    Board:SetItem(loc, item) --this still doesn't spawn an item. AAAAAAAH
+                end
+
+
+            else
+                LOG("[WAIT] Pawn found at: "..loc:GetString())
+                --Corpse can f*ck our logic, maybe just remove the data
+            end
+
+            --in any case
+            table.remove(missionData().afterKill, index)
+            index = index - 1 --necessary, right?
+
+        end
+
+    end
+
 end
 
 
@@ -169,6 +214,8 @@ end
 local function EVENT_onModsLoaded()
     modApi:addNextTurnHook(HOOK_onNextTurnHook)
     modapiext:addResetTurnHook(HOOK_onTurnReset)
+    modapiext:addPawnKilledHook(HOOK_onPawnKilled)
+    modApi:addMissionUpdateHook(HOOK_onMissionUpdate)
 end
 
 modApi.events.onModsLoaded:subscribe(EVENT_onModsLoaded)
