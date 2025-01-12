@@ -212,7 +212,7 @@ function TryAddWeapon(loc, weapon, msg)
 			--Replace the 3rd weapon with the new one?
 		end
 	else
-		LOG(" -----> Destroyed")
+		--LOG(" -----> Destroyed")
 		Board:AddAlert(loc, "DESTROYED")
 	end
 end
@@ -251,6 +251,8 @@ BoardEvents.onItemRemoved:subscribe(function(loc, removed_item)
 	 - Move the pawn to (-1, -1), wait a frame and move it back to loc, doesn't work (even if I also wait one frame before doing that)
 	]]
 	elseif removed_item == "truelch_Item_WeaponPod_Mg43" then
+		TryAddWeapon(loc, "truelch_Mg43MachineGun", "Acquired a MG-43 Machine Gun!"..weaponSuffix)
+		--[[
 		if not pawn:IsEnemy() then
 			if #pawn:GetPoweredWeapons() < 3 then
 				pawn:AddWeapon("truelch_Mg43MachineGun")
@@ -261,9 +263,13 @@ BoardEvents.onItemRemoved:subscribe(function(loc, removed_item)
 		else
 			Board:AddAlert(loc, "DESTROYED")
 		end
+		]]
 	elseif removed_item == "truelch_Item_WeaponPod_Apw1" then
+		TryAddWeapon(loc, "truelch_Apw1AntiMaterielRifle", "Acquired an APW-1 Anti-Materiel Rifle!"..weaponSuffix)
+		--[[
 		if not pawn:IsEnemy() then
 			if #pawn:GetPoweredWeapons() < 3 then
+				--TryAddWeapon(loc, )
 				pawn:AddWeapon("truelch_Apw1AntiMaterielRifle")
 				Board:AddAlert(loc, "Acquired an APW-1 Anti-Materiel Rifle!"..weaponSuffix)
 			else
@@ -272,9 +278,12 @@ BoardEvents.onItemRemoved:subscribe(function(loc, removed_item)
 		else
 			Board:AddAlert(loc, "DESTROYED")
 		end
+		]]
 	elseif removed_item == "truelch_Item_WeaponPod_Flam40" then
+		TryAddWeapon(loc, "truelch_Flam40Flamethrower", "Acquired a FLAM-40 Flamethrower!"..weaponSuffix)
+		--[[
 		if not pawn:IsEnemy() then
-			if #pawn:GetPoweredWeapons() < 3 then
+			if #pawn:GetPoweredWeapons() < 3 then				
 				pawn:AddWeapon("truelch_Flam40Flamethrower")
 				Board:AddAlert(loc, "Acquired a FLAM-40 Flamethrower!"..weaponSuffix)
 			else
@@ -282,8 +291,11 @@ BoardEvents.onItemRemoved:subscribe(function(loc, removed_item)
 			end
 		else
 			Board:AddAlert(loc, "DESTROYED")
-		end	
+		end
+		]]
 	elseif removed_item == "truelch_Item_WeaponPod_Rs422" then
+		TryAddWeapon(loc, "truelch_Rs422Railgun", "Acquired a RS-422 Railgun!"..weaponSuffix)
+		--[[
 		if not pawn:IsEnemy() then
 			if #pawn:GetPoweredWeapons() < 3 then
 				pawn:AddWeapon("truelch_Rs422Railgun")
@@ -294,6 +306,7 @@ BoardEvents.onItemRemoved:subscribe(function(loc, removed_item)
 		else
 			Board:AddAlert(loc, "DESTROYED")
 		end
+		]]
 	end
 end)
 

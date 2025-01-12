@@ -64,9 +64,11 @@ end
 
 -------------------- TEST --------------------
 
---local testMissionPawn = nil
-
 local truelch_stratagem_flag = false --moved this here
+
+local function isShuttle(point)
+	return Board:IsPawnSpace(point) and Board:GetPawn(point):GetType() == "truelch_EagleMech"
+end
 
 local function isStratagemWeapon(weapon)
     if type(weapon) == 'table' then
@@ -166,7 +168,6 @@ function compute500KgAirstrike(se, point, dir)
 end
 
 
-
 --Happens before Vek actions
 local function resolveAirstrikes()
 	--LOG("resolveAirstrikes()")
@@ -191,94 +192,14 @@ local function resolveAirstrikes()
 		end		
 
 		if id == 0 then
-			----- NAPALM AIRSTRIKE -----
-			--LOG(" --- Napalm airstrike!")
 			computeNapalmAirstrike(se, point, dir)
-
-			--[[
-			--Center
-			local curr = point
-			--LOG("curr: "..curr:GetString())
-			local damage = SpaceDamage(curr, 0)
-			damage.iFire = EFFECT_CREATE
-			se:AddDamage(damage)
-			se:AddBounce(curr, 2)
-
-			--Forward, left, right			
-			local dirOffsets = {0, -1, 1} 
-			for _, offset in ipairs(dirOffsets) do
-				local curr = point + DIR_VECTORS[(dir + offset)% 4]
-				--LOG("curr: "..curr:GetString())
-				local damage = SpaceDamage(curr, 0)
-				damage.iFire = EFFECT_CREATE
-				se:AddDamage(damage)
-				se:AddBounce(curr, 2)
-			end
-			]]
 		elseif id == 1 then
-			----- SMOKE AIRSTRIKE -----
-			--LOG("----- SMOKE AIRSTRIKE -----")
 			computeSmokeAirstrike(se, point, dir)
-
-			--[[
-			local curr = point
-			--LOG("curr: "..curr:GetString())
-			local damage = SpaceDamage(curr, 0)
-			damage.iSmoke = EFFECT_CREATE				
-			se:AddDamage(damage)
-			se:AddBounce(curr, 2)
-
-			--Forward, left, right
-			local dirOffsets = {0, -1, 1} 
-			for _, offset in ipairs(dirOffsets) do
-				local curr = point + DIR_VECTORS[(dir + offset)% 4]
-				--LOG("curr: "..curr:GetString())
-				local damage = SpaceDamage(curr, 0)
-				damage.iSmoke = EFFECT_CREATE				
-				se:AddDamage(damage)
-				se:AddBounce(curr, 2)
-			end
-			]]
 		elseif id == 2 then
-			----- 500KG BOMB -----
-			--LOG("----- 500KG BOMB -----")
 			compute500KgAirstrike(se, point, dir)
-
-			--[[
-			--Delay
-			se:AddDelay(0.05)
-
-			--Bomb fall + explosion anim
-			local bombAnim = SpaceDamage(point, 0)
-			bombAnim.sAnimation = "truelch_500kg"
-			se:AddDamage(bombAnim)
-
-			--Delay
-			se:AddDelay(0.5)
-
-			--Board shake
-			se:AddBoardShake(2)
-
-			--Center
-			local damage = SpaceDamage(point, 4)
-			--damage.sAnimation = "ExploArt3" --TODO
-			se:AddDamage(damage)
-			se:AddBounce(point, 3)
-
-			--Adjacent
-			for dir = DIR_START, DIR_END do
-				local curr = point + DIR_VECTORS[dir]
-				local damage = SpaceDamage(curr, 2)
-				--damage.sAnimation = "ExploArt1"
-				--Does it have a dir?
-				damage.sAnimation = "exploout2_" --Replacement proposed by Metalocif
-				se:AddDamage(damage)
-				se:AddBounce(curr, 1)
-			end
-			]]
 		end
 
-		Board:AddEffect(se) --this
+		Board:AddEffect(se)
 	end	
 
 	--Clear airstrikes data
@@ -357,7 +278,7 @@ local function rippleEffect(point)
 end
 
 --Oooh, I think I need the function to NOT be local to be called from an AddScript() function
---[[local]] function computeOrbitalPrecisionStrike(point)
+function computeOrbitalPrecisionStrike(point)
 	--LOG("computeOrbitalPrecisionStrike")
 	local damage = SpaceDamage(point, DAMAGE_DEATH)
 	damage.iCrack = EFFECT_CREATE
@@ -387,21 +308,6 @@ local function resolveOrbitalStrikes()
 		--LOG(string.format(" --- point: %s, dir: %s, id: %s", point:GetString(), tostring(dir), tostring(id)))
 
 		if id == 0 then
-			----- ORIBTAL PRECISION STRIKE -----
-
-			--[[
-			--Center
-			local damage = SpaceDamage(point, DAMAGE_DEATH)
-			damage.iCrack = EFFECT_CREATE
-			damage.sAnimation = "truelch_anim_orbital_laser"
-			damage.sSound = "/weapons/burst_beam"
-			Board:AddEffect(damage)
-
-			rippleEffect(point)
-
-			local damage = SpaceDamage(point, DAMAGE_DEATH)
-			Board:AddEffect(damage)
-			]]
 			computeOrbitalPrecisionStrike(point)
 
 		--elseif id == 1 then
@@ -426,15 +332,22 @@ truelch_Mg43Mode = {
 		"\nShoots a third projectile after enemies actions if the Mech stayed immobile.",
 	aFM_icon = "img/modes/icon_mg43.png",
 
-	aFM_twoClick = false,
+	aFM_twoClick = true, --false,
 	aFM_limited = 1,
 
 	UpShot = "effects/truelch_shotup_stratagem_ball.png",
 	Range = 2,
+
 	Item = "truelch_Item_WeaponPod_Mg43",
+	Weapon = "truelch_Mg43MachineGun",
+	Message = "Acquired a MG-43 Machine Gun!", --"\n(de-select and re-select the Mech to see it)"
 }
 
 CreateClass(truelch_Mg43Mode)
+
+function truelch_Mg43Mode:isTwoClickExc(p1, p2)
+	return not isShuttle(p2) or IsTestMechScenario()
+end
 
 function truelch_Mg43Mode:targeting(point)
 	local points = {}
@@ -474,8 +387,15 @@ function truelch_Mg43Mode:targeting(point)
 	return points
 end
 
-function truelch_Mg43Mode:fire(p1, p2, se)
+--Note: AddScript need to call a global function (so, a function without "local in front")
+--These functions need to have a very specific name (prefixed with modder's username for example)
+--to not accidentally override other function elsewhere with the same name.
+--I've decided to not use missionData() directly here and rather use an intermediate function for that reason.
+--Also, improvement: use string format
+--Thx tosx and Metalocif for the help!
+--se:AddScript([[truelch_MechDivers_AddPodData(]]..p2:GetString()..[[,"]]..self.Item..[[")]])
 
+function truelch_Mg43Mode:fire(p1, p2, se)
 	if IsTestMechScenario() then
 		local damage = SpaceDamage(p2, 0)
     	damage.sImageMark = "combat/blue_stratagem_grenade.png"
@@ -484,24 +404,105 @@ function truelch_Mg43Mode:fire(p1, p2, se)
 		return
 	end
 
+	--[[
+	if not isShuttle(p2) then
+		--Regular old logic
+	    local damage = SpaceDamage(p2, 0)
+	    damage.sImageMark = "combat/blue_stratagem_grenade.png"
+	    se:AddArtillery(damage, self.UpShot)
+
+	    --Free action
+	    se:AddScript("Pawn:SetActive(true)")
+
+	    if not Board:IsTipImage() and isMission() then
+		    se:AddScript(string.format("truelch_MechDivers_AddPodData(%s, %s)", p2:GetString(), self.Item))
+		end
+
+	else
+		--TC
+
+	end
+	]]
+
+	--Old. Hm maybe it can work that way
     local damage = SpaceDamage(p2, 0)
     damage.sImageMark = "combat/blue_stratagem_grenade.png"
     se:AddArtillery(damage, self.UpShot)
 
     --Free action
-    se:AddScript([[
-        Pawn:SetActive(true)
-    ]])
+    se:AddScript("Pawn:SetActive(true)")
 
+    --tip image would not reach here anyway (i think?)
     if not Board:IsTipImage() and isMission() then
-    	--Note: AddScript need to call a global function (so, a function without "local in front")
-    	--These functions need to have a very specific name (prefixed with modder's username for example)
-    	--to not accidentally override other function elsewhere with the same name.
-    	--I've decided to not use missionData() directly here and rather use an intermediate function for that reason.
-    	--Also, improvement: use string format
-    	--Thx tosx and Metalocif for the help!
-	    se:AddScript([[truelch_MechDivers_AddPodData(]]..p2:GetString()..[[,"]]..self.Item..[[")]])
+	    se:AddScript(string.format("truelch_MechDivers_AddPodData(%s, %s)", p2:GetString(), self.Item))
 	end
+end
+
+function truelch_Mg43Mode:second_targeting(p1, p2) 
+    local ret = PointList()
+
+	for dir = DIR_START, DIR_END do
+		local curr = p2 + DIR_VECTORS[dir]*2
+		if not isShuttle(p2) or not Board:IsBlocked(curr, PATH_PROJECTILE) then
+			ret:push_back(curr)
+		end
+	end
+
+    return ret
+end
+
+function truelch_Mg43Mode:second_fire(p1, p2, p3)
+	--LOG("truelch_NapalmAirstrikeMode:second_fire")
+    local ret = SkillEffect()
+
+    local damage = SpaceDamage(p2, 0)    
+    ret:AddArtillery(damage, self.UpShot, FULL_DELAY)
+
+    --local isShuttle = Board:IsPawnSpace(p2) and Board:GetPawn(p2):GetType() == "truelch_EagleMech"
+    local dir = GetDirection(p3 - p2)
+
+    --Shuttle's move
+    if isShuttle(p2) then
+    	--Shuttle move
+		local move = PointList()
+		move:push_back(p2)
+		move:push_back(p3)
+		ret:AddBounce(p2, 2)
+		ret:AddLeap(move, 0.25)
+
+		--
+		local middle = p2 + DIR_VECTORS[dir]
+		local pawn = Board:GetPawn()
+		if pawn == nil then
+			--Create an item (instantly)
+			se.sItem = self.Item
+		elseif pawn:IsMech() then
+			--Give this mech the weapon
+			TryAddWeapon(middle, self.Weapon, self.Message)
+		else
+			LOG("Certainly an enemy or a deployable or whatever")
+
+		end
+		
+	else
+		--Should NOT happen
+		LOG("WTF")
+    end
+
+    return ret
+end
+
+
+function truelch_Mg43Mode:second_targeting(p1, p2) 
+    --return Ranged_TC_BounceShot.GetSecondTargetArea(Ranged_TC_BounceShot, p1, p2)
+
+    for dir = DIR_START, DIR_END do
+
+    end
+end
+
+function truelch_Mg43Mode:second_fire(p1, p2, p3)
+    --return Ranged_TC_BounceShot.GetFinalEffect(Ranged_TC_BounceShot, p1, p2, p3)
 end
 
 
@@ -560,7 +561,6 @@ function truelch_MgSentryMode:fire(p1, p2, se)
     se:AddArtillery(damage, self.UpShot, FULL_DELAY)
 
     local dropAnim = SpaceDamage(p2, 0)
-    --dropAnim.sAnimation = "truelch_anim_pod_land"
     dropAnim.sAnimation = "truelch_anim_pod_land_2"
     se:AddDamage(dropAnim)
 
@@ -576,7 +576,7 @@ truelch_MortarSentryMode = truelch_MgSentryMode:new{
 	aFM_desc = "Drop an AA/M-12 Mortar Sentry."..
 		"\n(...)",
 	aFM_icon = "img/modes/icon_mortar_sentry.png",
-	Pawn = "truelch_Am12MortarSentry", --"truelch_Am12MortarSentry_Weapon"
+	Pawn = "truelch_Am12MortarSentry",
 }
 
 -------------------- MODE 7: A/ARC-3 Tesla Tower --------------------
@@ -585,7 +585,7 @@ truelch_TeslaTowerMode = truelch_MgSentryMode:new{
 	aFM_desc = "Drop an A/ARC-3 Tesla Tower."..
 		"\n(...)",
 	aFM_icon = "img/modes/icon_tesla_tower.png",
-	Pawn = "truelch_TeslaTower", --"truelch_TeslaTower"
+	Pawn = "truelch_TeslaTower",
 }
 
 -------------------- MODE 8: Guard Dog --------------------
@@ -607,8 +607,6 @@ function truelch_GuardDogMode:fire(p1, p2, se)
 end
 
 
-
-
 -----------------------------------------------------
 -------------------- AIR STRIKES --------------------
 -----------------------------------------------------
@@ -627,24 +625,6 @@ truelch_NapalmAirstrikeMode = truelch_Mg43Mode:new{
 	AirstrikeAnim = "units/mission/bomber_1.png", --TODO
 	FakeMark = "combat/icons/icon_napalm_airstrike.png",
 }
-
---[[
-function truelch_NapalmAirstrikeMode:targeting(point)
-	local points = {}
-
-    for dir = DIR_START, DIR_END do
-    	for i = 1, 7 do
-    		local curr = point + DIR_VECTORS[dir]*i
-    		points[#points+1] = curr
-    		if not Board:IsValid(curr) then
-    			break
-    		end
-    	end
-    end
-
-	return points
-end
-]]
 
 function truelch_NapalmAirstrikeMode:targeting(point)
 	local points = {}
@@ -682,12 +662,11 @@ end
 
 function truelch_NapalmAirstrikeMode:second_targeting(p1, p2) 
     local ret = PointList()
-    local isShuttle = Board:IsPawnSpace(p2) and Board:GetPawn(p2):GetType() == "truelch_EagleMech"
 
 	for dir = DIR_START, DIR_END do
 		for i = self.MinRange, self.MaxRange do
 			local curr = p2 + DIR_VECTORS[dir]*i
-			if not isShuttle or not Board:IsBlocked(curr, PATH_PROJECTILE) then
+			if not isShuttle(p2) or not Board:IsBlocked(curr, PATH_PROJECTILE) then
 				ret:push_back(curr)
 			end
 		end
@@ -703,11 +682,11 @@ function truelch_NapalmAirstrikeMode:second_fire(p1, p2, p3)
     local damage = SpaceDamage(p2, 0)    
     ret:AddArtillery(damage, self.UpShot, FULL_DELAY)
 
-    local isShuttle = Board:IsPawnSpace(p2) and Board:GetPawn(p2):GetType() == "truelch_EagleMech"
+    --local isShuttle = Board:IsPawnSpace(p2) and Board:GetPawn(p2):GetType() == "truelch_EagleMech"
     local dir = GetDirection(p3 - p2)
 
     --Shuttle's move
-    if isShuttle then
+    if isShuttle(p2) then
     	--Shuttle move
 		local move = PointList()
 		move:push_back(p2)
@@ -717,22 +696,6 @@ function truelch_NapalmAirstrikeMode:second_fire(p1, p2, p3)
 
 		--Instant damage effect
 		computeNapalmAirstrike(ret, p2, dir)
-
-		--[[
-		--Center
-		local damage = SpaceDamage(p2, 0)
-		damage.iFire = EFFECT_CREATE
-		ret:AddDamage(damage)
-
-		--Forward, left, right
-		local dirOffsets = {0, -1, 1}
-		for _, offset in ipairs(dirOffsets) do
-			local curr = p2 + DIR_VECTORS[(dir + offset)% 4]
-			local damage = SpaceDamage(curr, 0)
-			damage.iFire = EFFECT_CREATE
-			ret:AddDamage(damage)
-		end
-		]]
 	else
 		--Fake marks
 
@@ -773,11 +736,11 @@ function truelch_SmokeAirstrikeMode:second_fire(p1, p2, p3)
     local damage = SpaceDamage(p2, 0)    
     ret:AddArtillery(damage, self.UpShot, FULL_DELAY)
 
-    local isShuttle = Board:IsPawnSpace(p2) and Board:GetPawn(p2):GetType() == "truelch_EagleMech"
+    --local isShuttle = Board:IsPawnSpace(p2) and Board:GetPawn(p2):GetType() == "truelch_EagleMech"
     local dir = GetDirection(p3 - p2)
 
     --Shuttle's move
-    if isShuttle then
+    if isShuttle(p2) then
     	--Shuttle move
 		local move = PointList()
 		move:push_back(p2)
@@ -860,12 +823,12 @@ end
 
 function truelch_500kgAirstrikeMode:second_targeting(p1, p2) 
     local ret = PointList()
-    local isShuttle = Board:IsPawnSpace(p2) and Board:GetPawn(p2):GetType() == "truelch_EagleMech"
+    --local isShuttle = Board:IsPawnSpace(p2) and Board:GetPawn(p2):GetType() == "truelch_EagleMech"
 
 	for dir = DIR_START, DIR_END do
 		for i = self.MinRange, self.MaxRange do
 			local curr = p2 + DIR_VECTORS[dir]*i
-			if not isShuttle or not Board:IsBlocked(curr, PATH_PROJECTILE) then
+			if not isShuttle(p2) or not Board:IsBlocked(curr, PATH_PROJECTILE) then
 				ret:push_back(curr)
 			end
 		end
@@ -881,11 +844,11 @@ function truelch_500kgAirstrikeMode:second_fire(p1, p2, p3)
 	local damage = SpaceDamage(p2, 0)    
     ret:AddArtillery(damage, self.UpShot, FULL_DELAY)
 
-    local isShuttle = Board:IsPawnSpace(p2) and Board:GetPawn(p2):GetType() == "truelch_EagleMech"
+    --local isShuttle = Board:IsPawnSpace(p2) and Board:GetPawn(p2):GetType() == "truelch_EagleMech"
     local dir = GetDirection(p3 - p2)
 
     --Shuttle's move
-    if isShuttle then
+    if isShuttle(p2) then
     	--Shuttle move
 		local move = PointList()
 		move:push_back(p2)
@@ -1193,6 +1156,11 @@ function truelch_StratagemFMW:GetSkillEffect(p1, p2)
 end
 
 function truelch_StratagemFMW:IsTwoClickException(p1, p2)
+	--return not _G[self:FM_GetMode(p1)].aFM_twoClick
+	if _G[self:FM_GetMode(p1)].isTwoClickExc then
+    	return _G[self:FM_GetMode(p1)].isTwoClickExc(p1, p2)
+	end
+
 	return not _G[self:FM_GetMode(p1)].aFM_twoClick
 end
 
