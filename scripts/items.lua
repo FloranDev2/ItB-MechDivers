@@ -195,6 +195,10 @@ TILE_TOOLTIPS.Item_Truelch_WeaponPod_Rs422_Text = {"RS-422 Pod", "Pick it up to 
 
 -------------------- UTILITY FUNCTIONS --------------------
 
+function TruelchTestTryAddWeapon()
+	LOG("------------------------> TruelchTestTryAddWeapon()")
+end
+
 function TryAddWeapon(loc, weapon, msg)
 	local pawn = Board:GetPawn(loc)
 

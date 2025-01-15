@@ -49,12 +49,13 @@ function mod:init()
 	--Test
 	require(self.scriptPath.."/weapons/test/testWeapon")
 	require(self.scriptPath.."/weapons/test/debugMechs")
-	require(self.scriptPath.."/weapons/test/FMweapon_example")
+	require(self.scriptPath.."/weapons/test/testTCexc")
 
 	--Regular weapons
 	require(self.scriptPath.."/weapons/dualAutocannons")
 	require(self.scriptPath.."/weapons/patriotWeapons")
 	require(self.scriptPath.."/weapons/stratagemFMW")
+	--require(self.scriptPath.."/weapons/stratagemFMW_BU")
 	require(self.scriptPath.."/weapons/delivery")
 	require(self.scriptPath.."/weapons/passive_respawn")
 

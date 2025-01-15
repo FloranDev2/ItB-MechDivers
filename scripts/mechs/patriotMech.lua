@@ -49,7 +49,8 @@ truelch_PatriotMech = Pawn:new{
 	ImageOffset = mechDiversBlack,
 	
 	SkillList = { "truelch_PatriotWeapons", "truelch_StratagemFMW" },
-	--SkillList = { "atlas_Mortar", "truelch_StratagemFMW" },
+	--SkillList = { "atlas_Mortar" , "truelch_StratagemFMW" },
+	--SkillList = { "truelch_StratagemFMW" , "atlas_Mortar" }, --this isn't an issue, not sure how
 
 	SoundLocation = "/mech/prime/punch_mech/",
 	ImpactMaterial = IMPACT_METAL,

@@ -66,10 +66,6 @@ end
 
 local truelch_stratagem_flag = false --moved this here
 
---WHY WHY WHY WHY WHY
-local truelch_strat_p1
-local truelch_strat_p2
-
 local function isShuttle(point)
 	return Board:IsPawnSpace(point) and Board:GetPawn(point):GetType() == "truelch_EagleMech"
 end
@@ -336,7 +332,7 @@ truelch_Mg43Mode = {
 		"\nShoots a third projectile after enemies actions if the Mech stayed immobile.",
 	aFM_icon = "img/modes/icon_mg43.png",
 
-	aFM_twoClick = true,
+	aFM_twoClick = false,
 	aFM_limited = 1,
 
 	UpShot = "effects/truelch_shotup_stratagem_ball.png",
@@ -348,12 +344,6 @@ truelch_Mg43Mode = {
 }
 
 CreateClass(truelch_Mg43Mode)
-
---p2 is FUCKING nil FOR NO REASON. So I'm using this external variable. FFS. GAAAH
-function truelch_Mg43Mode:isTwoClickExc(p1, p2)
-	--return not isShuttle(p2) or IsTestMechScenario() --p2 nil...
-	return not isShuttle(truelch_strat_p2) or IsTestMechScenario() --WHY WHY WHY WHY WHY
-end
 
 function truelch_Mg43Mode:targeting(point)
 	local points = {}
@@ -378,7 +368,7 @@ function truelch_Mg43Mode:targeting(point)
 
             if curr ~= point and
             	Board:IsValid(curr) and
-            	(not Board:IsBlocked(curr, PATH_PROJECTILE) or isShuttle(curr)) and
+            	not Board:IsBlocked(curr, PATH_PROJECTILE) and
                 not Board:IsPod(curr) and
                 isItem == false and --not Board:IsPod(point) --same?
                 not Board:IsTerrain(curr, TERRAIN_HOLE) and
@@ -400,7 +390,6 @@ end
 --Also, improvement: use string format
 --Thx tosx and Metalocif for the help!
 --se:AddScript([[truelch_MechDivers_AddPodData(]]..p2:GetString()..[[,"]]..self.Item..[[")]])
-
 function truelch_Mg43Mode:fire(p1, p2, se)
 	if IsTestMechScenario() then
 		local damage = SpaceDamage(p2, 0)
@@ -410,35 +399,9 @@ function truelch_Mg43Mode:fire(p1, p2, se)
 		return
 	end
 
-	--[[
-	if not isShuttle(p2) then
-		--Regular old logic
-	    local damage = SpaceDamage(p2, 0)
-	    damage.sImageMark = "combat/blue_stratagem_grenade.png"
-	    se:AddArtillery(damage, self.UpShot)
-
-	    --Free action
-	    se:AddScript("Pawn:SetActive(true)")
-
-	    if not Board:IsTipImage() and isMission() then
-		    se:AddScript(string.format("truelch_MechDivers_AddPodData(%s, %s)", p2:GetString(), self.Item))
-		end
-
-	else
-		--TC
-	end
-	]]
-
-	--Old. Hm maybe it can work that way
-	if isShuttle(p2) then
-		--"throw"
-		local damage = SpaceDamage(p2, 0)
-		damage.sImageMark = "advanced/combat/throw_"..GetDirection(p2 - p1)..".png"
-	else
-	    local damage = SpaceDamage(p2, 0)
-    	damage.sImageMark = "combat/blue_stratagem_grenade.png"
-    	se:AddArtillery(damage, self.UpShot)
-	end
+    local damage = SpaceDamage(p2, 0)
+    damage.sImageMark = "combat/blue_stratagem_grenade.png"
+    se:AddArtillery(damage, self.UpShot)
 
     --Free action
     se:AddScript("Pawn:SetActive(true)")
@@ -447,77 +410,6 @@ function truelch_Mg43Mode:fire(p1, p2, se)
     if not Board:IsTipImage() and isMission() then
 	    se:AddScript(string.format("truelch_MechDivers_AddPodData(%s, %s)", p2:GetString(), self.Item))
 	end
-end
-
-function truelch_Mg43Mode:second_targeting(p1, p2)
-	--LOG("truelch_Mg43Mode:second_targeting - A")
-    local ret = PointList()
-
-	for dir = DIR_START, DIR_END do
-		local curr = p2 + DIR_VECTORS[dir]*2
-		if not isShuttle(p2) or not Board:IsBlocked(curr, PATH_PROJECTILE) then
-			ret:push_back(curr)
-		end
-	end
-
-	--LOG("truelch_Mg43Mode:second_targeting - B")
-
-    return ret
-end
-
-function truelch_Mg43Mode:second_fire(p1, p2, p3)
-	--LOG("truelch_Mg43Mode:second_fire - A")
-    local ret = SkillEffect()
-
-    local damage = SpaceDamage(p2, 0)    
-    ret:AddArtillery(damage, self.UpShot, FULL_DELAY)
-
-    --LOG("truelch_Mg43Mode:second_fire - B")
-
-    --local isShuttle = Board:IsPawnSpace(p2) and Board:GetPawn(p2):GetType() == "truelch_EagleMech"
-    local dir = GetDirection(p3 - p2)
-
-    --LOG("truelch_Mg43Mode:second_fire - B")
-
-    --Shuttle's move
-    if isShuttle(p2) then
-    	LOG("truelch_Mg43Mode:second_fire - isShuttle - A")
-    	--Shuttle move
-		local move = PointList()
-		move:push_back(p2)
-		move:push_back(p3)
-		ret:AddBounce(p2, 2)
-		ret:AddLeap(move, 0.25)
-
-		LOG("truelch_Mg43Mode:second_fire - isShuttle - B")
-
-		--
-		local middle = p2 + DIR_VECTORS[dir]
-		local pawn = Board:GetPawn(middle)
-		if pawn == nil then
-			--Create an item (instantly)
-			LOG("------------ Create item: "..self.Item)
-			ret.sItem = self.Item
-		elseif pawn:IsMech() then
-			--Give this mech the weapon
-			LOG("------------ Give weapon: "..self.Weapon.." to mech: "..pawn:GetMechName())
-			--TryAddWeapon(middle, self.Weapon, self.Message)
-			local stringTest = string.format("TryAddWeapon(%s, %s, %s)", middle:GetString(), self.Weapon, self.Message)
-			LOG("stringTest: "..stringTest)
-			ret:AddScript(stringTest)
-		else
-			LOG("Certainly an enemy or a deployable or whatever")
-
-		end
-
-		LOG("truelch_Mg43Mode:second_fire - isShuttle - C")
-		
-	else
-		--Should NOT happen
-		LOG("WTF")
-    end
-
-    return ret
 end
 
 
@@ -1162,17 +1054,7 @@ end
 
 
 function truelch_StratagemFMW:GetSkillEffect(p1, p2)
-	--[[
-	LOG("truelch_StratagemFMW:GetSkillEffect")
-	if p1 == nil or p2 == nil then
-		LOG(">>> truelch_StratagemFMW:GetSkillEffect(PROBLEM WITH P1 AND / OR P2) <<<")
-		if p1 == nil then LOG("p1 == nil") end
-		if p2 == nil then LOG("p2 == nil") end
-	else
-		LOG(string.format(">>> truelch_StratagemFMW:GetSkillEffect(p1: %s, p2: %s)", p1:GetString(), p2:GetString()))
-	end
-	]]
-
+	--LOG("truelch_StratagemFMW:GetSkillEffect")
 	if not Board:IsTipImage() then
 		return self:GetSkillEffect_Normal(p1, p2)
 	else
@@ -1181,67 +1063,29 @@ function truelch_StratagemFMW:GetSkillEffect(p1, p2)
 end
 
 function truelch_StratagemFMW:IsTwoClickException(p1, p2)
-	LOG(" ---------------- truelch_StratagemFMW:IsTwoClickException() ---------------- ")
-	if p1 == nil or p2 == nil then
-		LOG(">>> truelch_StratagemFMW:IsTwoClickException(PROBLEM WITH P1 AND / OR P2) <<<")
-		if p1 == nil then LOG("p1 == nil") end
-		if p2 == nil then LOG("p2 == nil") end
-	else
-		LOG(string.format(">>> truelch_StratagemFMW:IsTwoClickException(p1: %s, p2: %s)", p1:GetString(), p2:GetString()))
-	end
+	LOG(string.format("truelch_StratagemFMW:IsTwoClickException(p1: %s, p2: %s)", p1:GetString(), p2:GetString()))
 
-	--WHY WHY WHY WHY WHY
-	truelch_strat_p1 = p1
-	truelch_strat_p2 = p2
+	--return not _G[self:FM_GetMode(p1)].aFM_twoClick --old
 
-	--return not _G[self:FM_GetMode(p1)].aFM_twoClick
 	if _G[self:FM_GetMode(p1)].isTwoClickExc then
-		LOG("----------- [IF] isTwoClickExc exists!")
-		local mode = self:FM_GetMode(p1)
-		LOG("----------- mode: "..tostring(mode).." p1, p2 after:...")
-
-		if p1 == nil or p2 == nil then
-			if p1 == nil then LOG("p1 == nil") end
-			if p2 == nil then LOG("p2 == nil") end
-		else
-			LOG(string.format("p1: %s, p2: %s", p1:GetString(), p2:GetString()))
-			LOG(string.format("test_p1: %s, test_p2: %s", p1:GetString(), p2:GetString()))
-		end
-
-		local isTCexc = _G[self:FM_GetMode(p1)].isTwoClickExc(p1, p2)
-		LOG("-----------> isTCexc: "..tostring(isTCexc))
-		return _G[self:FM_GetMode(p1)].isTwoClickExc(p1, p2)
-	else
-		LOG("----------- [ELSE] isTwoClickExc DOES NOT EXIST")
-		local isTCexc = not _G[self:FM_GetMode(p1)].aFM_twoClick
-		LOG("-----------> isTCexc: "..tostring(isTCexc))
-		return not _G[self:FM_GetMode(p1)].aFM_twoClick
+		LOG("_G[self:FM_GetMode(p1)].isTwoClickExc exists!")
+    	return _G[self:FM_GetMode(p1)].isTwoClickExc(p1, p2)
 	end
+
+	return not _G[self:FM_GetMode(p1)].aFM_twoClick
 end
 
 
 function truelch_StratagemFMW:GetSecondTargetArea(p1, p2)
-	--[[
-	LOG("truelch_StratagemFMW:GetSecondTargetArea")
-	if p1 == nil or p2 == nil then
-		LOG(">>> truelch_StratagemFMW:GetSecondTargetArea(PROBLEM WITH P1 AND / OR P2) <<<")
-		if p1 == nil then LOG("p1 == nil") end
-		if p2 == nil then LOG("p2 == nil") end
-	else
-		LOG(string.format(">>> truelch_StratagemFMW:GetSecondTargetArea(p1: %s, p2: %s) <<<", p1:GetString(), p2:GetString()))
-	end
-	]]
-
+	LOG(string.format("truelch_StratagemFMW:GetSecondTargetArea(p1: %s, p2: %s)", p1:GetString(), p2:GetString()))
 	if not Board:IsTipImage() then
+		LOG("truelch_StratagemFMW:GetSecondTargetArea - A")
 		local currentShell = _G[self:FM_GetMode(p1)]
 	    local pl = PointList()
 
-	    --LOG("--------------- currentShell: "..tostring(currentShell))
-	    --local mode = self:FM_GetMode(p1) --debug
-		--LOG("----------- mode: "..tostring(mode))
+	    LOG("truelch_StratagemFMW:GetSecondTargetArea - B")
 	    
-		if self:FM_CurrentModeReady(p1) and currentShell.aFM_twoClick then
-			--LOG("--------------- HERE")
+		if self:FM_CurrentModeReady(p1) and currentShell.aFM_twoClick then 
 			pl = currentShell:second_targeting(p1, p2)
 		end
 	    
@@ -1254,16 +1098,6 @@ end
 
 
 function truelch_StratagemFMW:GetFinalEffect_Normal(p1, p2, p3)
-	--[[
-	if p1 == nil or p2 == nil then
-		LOG(">>> truelch_StratagemFMW:GetFinalEffect_Normal(PROBLEM WITH P1 AND / OR P2) <<<")
-		if p1 == nil then LOG("p1 == nil") end
-		if p2 == nil then LOG("p2 == nil") end
-	else
-		LOG(string.format(">>> truelch_StratagemFMW:GetFinalEffect_Normal(p1: %s, p2: %s, p3: %s) <<<", p1:GetString(), p2:GetString(), p3:GetString()))
-	end
-	]]
-
     local se = SkillEffect()
 	local currentShell = _G[self:FM_GetMode(p1)]
 
@@ -1422,10 +1256,10 @@ local HOOK_onMissionUpdate = function(mission)
     --Alpha
     --[[
     alpha = alpha + incr
-    if alpha >= 1 then
+    if alpha > 1 then
     	alpha = 1
     	incr = -0.01
-    elseif alpha <= 0 then
+    elseif alpha < 0 then
     	alpha = 0
     	incr = 0.01
     end

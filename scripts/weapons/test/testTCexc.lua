@@ -2,10 +2,13 @@ local this = {}
 local path = mod_loader.mods[modApi.currentMod].scriptPath
 local resources = mod_loader.mods[modApi.currentMod].resourcePath
 
+local test_p1
+local test_p2
+
 atlas_ShellStd = {
 	aFM_name = "Standard Shell",												 -- required
 	aFM_desc = "High-explosive shell that explodes upon impact.",				 -- required
-	aFM_icon = "img/shells/icon_minigun.png",	 						 -- required (if you don't have an image an empty string will work) 
+	aFM_icon = "img/modes/icon_minigun.png",	 						 -- required (if you don't have an image an empty string will work) 
 	-- aFM_limited = 2, 														 -- optional (FMW will automatically handle uses for weapons)
 	-- aFM_handleLimited = false 												 -- optional (FMW will no longer automatically handle uses for this mode if set) 
 	minrange = 2,
@@ -80,8 +83,8 @@ end
 atlas_ShellFire = atlas_ShellStd:new{
 	aFM_name = "Napalm Shell",
 	aFM_desc = "Explosive shell that sets an area on fire.",
-	aFM_icon = "img/shells/icon_rocket_pod.png",
-	aFM_limited = 2,
+	aFM_icon = "img/modes/icon_rocket_pod.png",
+	--aFM_limited = 2,
     aFM_twoClick = true,
     
 	innerDamage = 1, 
@@ -102,7 +105,37 @@ function atlas_ShellFire:second_fire(p1, p2, p3)
 end
 
 function atlas_ShellFire:isTwoClickExc(p1, p2)
-	
+
+	if test_p1 == nil then
+		LOG("test_p1 is nil!")
+	else
+		LOG("test_p1: "..test_p1:GetString())
+	end
+
+	if test_p2 == nil then
+		LOG("test_p2 is nil!")
+	else
+		LOG("test_p2: "..test_p2:GetString())
+	end
+
+
+	if p1 == nil or p2 == nil then
+		LOG(">>> atlas_ShellFire:isTwoClickExc(PROBLEM WITH P1 AND / OR P2) <<<")
+		if p1 == nil then LOG("p1 == nil") end
+		if p2 == nil then LOG("p2 == nil") end
+	else
+		LOG(string.format(">>> atlas_ShellFire:isTwoClickExc(p1: %s, p2: %s)", p1:GetString(), p2:GetString()))
+	end
+
+	--FOR SOME FUCKING REASON P2 IS NIL	
+	--if Board:IsPawnSpace(p2) then
+	if Board:IsPawnSpace(test_p2) then
+		LOG("------- return true")
+		return true
+	else
+		LOG("------- return false")
+		return false
+	end
 end
 
 atlas_Mortar = aFM_WeaponTemplate:new{
@@ -148,11 +181,40 @@ function atlas_Mortar:GetSkillEffect(p1, p2)
 end
 
 function atlas_Mortar:IsTwoClickException(p1, p2)
-	if _G[self:FM_GetMode(p1)].isTwoClickExc then
-		return _G[self:FM_GetMode(p1)].isTwoClickExc(p1, p2)
+
+	if p1 == nil or p2 == nil then
+		LOG(">>> atlas_Mortar:IsTwoClickException(PROBLEM WITH P1 AND / OR P2) <<<")
+		if p1 == nil then LOG("p1 == nil") end
+		if p2 == nil then LOG("p2 == nil") end
+	else
+		LOG(string.format(">>> atlas_Mortar:IsTwoClickException(p1: %s, p2: %s)", p1:GetString(), p2:GetString()))
 	end
 
-	return not _G[self:FM_GetMode(p1)].aFM_twoClick 
+	test_p1 = p1
+	test_p2 = p2
+
+	if _G[self:FM_GetMode(p1)].isTwoClickExc then
+		LOG("----------- [IF] isTwoClickExc exists!")
+		local mode = self:FM_GetMode(p1)
+		LOG("----------- mode: "..tostring(mode).." p1, p2 after:...")
+
+		if p1 == nil or p2 == nil then
+			if p1 == nil then LOG("p1 == nil") end
+			if p2 == nil then LOG("p2 == nil") end
+		else
+			LOG(string.format("p1: %s, p2: %s", p1:GetString(), p2:GetString()))
+			LOG(string.format("test_p1: %s, test_p2: %s", p1:GetString(), p2:GetString()))
+		end
+
+		local isTCexc = _G[self:FM_GetMode(p1)].isTwoClickExc(p1, p2)
+		LOG("-----------> isTCexc: "..tostring(isTCexc))
+		return _G[self:FM_GetMode(p1)].isTwoClickExc(p1, p2)
+	else
+		LOG("----------- [ELSE] isTwoClickExc DOES NOT EXIST")
+		local isTCexc = not _G[self:FM_GetMode(p1)].aFM_twoClick
+		LOG("-----------> isTCexc: "..tostring(isTCexc))
+		return not _G[self:FM_GetMode(p1)].aFM_twoClick
+	end
 end
 
 function atlas_Mortar:GetSecondTargetArea(p1, p2)
