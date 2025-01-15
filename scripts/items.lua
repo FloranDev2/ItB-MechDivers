@@ -195,28 +195,19 @@ TILE_TOOLTIPS.Item_Truelch_WeaponPod_Rs422_Text = {"RS-422 Pod", "Pick it up to 
 
 -------------------- UTILITY FUNCTIONS --------------------
 
-function TruelchTestTryAddWeapon()
-	LOG("------------------------> TruelchTestTryAddWeapon()")
-end
-
 function TryAddWeapon(loc, weapon, msg)
 	local pawn = Board:GetPawn(loc)
-
+	
 	if pawn == nil then return end
-
-	LOG("TryAddWeapon(pawn: "..pawn:GetMechName()..", health: "..tostring(pawn:GetHealth()))
 
 	if not pawn:IsEnemy() then
 		if #pawn:GetPoweredWeapons() < 3 then
 			pawn:AddWeapon(weapon)			
 			Board:AddAlert(loc, msg)
-			--Save that weapon for removal at the end of the mission
-			--table.insert(missionData().stratWeapsToRemove, {})
 		else
 			--Replace the 3rd weapon with the new one?
 		end
 	else
-		--LOG(" -----> Destroyed")
 		Board:AddAlert(loc, "DESTROYED")
 	end
 end

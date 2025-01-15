@@ -397,10 +397,7 @@ end
 --These functions need to have a very specific name (prefixed with modder's username for example)
 --to not accidentally override other function elsewhere with the same name.
 --I've decided to not use missionData() directly here and rather use an intermediate function for that reason.
---Also, improvement: use string format
 --Thx tosx and Metalocif for the help!
---se:AddScript([[truelch_MechDivers_AddPodData(]]..p2:GetString()..[[,"]]..self.Item..[[")]])
-
 function truelch_Mg43Mode:fire(p1, p2, se)
 	if IsTestMechScenario() then
 		local damage = SpaceDamage(p2, 0)
@@ -410,26 +407,6 @@ function truelch_Mg43Mode:fire(p1, p2, se)
 		return
 	end
 
-	--[[
-	if not isShuttle(p2) then
-		--Regular old logic
-	    local damage = SpaceDamage(p2, 0)
-	    damage.sImageMark = "combat/blue_stratagem_grenade.png"
-	    se:AddArtillery(damage, self.UpShot)
-
-	    --Free action
-	    se:AddScript("Pawn:SetActive(true)")
-
-	    if not Board:IsTipImage() and isMission() then
-		    se:AddScript(string.format("truelch_MechDivers_AddPodData(%s, %s)", p2:GetString(), self.Item))
-		end
-
-	else
-		--TC
-	end
-	]]
-
-	--Old. Hm maybe it can work that way
 	if isShuttle(p2) then
 		--"throw"
 		local damage = SpaceDamage(p2, 0)
@@ -450,7 +427,6 @@ function truelch_Mg43Mode:fire(p1, p2, se)
 end
 
 function truelch_Mg43Mode:second_targeting(p1, p2)
-	--LOG("truelch_Mg43Mode:second_targeting - A")
     local ret = PointList()
 
 	for dir = DIR_START, DIR_END do
@@ -460,28 +436,29 @@ function truelch_Mg43Mode:second_targeting(p1, p2)
 		end
 	end
 
-	--LOG("truelch_Mg43Mode:second_targeting - B")
-
     return ret
 end
 
+--Need to do this because you can't call a global function with arguments with AddScript. SOMEHOW.
+--Why is it name ZogZog? Why not?
+local zogZogLoc    --Am I
+local zogZogWeapon --Becoming crazy?
+local zogZogMsg    --NO NO IT'S FINE I'M FINE...              ...HAHAHAHAHAHAHA
+function ZogZog(--[[loc, weapon, msg]]) --hehehe... NO
+	--LOG(string.format("ZogZog(loc: %s, weapon: %s, msg: %s)", loc:GetString(), weapon, msg))
+	--LOG("ZogZog()")
+	--TryAddWeapon(loc, weapon, msg) --HAHAHA
+	TryAddWeapon(zogZogLoc, zogZogWeapon, zogZogMsg) --HO? OH OH OH
+end
+
+
 function truelch_Mg43Mode:second_fire(p1, p2, p3)
-	--LOG("truelch_Mg43Mode:second_fire - A")
     local ret = SkillEffect()
-
-    local damage = SpaceDamage(p2, 0)    
-    ret:AddArtillery(damage, self.UpShot, FULL_DELAY)
-
-    --LOG("truelch_Mg43Mode:second_fire - B")
-
-    --local isShuttle = Board:IsPawnSpace(p2) and Board:GetPawn(p2):GetType() == "truelch_EagleMech"
-    local dir = GetDirection(p3 - p2)
-
-    --LOG("truelch_Mg43Mode:second_fire - B")
 
     --Shuttle's move
     if isShuttle(p2) then
-    	LOG("truelch_Mg43Mode:second_fire - isShuttle - A")
+    	local dir = GetDirection(p3 - p2)
+
     	--Shuttle move
 		local move = PointList()
 		move:push_back(p2)
@@ -489,33 +466,33 @@ function truelch_Mg43Mode:second_fire(p1, p2, p3)
 		ret:AddBounce(p2, 2)
 		ret:AddLeap(move, 0.25)
 
-		LOG("truelch_Mg43Mode:second_fire - isShuttle - B")
-
-		--
 		local middle = p2 + DIR_VECTORS[dir]
 		local pawn = Board:GetPawn(middle)
 		if pawn == nil then
 			--Create an item (instantly)
-			LOG("------------ Create item: "..self.Item)
 			ret.sItem = self.Item
 		elseif pawn:IsMech() then
 			--Give this mech the weapon
-			LOG("------------ Give weapon: "..self.Weapon.." to mech: "..pawn:GetMechName())
-			--TryAddWeapon(middle, self.Weapon, self.Message)
-			local stringTest = string.format("TryAddWeapon(%s, %s, %s)", middle:GetString(), self.Weapon, self.Message)
-			LOG("stringTest: "..stringTest)
-			ret:AddScript(stringTest)
+			--TryAddWeapon(middle, self.Weapon, self.Message) --don't want to happen during preview but when the weapon is actually fired
+			--Apparently, you cannot call a global function with argument in AddScript()
+			--local stringTest = string.format("TryAddWeapon(%s, %s, %s)", middle:GetString(), self.Weapon, self.Message)
+			
+			--So I might try with an intermediate local function
+			zogZogLoc = middle         --Everything
+			zogZogWeapon = self.Weapon --is
+			zogZogMsg = self.Message   --daijobu
+			ret:AddScript("ZogZog()")
 		else
 			LOG("Certainly an enemy or a deployable or whatever")
 
-		end
-
-		LOG("truelch_Mg43Mode:second_fire - isShuttle - C")
-		
+		end		
 	else
 		--Should NOT happen
 		LOG("WTF")
     end
+
+    --Free action
+    ret:AddScript("Pawn:SetActive(true)")
 
     return ret
 end
@@ -528,7 +505,10 @@ truelch_Apw1Mode = truelch_Mg43Mode:new{
 		"\nCall-in a pod containing a APW-1 Anti-Materiel Rifle."..
 		"It shoots projectiles with a minimum range of 2 that deals heavy damage and pull.",
 	aFM_icon = "img/modes/icon_apw1.png",
+
 	Item = "truelch_Item_WeaponPod_Apw1",
+	Weapon = "truelch_Apw1AntiMaterielRifle",
+	Message = "Acquired an APW-1 Anti-Materiel Rifle!", --"\n(de-select and re-select the Mech to see it)"
 }
 
 
@@ -539,7 +519,10 @@ truelch_Flam40Mode = truelch_Mg43Mode:new{
 		"\nCall-in a pod containing a FLAM-40 Flamethrower."..
 		"Ignite the target tile and pull inward an adjacent tile.",
 	aFM_icon = "img/modes/icon_flam40.png",
+
 	Item = "truelch_Item_WeaponPod_Flam40",
+	Weapon = "truelch_Flam40Flamethrower",
+	Message = "Acquired a FLAM-40 Flamethrower!", --"\n(de-select and re-select the Mech to see it)"
 }
 
 
@@ -555,6 +538,8 @@ truelch_Rs422Mode = truelch_Mg43Mode:new{
 	aFM_limited = 1,
 
 	Item = "truelch_Item_WeaponPod_Rs422",
+	Weapon = "truelch_Rs422Railgun",
+	Message = "Acquired a RS-422 Railgun!", --"\n(de-select and re-select the Mech to see it)"
 }
 
 -----------------------------------------------------
@@ -562,12 +547,15 @@ truelch_Rs422Mode = truelch_Mg43Mode:new{
 -----------------------------------------------------
 
 -------------------- MODE 5: A/MG Machine Gun Sentry --------------------
-truelch_MgSentryMode = truelch_Mg43Mode:new{
+truelch_MgSentryMode = truelch_Mg43Mode:new{ --I need to be careful with this with recent changes
 	aFM_name = "Call-in a Machine Gun Sentry",
 	aFM_desc = "Drop an A/MG Machine Gun Sentry."..
 		"\nIt shoots projectiles with a minimum range of 2 that deals heavy damage and pull.",
 	aFM_icon = "img/modes/icon_mg_sentry.png",
+
+	aFM_twoClick = false, --to counter new changes from truelch_Mg43Mode. Hope that's enough...
 	--aFM_limited = 1, --no need to re-define this
+
 	Pawn = "truelch_Amg43MachineGunSentry",
 }
 
@@ -1181,6 +1169,7 @@ function truelch_StratagemFMW:GetSkillEffect(p1, p2)
 end
 
 function truelch_StratagemFMW:IsTwoClickException(p1, p2)
+	--[[
 	LOG(" ---------------- truelch_StratagemFMW:IsTwoClickException() ---------------- ")
 	if p1 == nil or p2 == nil then
 		LOG(">>> truelch_StratagemFMW:IsTwoClickException(PROBLEM WITH P1 AND / OR P2) <<<")
@@ -1189,6 +1178,7 @@ function truelch_StratagemFMW:IsTwoClickException(p1, p2)
 	else
 		LOG(string.format(">>> truelch_StratagemFMW:IsTwoClickException(p1: %s, p2: %s)", p1:GetString(), p2:GetString()))
 	end
+	]]
 
 	--WHY WHY WHY WHY WHY
 	truelch_strat_p1 = p1
@@ -1196,6 +1186,7 @@ function truelch_StratagemFMW:IsTwoClickException(p1, p2)
 
 	--return not _G[self:FM_GetMode(p1)].aFM_twoClick
 	if _G[self:FM_GetMode(p1)].isTwoClickExc then
+		--[[
 		LOG("----------- [IF] isTwoClickExc exists!")
 		local mode = self:FM_GetMode(p1)
 		LOG("----------- mode: "..tostring(mode).." p1, p2 after:...")
@@ -1207,14 +1198,19 @@ function truelch_StratagemFMW:IsTwoClickException(p1, p2)
 			LOG(string.format("p1: %s, p2: %s", p1:GetString(), p2:GetString()))
 			LOG(string.format("test_p1: %s, test_p2: %s", p1:GetString(), p2:GetString()))
 		end
+		]]
 
+		--[[
 		local isTCexc = _G[self:FM_GetMode(p1)].isTwoClickExc(p1, p2)
 		LOG("-----------> isTCexc: "..tostring(isTCexc))
+		]]
 		return _G[self:FM_GetMode(p1)].isTwoClickExc(p1, p2)
 	else
+		--[[
 		LOG("----------- [ELSE] isTwoClickExc DOES NOT EXIST")
 		local isTCexc = not _G[self:FM_GetMode(p1)].aFM_twoClick
 		LOG("-----------> isTCexc: "..tostring(isTCexc))
+		]]
 		return not _G[self:FM_GetMode(p1)].aFM_twoClick
 	end
 end
