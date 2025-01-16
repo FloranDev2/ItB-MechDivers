@@ -139,7 +139,7 @@ function computeSmokeAirstrike(se, point, dir)
 	end
 end
 
-function compute500KgAirstrike(se, point, dir)
+function compute500KgAirstrike(se, point)
 	se:AddDelay(0.05)
 
 	--Bomb fall + explosion anim
@@ -200,7 +200,7 @@ local function resolveAirstrikes()
 		elseif id == 1 then
 			computeSmokeAirstrike(se, point, dir)
 		elseif id == 2 then
-			compute500KgAirstrike(se, point, dir)
+			compute500KgAirstrike(se, point)
 		end
 
 		Board:AddEffect(se)
@@ -327,8 +327,36 @@ end
 -------------------- SUPPORT WEAPONS --------------------
 ---------------------------------------------------------
 
+-------------------- MODE 0: Base (not used) --------------------
+truelch_StratMode = {
+	aFM_name = "Name",
+	aFM_desc = "Description.",
+	aFM_icon = "img/modes/icon_mg43.png",
+	Range = 2,
+	aFM_twoClick = false,
+	aFM_limited = 1,
+	UpShot = "effects/truelch_shotup_stratagem_ball.png",
+}
+
+function truelch_StratMode:targeting(point)
+	local points = {}
+
+    for j = -self.Range, self.Range do
+        for i = -self.Range, self.Range do
+            local curr = point + Point(i, j)
+            if curr ~= point and Board:IsValid(curr) then
+            	points[#points+1] = curr
+            end
+        end
+    end
+
+	return points
+end
+
+CreateClass(truelch_StratMode)
+
 -------------------- MODE 1: MG-43 Machine Gun --------------------
-truelch_Mg43Mode = {
+truelch_Mg43Mode = truelch_StratMode:new{
 	aFM_name = "Call-in a Machine Gun",
 	aFM_desc = "Free action."..
 		"\nCall-in a pod containing a MG-43 Machine Gun that shoots a pushing projectile that deals 1 damage."..
@@ -337,17 +365,15 @@ truelch_Mg43Mode = {
 	aFM_icon = "img/modes/icon_mg43.png",
 
 	aFM_twoClick = true,
-	aFM_limited = 1,
 
-	UpShot = "effects/truelch_shotup_stratagem_ball.png",
-	Range = 2,
+	--UpShot = "effects/truelch_shotup_stratagem_ball.png",
 
 	Item = "truelch_Item_WeaponPod_Mg43",
 	Weapon = "truelch_Mg43MachineGun",
 	Message = "Acquired a MG-43 Machine Gun!", --"\n(de-select and re-select the Mech to see it)"
 }
 
-CreateClass(truelch_Mg43Mode)
+--CreateClass(truelch_Mg43Mode)
 
 --p2 is FUCKING nil FOR NO REASON. So I'm using this external variable. FFS. GAAAH
 function truelch_Mg43Mode:isTwoClickExc(p1, p2)
@@ -547,26 +573,50 @@ truelch_Rs422Mode = truelch_Mg43Mode:new{
 -----------------------------------------------------
 
 -------------------- MODE 5: A/MG Machine Gun Sentry --------------------
-truelch_MgSentryMode = truelch_Mg43Mode:new{ --I need to be careful with this with recent changes
+truelch_MgSentryMode = truelch_StratMode:new{ --no more spaghetti
 	aFM_name = "Call-in a Machine Gun Sentry",
 	aFM_desc = "Drop an A/MG Machine Gun Sentry."..
-		"\nIt shoots projectiles with a minimum range of 2 that deals heavy damage and pull.",
+		"\nShoot a projectile that deployables 1 damage and pushes.",
 	aFM_icon = "img/modes/icon_mg_sentry.png",
-
-	aFM_twoClick = false, --to counter new changes from truelch_Mg43Mode. Hope that's enough...
-	--aFM_limited = 1, --no need to re-define this
-
 	Pawn = "truelch_Amg43MachineGunSentry",
 }
 
-function truelch_MgSentryMode:fire(p1, p2, se)
-    local damage = SpaceDamage(p2, 0)    
-    se:AddArtillery(damage, self.UpShot, FULL_DELAY)
+function truelch_MgSentryMode:targeting(point)
+	local points = {}
 
+	--Check if it's not already a point in the mission data!
+
+    for j = -self.Range, self.Range do
+        for i = -self.Range, self.Range do
+            local curr = point + Point(i, j)
+
+        	local isHellPodPoint = false
+        	if isMission() then
+				for _, hellPod in pairs(missionData().hellPods) do
+					if hellPod[1] == curr then
+						isHellPodPoint = true
+						break
+					end
+				end
+			end
+
+            local isItem = Board:GetItem(curr) == nil
+            if curr ~= point and Board:IsValid(curr) and not Board:IsBlocked(curr, PATH_PROJECTILE) and isItem == false and not Board:IsPod(curr)
+            		and not Board:IsTerrain(curr, TERRAIN_HOLE) and not Board:IsTerrain(curr, TERRAIN_WATER) and not Board:IsTerrain(curr, TERRAIN_LAVA) then
+            	points[#points+1] = curr
+            end
+        end
+    end
+
+	return points
+end
+
+function truelch_MgSentryMode:fire(p1, p2, se)
+    local damage = SpaceDamage(p2, 0)
+    se:AddArtillery(damage, self.UpShot, FULL_DELAY)
     local dropAnim = SpaceDamage(p2, 0)
     dropAnim.sAnimation = "truelch_anim_pod_land_2"
     se:AddDamage(dropAnim)
-
     se:AddDelay(1.9)
     local spawn = SpaceDamage(p2, 0)
     spawn.sPawn = self.Pawn
@@ -577,7 +627,7 @@ end
 truelch_MortarSentryMode = truelch_MgSentryMode:new{
 	aFM_name = "Call-in a Mortar Sentry",
 	aFM_desc = "Drop an AA/M-12 Mortar Sentry."..
-		"\n(...)",
+		"\nIt shoots artillery projectiles that deals 1 damage to the target and adjacent tiles and pushes adjacent tiles.",
 	aFM_icon = "img/modes/icon_mortar_sentry.png",
 	Pawn = "truelch_Am12MortarSentry",
 }
@@ -586,7 +636,7 @@ truelch_MortarSentryMode = truelch_MgSentryMode:new{
 truelch_TeslaTowerMode = truelch_MgSentryMode:new{
 	aFM_name = "Call-in a Tesla Tower",
 	aFM_desc = "Drop an A/ARC-3 Tesla Tower."..
-		"\n(...)",
+		"\nChain damage through adjacent targets, dealing 2 points of damage. (can damage friendly units but not the buildings)",
 	aFM_icon = "img/modes/icon_tesla_tower.png",
 	Pawn = "truelch_TeslaTower",
 }
@@ -594,16 +644,45 @@ truelch_TeslaTowerMode = truelch_MgSentryMode:new{
 -------------------- MODE 8: Guard Dog --------------------
 truelch_GuardDogMode = truelch_MgSentryMode:new{
 	aFM_name = "Release a Guard Dog",
-	aFM_desc = "AX/AR-23 'Guard Dog'.".. --don't know if '' can work as a replacement to "" inside a string
-		"\n(...)",
+	aFM_desc = [[AX/AR-23 "Guard Dog".]]..
+		"\nIt shoots projectiles at melee range.", --smart
 	aFM_icon = "img/modes/icon_guard_dog.png",
 	Pawn = "truelch_GuardDog", --TODO
 }
 
+function truelch_GuardDogMode:targeting(point)
+	local points = {}
+
+	--Check if it's not already a point in the mission data!
+
+    for j = -self.Range, self.Range do
+        for i = -self.Range, self.Range do
+            local curr = point + Point(i, j)
+
+        	local isHellPodPoint = false
+        	if isMission() then
+				for _, hellPod in pairs(missionData().hellPods) do
+					if hellPod[1] == curr then
+						isHellPodPoint = true
+						break
+					end
+				end
+			end
+
+            local isItem = Board:GetItem(curr) == nil
+            if curr ~= point and Board:IsValid(curr) and not Board:IsBlocked(curr, PATH_PROJECTILE) and isItem == false and not Board:IsPod(curr) then
+            	points[#points+1] = curr
+            end
+        end
+    end
+
+	return points
+end
+
+
 function truelch_GuardDogMode:fire(p1, p2, se)
     local damage = SpaceDamage(p2, 0)
     se:AddArtillery(damage, "effects/truelch_mg_drone_shotup.png", FULL_DELAY)
-
     local spawn = SpaceDamage(p2, 0)
     spawn.sPawn = self.Pawn
     se:AddDamage(spawn)
@@ -616,7 +695,9 @@ end
 --Airstrikes after Mechs' turn but before Vek act. If the Shuttle Mech is in range, it can fires the effect itself, making it instant.
 
 -------------------- MODE 9: Napalm Airstrike --------------------
-truelch_NapalmAirstrikeMode = truelch_Mg43Mode:new{
+--truelch_StratMode
+--truelch_NapalmAirstrikeMode = truelch_Mg43Mode:new{
+truelch_NapalmAirstrikeMode = truelch_StratMode:new{
 	aFM_name = "Napalm Airstrike",
 	aFM_desc = "Ignite 4 tiles in an arrow shapes."..
 		"\nYou can first target a Shuttle Mech to do the strike instantly."..
@@ -806,27 +887,68 @@ truelch_500kgAirstrikeMode = truelch_NapalmAirstrikeMode:new{
 	AirstrikeAnim = "units/mission/bomber_1.png", --TODO
 }
 
+--p2 was nil for mg43 so I'm taking safety measures here
+function truelch_500kgAirstrikeMode:isTwoClickExc(p1, p2)
+	--return not isShuttle(p2) or IsTestMechScenario() --p2 nil...
+	--[[
+	LOG("truelch_500kgAirstrikeMode:isTwoClickExc")
+
+	if p2 == nil then
+		LOG("----------- p2 is nil!")
+	else
+		LOG("----------- p2: "..p2:GetString())
+	end
+
+	if truelch_strat_p2 == nil then
+		LOG("----------- truelch_strat_p2 is nil!")
+	else
+		LOG("----------- truelch_strat_p2: "..truelch_strat_p2:GetString())
+	end
+	]]
+
+	return not isShuttle(truelch_strat_p2) or IsTestMechScenario()
+end
+
 --TC wasn't necessary
 --Oh, it was, for the shuttle move!
 --Maybe I should write a TC exception for the case we don't target shuttle at p2
 function truelch_500kgAirstrikeMode:fire(p1, p2, se)
+	--LOG("truelch_500kgAirstrikeMode:fire()")
     local damage = SpaceDamage(p2, 0)    
     se:AddArtillery(damage, self.UpShot, FULL_DELAY)
 
-    local pawn = Board:GetPawn(p2)
-    if pawn ~= nil and pawn:GetType() == "truelch_EagleMech" then
+    --local pawn = Board:GetPawn(p2)
+    --if pawn ~= nil and pawn:GetType() == "truelch_EagleMech" then
+	if isShuttle(p2) then
+		--LOG("isShuttle ----- A")
     	local damage = SpaceDamage(p2, 0)
     	se:AddDamage(damage)
+    	--LOG("isShuttle ----- B")
     else
+    	--LOG("ELSE --------- A")
+    	--Let's do the final effect here since we are in a TC exception here...
+
+    	--Center
 		local damage = SpaceDamage(p2, 0)
 		damage.sImageMark = "combat/icons/icon_500kg_inner.png"
     	se:AddDamage(damage)
+
+		--Outer
+		for dir = DIR_START, DIR_END do		
+			local curr = p2 + DIR_VECTORS[dir]
+			local damage = SpaceDamage(curr, 0)
+			damage.sImageMark = "combat/icons/icon_500kg_outer.png"
+			se:AddDamage(damage)
+		end
+
+		--LOG("ELSE --------- B")
+		se:AddScript(string.format("truelch_MechDivers_AddAirstrike(%s, -1, 2)", p2:GetString()))
     end
 end
 
-function truelch_500kgAirstrikeMode:second_targeting(p1, p2) 
+function truelch_500kgAirstrikeMode:second_targeting(p1, p2)
+	--LOG("truelch_500kgAirstrikeMode:second_targeting()")
     local ret = PointList()
-    --local isShuttle = Board:IsPawnSpace(p2) and Board:GetPawn(p2):GetType() == "truelch_EagleMech"
 
 	for dir = DIR_START, DIR_END do
 		for i = self.MinRange, self.MaxRange do
@@ -841,7 +963,7 @@ function truelch_500kgAirstrikeMode:second_targeting(p1, p2)
 end
 
 function truelch_500kgAirstrikeMode:second_fire(p1, p2, p3)
-	--LOG("truelch_NapalmAirstrikeMode:second_fire")
+	LOG("truelch_NapalmAirstrikeMode:second_fire - A")
     local ret = SkillEffect()
 
 	local damage = SpaceDamage(p2, 0)    
@@ -850,43 +972,26 @@ function truelch_500kgAirstrikeMode:second_fire(p1, p2, p3)
     --local isShuttle = Board:IsPawnSpace(p2) and Board:GetPawn(p2):GetType() == "truelch_EagleMech"
     local dir = GetDirection(p3 - p2)
 
+    LOG("truelch_NapalmAirstrikeMode:second_fire - B")
+
     --Shuttle's move
     if isShuttle(p2) then
+    	LOG("truelch_NapalmAirstrikeMode:second_fire - isShuttle - A")
     	--Shuttle move
 		local move = PointList()
+		LOG("truelch_NapalmAirstrikeMode:second_fire - isShuttle - B")
 		move:push_back(p2)
+		LOG("truelch_NapalmAirstrikeMode:second_fire - isShuttle - C")
 		move:push_back(p3)
+		LOG("truelch_NapalmAirstrikeMode:second_fire - isShuttle - D")
 		ret:AddBounce(p2, 2)
+		LOG("truelch_NapalmAirstrikeMode:second_fire - isShuttle - E")
 		ret:AddLeap(move, 0.25)
 
-		compute500KgAirstrike(p2, dir)
-
-		--[[
-		--Anim
-		local bombAnim = SpaceDamage(p2, 0)
-		bombAnim.sAnimation = "truelch_500kg"
-		ret:AddDamage(bombAnim)
-
-		ret:AddDelay(0.5)
-
-		--Board shake
-		ret:AddBoardShake(2)
-
-		--Center
-		local damage = SpaceDamage(p2, 4)
-		ret:AddDamage(damage)
-		ret:AddBounce(p2, 3)
-
-		--Adjacent
-		for dir = DIR_START, DIR_END do
-			local curr = p2 + DIR_VECTORS[dir]
-			local damage = SpaceDamage(curr, 2)
-			damage.sAnimation = "exploout2_"..dir
-			ret:AddDamage(damage)
-			ret:AddBounce(curr, 1)
-		end
-		]]
+		compute500KgAirstrike(ret, p2)
+		LOG("truelch_NapalmAirstrikeMode:second_fire - isShuttle - E")
 	else
+		LOG("Shouldn't happen anyway. RIGHT????????????????????")
 		--Fake Mark
 
 		--Center
@@ -894,6 +999,7 @@ function truelch_500kgAirstrikeMode:second_fire(p1, p2, p3)
 		damage.sImageMark = "combat/icons/icon_500kg_inner.png"
 		ret:AddDamage(damage)
 
+		--Outer
 		for dir = DIR_START, DIR_END do		
 			local curr = p2 + DIR_VECTORS[dir]
 			local damage = SpaceDamage(curr, 0)
@@ -903,6 +1009,8 @@ function truelch_500kgAirstrikeMode:second_fire(p1, p2, p3)
 
 		ret:AddScript(string.format("truelch_MechDivers_AddAirstrike(%s, %s, 2)", p2:GetString(), tostring(dir)))
     end
+
+    LOG("truelch_NapalmAirstrikeMode:second_fire - C")
 
     return ret
 end
@@ -915,7 +1023,6 @@ end
 --Orbital strikes effects will happen AFTER Vek act.
 
 -------------------- MODE 12: Orbital Strike --------------------
---truelch_OrbitalPrecisionStrikeMode = truelch_NapalmAirstrikeMode:new{
 truelch_OrbitalPrecisionStrikeMode = truelch_NapalmAirstrikeMode:new{
 	aFM_name = "Orbital Precision Strike",
 	aFM_desc = "Command a precision orbital strike that'll kill anything below."..
@@ -1150,7 +1257,6 @@ end
 
 
 function truelch_StratagemFMW:GetSkillEffect(p1, p2)
-	--[[
 	LOG("truelch_StratagemFMW:GetSkillEffect")
 	if p1 == nil or p2 == nil then
 		LOG(">>> truelch_StratagemFMW:GetSkillEffect(PROBLEM WITH P1 AND / OR P2) <<<")
@@ -1159,7 +1265,6 @@ function truelch_StratagemFMW:GetSkillEffect(p1, p2)
 	else
 		LOG(string.format(">>> truelch_StratagemFMW:GetSkillEffect(p1: %s, p2: %s)", p1:GetString(), p2:GetString()))
 	end
-	]]
 
 	if not Board:IsTipImage() then
 		return self:GetSkillEffect_Normal(p1, p2)

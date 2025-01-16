@@ -152,7 +152,6 @@ truelch_Am12MortarSentry = Pawn:new{
 	Name = "A/M-12 Mortar Sentry",
 	Health = 1,
 	MoveSpeed = 0,
-	--Image = "MechNano",
 	Image = "truelch_mortar_sentry",
 	SkillList = { "truelch_Am12MortarSentry_Weapon" },
 	SoundLocation = "/mech/flying/jet_mech/",
@@ -270,7 +269,6 @@ truelch_TeslaTower = Pawn:new{
 	Health = 1,
 	MoveSpeed = 0,
 	Image = "truelch_tesla_tower",
-	--Image = "MechScarab",
 	SkillList = { "truelch_TeslaTower_Weapon" },
 	SoundLocation = "/mech/flying/jet_mech/",
 	ImageOffset = mechDiversBlack,
@@ -385,11 +383,10 @@ end
 -------------------------------------------------------------------------------------------
 
 truelch_GuardDog = Pawn:new{
-	Name = "AX/AR-23 'Guard Dog'",
+	Name = [[AX/AR-23 "Guard Dog"]],
 	Health = 1,
 	MoveSpeed = 3,
 	Image = "truelch_guard_dog",
-	--Image = "MechJudo",
 	SkillList = { "truelch_GuardDog_Weapon" },
 	SoundLocation = "/mech/flying/jet_mech/",
 	ImageOffset = mechDiversBlack,
@@ -405,7 +402,7 @@ AddPawn("truelch_GuardDog")
 truelch_GuardDog_Weapon = Skill:new{
 	--Infos
 	Name = "AR-23P Liberator Penetrator",
-	Description = "Shoots a projectile at melee range, prioritizing enemies adjacent with Mechs.",
+	Description = "Shoot a projectile at melee range, prioritizing enemies adjacent with Mechs.",
 	Class = "Unique",
 
 	--Art
