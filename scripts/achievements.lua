@@ -96,8 +96,12 @@ end
 
 
 --- DATA ---
-local function missionData()
+local function missionData(msg)
     local mission = GetCurrentMission()
+
+    if mission == nil then
+    	LOG("missionData -> mission == nil -> msg: "..msg)
+    end
 
     if mission.truelch_MechDivers == nil then
         mission.truelch_MechDivers = {}
@@ -191,7 +195,7 @@ achievements.truelch_RespawnAbuse.getTooltip = function(self)
 
 	--Can also be helpful to know if the passive if up even though you're not looking for the achievement.
 	if isMission() --[[and not achievements.truelch_RespawnAbuse:isComplete()]] then
-		status = status.."\nHas Mech respawned this mission? "..tostring(missionData().isRespawnUsed)
+		status = status.."\nHas Mech respawned this mission? "..tostring(missionData("getTooltip").isRespawnUsed)
 		status = status.."\nIs this achievement still doable? "..tostring(achievementData().isRespawnAchvStillOk)
 	end
 
@@ -274,7 +278,7 @@ local HOOK_onMissionEnded = function(mission)
 	end
 
 	--Compute
-	achievementData().isRespawnAchvStillOk = achievementData().isRespawnAchvStillOk and missionData().isRespawnUsed
+	achievementData().isRespawnAchvStillOk = achievementData().isRespawnAchvStillOk and missionData("HOOK_onMissionEnded").isRespawnUsed
 end
 
 -- --- EVENTS --- --

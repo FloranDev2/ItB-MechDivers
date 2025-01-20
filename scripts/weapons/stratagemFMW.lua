@@ -1162,8 +1162,20 @@ end
 function truelch_StratagemFMW:GetTargetArea_Normal(point)
 	local pl = PointList()
 	local currentMode = _G[self:FM_GetMode(point)]
+
+	--[[
+	local fmwUses = self:FM_GetUses(point, currentMode)
+	local isUseOk = true
+	if fmwUses == nil or fmwUses <= 0 then isUseOk = false end
+	]]
+
+	--LOG("truelch_StratagemFMW:GetTargetArea_Normal - fmwUses: "..tostring(fmwUses)) --nil
+	--LOG("truelch_StratagemFMW:GetTargetArea_Normal -> currentMode: "..tostring(currentMode))
     
-	if self:FM_CurrentModeReady(point) then
+	--Okay this is very experimental
+	local isOk = Pawn:GetId() <= 2 --respawned mechs aren't allowed to use stratagems!
+
+	if self:FM_CurrentModeReady(point) and isOk then
 		local points = currentMode:targeting(point)
 		for _, p in ipairs(points) do
 			pl:push_back(p)
@@ -1247,8 +1259,14 @@ end
 function truelch_StratagemFMW:GetSkillEffect_Normal(p1, p2)
 	local se = SkillEffect()
 	local currentMode = self:FM_GetMode(p1)
+
+	--[[
+	local fmwUses = self:FM_GetUses(p1, currentMode)
+	local isUseOk = true
+	if fmwUses == nil or fmwUses <= 0 then isUseOk = false end
+	]]
 	
-	if self:FM_CurrentModeReady(p1) then
+	if self:FM_CurrentModeReady(p1) --[[and isUseOk]] then
 		_G[currentMode]:fire(p1, p2, se)
 	end
 
@@ -1257,6 +1275,7 @@ end
 
 
 function truelch_StratagemFMW:GetSkillEffect(p1, p2)
+	--[[
 	LOG("truelch_StratagemFMW:GetSkillEffect")
 	if p1 == nil or p2 == nil then
 		LOG(">>> truelch_StratagemFMW:GetSkillEffect(PROBLEM WITH P1 AND / OR P2) <<<")
@@ -1265,6 +1284,7 @@ function truelch_StratagemFMW:GetSkillEffect(p1, p2)
 	else
 		LOG(string.format(">>> truelch_StratagemFMW:GetSkillEffect(p1: %s, p2: %s)", p1:GetString(), p2:GetString()))
 	end
+	]]
 
 	if not Board:IsTipImage() then
 		return self:GetSkillEffect_Normal(p1, p2)
@@ -1492,10 +1512,27 @@ local function computeStratagems()
 	end
 end
 
-local testMode = true
+local testMode = false
 
 local HOOK_onNextTurn = function(mission)
 	if Game:GetTeamTurn() ~= TEAM_PLAYER then
+
+		--[[
+		--Okay so newly spawned mech will have a new id (something like 105).
+		--But once a new mission starts, all mechs will reset to 0 - 2 ids! (thankfully)
+		--TMP STUF --->
+		for j = 0, 7 do
+			for i = 0, 7 do
+				local curr = Point(i, j)
+				local pawn = Board:GetPawn(curr)
+				if pawn ~= nil and pawn:IsMech() then
+					LOG(string.format("Mech found: %s, id: %s", pawn:GetMechName(), tostring(pawn:GetId())))
+				end
+			end
+		end
+		-- <--- TMP STUFF
+		]]
+
 		if truelch_stratagem_flag == true and not testMode then
 			truelch_stratagem_flag = false
 			computeStratagems()

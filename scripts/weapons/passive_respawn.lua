@@ -71,7 +71,7 @@ function truelch_Reinforcements_Passive:GSE1(p1, p2)
 end
 
 function truelch_Reinforcements_Passive:GetSkillEffect(p1, p2)
-	LOG("truelch_Reinforcements_Passive:GetSkillEffect -> fast respawn: "..tostring(self.FastRespawn))
+	--LOG("truelch_Reinforcements_Passive:GetSkillEffect -> fast respawn: "..tostring(self.FastRespawn))
 
 	if self.TipIndex == 0 then
 		self.TipIndex = 1

@@ -21,19 +21,19 @@ aFM_WeaponTemplate = Skill:new{
 --In case the pawn for this id isn't initialized (respawn!)
 -- p: pawn space or id
 function this:ForceFMWInit(p)
-	LOG("forceFMWInit()...")
+	--LOG("forceFMWInit()...")
 	local p = Board:GetPawn(p)
 	local pId = p:GetId()
 
-	LOG(string.format(" ------ pawn: %s, pId: %s", p:GetMechName(), tostring(pId)))
+	--LOG(string.format(" ------ pawn: %s, pId: %s", p:GetMechName(), tostring(pId)))
 
 	local m = GetCurrentMission()
 
 	if m == nil then
-		LOG("... not a mission!")
+		--LOG("... not a mission!")
 	end
 
-	LOG("...ok!")
+	--LOG("...ok!")
 
 	if this:HasSkill(pId) then
 		m.atlas_FMW.Curr[pId] = {}
@@ -50,7 +50,10 @@ function this:ForceFMWInit(p)
 
 				for j = 1, #weapon.aFM_ModeList do
 					local mode = weapon.aFM_ModeList[j]
-					m.atlas_FMW.Limited[pId][i][mode] = _G[mode].aFM_limited or -1
+					--none of this works
+					--m.atlas_FMW.Limited[pId][i][mode] = _G[mode].aFM_limited or -1
+					m.atlas_FMW.Limited[pId][i][mode] = _G[mode].aFM_limited or 0 --test
+					--m.atlas_FMW.Limited[pId][i][mode] = 0 --test2
 					m.atlas_FMW.IsActive[pId][i][mode] = true
 				end
 			end
