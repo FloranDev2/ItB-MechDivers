@@ -1620,10 +1620,8 @@ local function debugGameData()
 	end
 end
 
-local HOOK_onSkillEnd = function(mission, pawn, weaponId, p1, p2)
-    if type(weaponId) == 'table' then
-        weaponId = weaponId.__Id
-    end
+local function computeStratagemAfterUse(pawn, weaponId)
+    if type(weaponId) == 'table' then weaponId = weaponId.__Id end
 
     local p = pawn:GetId()
     local weapons = pawn:GetPoweredWeapons()
@@ -1631,16 +1629,10 @@ local HOOK_onSkillEnd = function(mission, pawn, weaponId, p1, p2)
     for weaponIdx = 1, 3 do
     	local fmw = truelch_divers_fmwApi:GetSkill(p, weaponIdx, false)
     	weapon = weapons[weaponIdx]
-
-    	--LOG(string.format("weaponIdx: %s, weaponId: %s, weapon: %s, fmw: %s", tostring(weaponIdx), tostring(weaponId), tostring(weapon), tostring(fmw)))
-
     	if fmw ~= nil and isStratagemWeapon(weaponId) and weapon == weaponId then
     		local mode = fmw:FM_GetMode(p)
-    		--LOG(" ---> here, mode: "..tostring(mode))
     		for i, stratagem in pairs(gameData().stratagems) do
-    			--if gameData().stratagems[p][i] == mode then
 				if stratagem[i] == mode then
-    				--LOG(" ------> HERE!!!!")
     				table.remove(gameData().stratagems[p], i)
     			end
 			end
@@ -1648,6 +1640,25 @@ local HOOK_onSkillEnd = function(mission, pawn, weaponId, p1, p2)
 	end
 end
 
+local HOOK_onSkillEnd = function(mission, pawn, weaponId, p1, p2)
+	computeStratagemAfterUse(pawn, weaponId)
+end
+
+local HOOK_onFinalEffectEnd = function(mission, pawn, weaponId, p1, p2, p3)
+	--LOG(string.format("%s has finished using %s at %s and %s!", pawn:GetMechName(), weaponId, p2:GetString(), p3:GetString()))
+	computeStratagemAfterUse(pawn, weaponId)
+end
+
+local function EVENT_onModsLoaded()
+    modApi:addMissionStartHook(HOOK_onMissionStarted)
+    modApi:addNextTurnHook(HOOK_onNextTurn)
+    modApi:addPreEnvironmentHook(HOOK_onPreEnv)
+    modApi:addMissionUpdateHook(HOOK_onMissionUpdate)
+    modapiext:addSkillEndHook(HOOK_onSkillEnd)
+    modapiext:addFinalEffectEndHook(HOOK_onFinalEffectEnd)
+end
+
+modApi.events.onModsLoaded:subscribe(EVENT_onModsLoaded)
 
 modApi.events.onTestMechEntered:subscribe(function()
 	modApi:runLater(function() --why was it necessary? But I 
@@ -1679,15 +1690,5 @@ modApi.events.onTestMechEntered:subscribe(function()
 	end)
 end)
 
-
-local function EVENT_onModsLoaded()
-    modApi:addMissionStartHook(HOOK_onMissionStarted)
-    modApi:addNextTurnHook(HOOK_onNextTurn)
-    modApi:addPreEnvironmentHook(HOOK_onPreEnv)
-    modApi:addMissionUpdateHook(HOOK_onMissionUpdate)
-    modapiext:addSkillEndHook(HOOK_onSkillEnd)
-end
-
-modApi.events.onModsLoaded:subscribe(EVENT_onModsLoaded)
 
 return this

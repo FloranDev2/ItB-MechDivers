@@ -119,8 +119,6 @@ end
 
 ----------------------------------------------- HOOKS -----------------------------------------------
 
-
-
 local function HOOK_onNextTurnHook()
     if Game:GetTeamTurn() == TEAM_PLAYER and IsPassiveSkill("truelch_Reinforcements_Passive") then
         --local board_size = Board:GetSize()

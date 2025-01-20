@@ -178,6 +178,26 @@ function this:load()
 			end
 		end)
 
+		--truelch fix (limited ammo wasn't used for TC FMW modes)
+		modapiext:addFinalEffectStartHook(function(m, pawn, weapon, p1, p2, p3)
+			if type(weapon) == 'table' then
+    			weapon = weapon.__Id
+			end
+
+			local wpn = _G[weapon]
+
+			if weapon == "Skill_Repair" then wpn = aFMWF.repair end
+			if weapon == "Move"         then wpn = aFMWF.move end
+
+			if wpn.aFM_ModeList and wpn.aFM_ModeList[1] then
+				local mode = wpn:FM_GetMode(p1)
+
+				if _G[mode].aFM_handleLimited == nil or _G[mode].aFM_handleLimited and wpn:FM_GetUses(p1, mode) > 0 then
+					wpn:FM_SubUses(p1, mode, 1)
+				end
+			end
+		end)
+
 		atlas_FMW_Loaded = true
 	end
 end
