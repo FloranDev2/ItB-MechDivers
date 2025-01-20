@@ -49,6 +49,30 @@ end
 function truelch_TestWeapon:GetSkillEffect(p1, p2)
 	local ret = SkillEffect()
 
+	--Just to show bunch of damage
+	local dmg = 0
+	for j = 0, 7 do
+		for i = 0, 7 do
+			local curr = Point(i, j)
+
+			--ACID
+			local damage = SpaceDamage(curr, dmg)
+			damage.iAcid = EFFECT_CREATE
+			ret:AddDamage(damage)
+
+			--[[
+			--DAMAGE
+			local damage = SpaceDamage(curr, dmg)
+			ret:AddDamage(damage)
+
+			--INCR
+			if dmg < 15 then --it seems to be the hardcoded limit!
+				dmg = dmg + 1
+			end
+			]]
+		end
+	end
+
 	--DAMAGE_DEATH
 
 	--[[
@@ -56,6 +80,7 @@ function truelch_TestWeapon:GetSkillEffect(p1, p2)
 	ret:AddDamage(damage)
 	]]
 
+	--[[
 	local damage = SpaceDamage(p2, self.Damage)
 	damage.iCrack = EFFECT_CREATE
 	ret:AddDamage(damage)
@@ -63,6 +88,7 @@ function truelch_TestWeapon:GetSkillEffect(p1, p2)
 	local damage = SpaceDamage(p2, self.Damage)
 	damage.iCrack = EFFECT_CREATE
 	ret:AddDamage(damage)
+	]]
 	
 	--[[
 	local pawn = Board:GetPawn(p2)

@@ -59,12 +59,35 @@ local function isProteccPawn(pawn)
 end
 
 --TODO: check if a Mech is in the loc of one of the effects
+--It seems that Train_Move is called everytime you do something and hijack my logic...
+--I wonder if there are other neutral stuff that do the same shit.
+--OR VEK QUEUED ATTACKS???
+--Anyway, I'm just gonna check if the pawn using the weapon is a protecc pawn
+----> wait no, a deployable could use a weapon and a protecc pawn needs to defend against it...
+--GAAAH
 local function protecc(pawn, skillEffect, weaponId)
     if skillEffect == nil or skillEffect.effect == nil then
         return
     end
 
+    if weaponId == nil or weaponId == "" then
+        return
+    end
+
+    if type(weaponId) == 'table' then
+        weaponId = weaponId.__Id
+    end
+
+    --thankfully this should cover all cases it didn't worked
+    if not skillEffect.q_effect:empty() then
+        --LOG("HERE!!! queued effect detected --> weaponId: "..weaponId)
+        return
+    end
+
+    --LOG(string.format("--------- protecc -> weaponId: %s", weaponId))
+
     missionData().proteccLastWeaponId = weaponId
+    missionData().proteccData = {} --clear
 
     for i = 1, skillEffect.effect:size() do
         local damageRedirected = 0
@@ -98,6 +121,26 @@ local function protecc(pawn, skillEffect, weaponId)
                     table.insert(missionData().proteccData, { proteccPawn, damageRedirected })
 
                     --Do some fake damage preview and apply damage only in applyProtecc (because Mech using weapon that moves them will prevent them to received damage)
+                    local dmgVal = damageRedirected
+                    if dmgVal < 0 then dmgVal = 0 end --wait wait wait, I need to also check REPAIR damage, no??
+                    if dmgVal > 15 then dmgVal = 15 end
+
+                    local imageName = "combat/icons/icon_protecc_"
+
+                    if proteccPawn:IsAcid() then
+                        dmgVal = dmgVal * 2
+                        imageName = imageName.."acid_"
+                    end
+
+                    imageName = imageName..tostring(dmgVal)..".png"
+
+                    --LOG("imageName: "..imageName)
+
+                    local fakeRedirDmg = SpaceDamage(proteccPawn:GetSpace(), 0)
+                    --LOG("proteccPawn: "..proteccPawn:GetMechName()..", pos: "..proteccPawn:GetSpace():GetString())
+                    fakeRedirDmg.sImageMark = imageName
+
+                    skillEffect:AddDamage(fakeRedirDmg) --will it break the loop if we add space damage to the skill effect?
                 end
 
             end
@@ -106,6 +149,16 @@ local function protecc(pawn, skillEffect, weaponId)
 end
 
 local function applyProtecc(weaponId)
+    if type(weaponId) == 'table' then weaponId = weaponId.__Id end
+
+    --[[
+    if missionData().proteccLastWeaponId ~= nil then
+        LOG(string.format("--------- applyProtecc -> weaponId: %s, proteccLastWeaponId: %s", weaponId, missionData().proteccLastWeaponId))
+    else
+        LOG("--------- applyProtecc -> nil stuff")
+    end
+    ]]
+
     if missionData().proteccLastWeaponId == weaponId then
         local effect = SkillEffect()
 

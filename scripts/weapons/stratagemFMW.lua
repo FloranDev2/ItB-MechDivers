@@ -1645,7 +1645,6 @@ local HOOK_onSkillEnd = function(mission, pawn, weaponId, p1, p2)
 end
 
 local HOOK_onFinalEffectEnd = function(mission, pawn, weaponId, p1, p2, p3)
-	--LOG(string.format("%s has finished using %s at %s and %s!", pawn:GetMechName(), weaponId, p2:GetString(), p3:GetString()))
 	computeStratagemAfterUse(pawn, weaponId)
 end
 
@@ -1673,8 +1672,8 @@ modApi.events.onTestMechEntered:subscribe(function()
 			for j = 0, 7 do
 				for i = 0, 7 do
 					local curr = Point(i, j)
-					if not Board:IsBlocked(curr, PATH_PROJECTILE) then						
-						points[#points + 1] = curr						
+					if not Board:IsBlocked(curr, PATH_PROJECTILE) then
+						points[#points + 1] = curr
 						break
 					end
 				end

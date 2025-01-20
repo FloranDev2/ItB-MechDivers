@@ -114,6 +114,16 @@ modApi:appendAsset("img/combat/icons/icon_500kg_inner.png", resourcePath.."img/c
 modApi:appendAsset("img/combat/icons/icon_orbital_precision_strike.png", resourcePath.."img/combat/icons/icon_orbital_precision_strike.png")
 	Location["combat/icons/icon_orbital_precision_strike.png"] = Point(-18, 5)
 
+for i = 1, 15 do --dimension: 10x15 -> 13x15
+	--Protecc normal damage
+	modApi:appendAsset("img/combat/icons/icon_protecc_"..tostring(i)..".png", resourcePath.."img/combat/icons/icon_protecc_"..tostring(i)..".png")
+		Location["combat/icons/icon_protecc_"..tostring(i)..".png"] = Point(-10, 10)
+
+	--Protecc acid damage
+	modApi:appendAsset("img/combat/icons/icon_protecc_acid_"..tostring(i)..".png", resourcePath.."img/combat/icons/icon_protecc_acid_"..tostring(i)..".png")
+		Location["combat/icons/icon_protecc_acid_"..tostring(i)..".png"] = Point(-10, 10)
+end
+
 --Trait icon
 modApi:appendAsset("img/combat/icons/icon_protecc.png", resourcePath.."img/combat/icons/icon_protecc.png")
 	Location["combat/icons/icon_protecc.png"] = Point(-12, 8)
