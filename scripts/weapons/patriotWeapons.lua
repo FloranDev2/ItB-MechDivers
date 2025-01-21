@@ -19,6 +19,7 @@ truelch_PatriotWeaponsMode1 = {
 	aFM_icon = "img/modes/icon_minigun.png",
 
 	ProjectileArt = "effects/shot_mechtank",
+	BaseDamage = 0,
 }
 
 CreateClass(truelch_PatriotWeaponsMode1)
@@ -44,7 +45,7 @@ function truelch_PatriotWeaponsMode1:fire(p1, p2, se, betterKO)
 
 	local target = GetProjectileEnd(p1, p2, PATH_PROJECTILE)
 
-	local damage = 1
+	local damage = self.BaseDamage
 	local pawn = Board:GetPawn(target)
 	if pawn ~= nil then
 		damage = damage + pawn:GetMaxHealth() - pawn:GetHealth()

@@ -24,6 +24,8 @@ modApi:appendAsset("img/modes/icon_smoke_airstrike.png",  resourcePath.."img/mod
 modApi:appendAsset("img/modes/icon_500kg_airstrike.png",  resourcePath.."img/modes/icon_500kg_airstrike.png")
 
 modApi:appendAsset("img/modes/icon_orbital_precision_strike.png", resourcePath.."img/modes/icon_orbital_precision_strike.png")
+modApi:appendAsset("img/modes/icon_orbital_walking_barrage.png", resourcePath.."img/modes/icon_orbital_walking_barrage.png")
+--modApi:appendAsset("img/modes/icon_orbital_walking_barrage.png", resourcePath.."img/modes/icon_orbital_walking_barrage.png")
 
 --Items
 --Note: this is also temporary; these effects are kinda like ENV icons
@@ -114,6 +116,9 @@ modApi:appendAsset("img/combat/icons/icon_500kg_inner.png", resourcePath.."img/c
 modApi:appendAsset("img/combat/icons/icon_orbital_precision_strike.png", resourcePath.."img/combat/icons/icon_orbital_precision_strike.png")
 	Location["combat/icons/icon_orbital_precision_strike.png"] = Point(-18, 5)
 
+modApi:appendAsset("img/combat/icons/icon_orbital_walking_barrage.png", resourcePath.."img/combat/icons/icon_orbital_walking_barrage.png")
+	Location["combat/icons/icon_orbital_walking_barrage.png"] = Point(-18, 5)
+
 for i = 1, 15 do --dimension: 10x15 -> 13x15
 	--Protecc normal damage
 	modApi:appendAsset("img/combat/icons/icon_protecc_"..tostring(i)..".png", resourcePath.."img/combat/icons/icon_protecc_"..tostring(i)..".png")
@@ -168,3 +173,5 @@ modApi:appendAsset("img/combat/tile_icon/tile_truelch_500kg_airstrike.png", mod.
 
 modApi:appendAsset("img/combat/tile_icon/tile_truelch_orbital_precision_strike.png", mod.resourcePath.."img/combat/tile_icon/tile_truelch_orbital_precision_strike.png")
 	Location["combat/tile_icon/tile_truelch_orbital_precision_strike.png"] = Point(-27, 2)
+modApi:appendAsset("img/combat/tile_icon/tile_truelch_orbital_walking_barrage.png", mod.resourcePath.."img/combat/tile_icon/tile_truelch_orbital_walking_barrage.png")
+	Location["combat/tile_icon/tile_truelch_orbital_walking_barrage.png"] = Point(-27, 2)

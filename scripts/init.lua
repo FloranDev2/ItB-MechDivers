@@ -92,6 +92,7 @@ function mod:init()
 	TILE_TOOLTIPS["airstrike_500_outer"]  = {"500kg Bomb", "This tile will take 2 damage before enemy turn."}
 	---> Orbital
 	TILE_TOOLTIPS["orbital_precision_strike"] = {"Orbital Precision Strike", "Anything on this tile will be destroyed just before new enemies emerge."}
+	TILE_TOOLTIPS["orbital_walking_barrage"] = {"Orbital Walking Barrage", "Anything on this tile will take 2 damage just before new enemies emerge."}
 
 	--A.I. Unit portraits. (I can't change A.I. Unit's name unfortunately...)
 	require(self.scriptPath.."truelchSave/replaceFiles"):init(self)

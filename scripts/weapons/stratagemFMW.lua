@@ -214,16 +214,7 @@ end
 local function rippleEffect(point)
 	--Ripple effect
 	local ripple = SkillEffect()
-	--[[
-	<center> (ring1) {ring2} [ring3]	
-	                 {0,  2}
-	        {-1,  1} (0,  1) {1,  1}
-	{-2, 0} (-1,  0) <0,  0> (1,  0) {2,  0}
-	        {-1, -1} (0, -1) {1, -1}
-	                 {0,  2}
-	]]
 
-	--V1
 	ring1 = { Point(0, 1), Point(-1, 0), Point(1, 0), Point(0, -1) }
 	ring2 = { Point(0, 2), Point(-1, 1), Point(1, 1), Point(-2, 0), Point(2, 0), Point(-1, -1), Point(1, -1), Point(0, 2) }
 
@@ -232,7 +223,6 @@ local function rippleEffect(point)
 
 	ripple:AddDelay(0.2)
 
-	--1
 	for _, offset in pairs(ring1) do
 		local curr = point + offset
 		if Board:IsValid(curr) then
@@ -242,8 +232,7 @@ local function rippleEffect(point)
 	end
 
 	ripple:AddDelay(0.2)
-
-	--2
+	
 	for _, offset in pairs(ring2) do
 		local curr = point + offset
 		if Board:IsValid(curr) then
@@ -251,31 +240,6 @@ local function rippleEffect(point)
 		end
 		--Negative bounce for ring1?
 	end
-
-	--3?
-
-	--V2
-	--[[
-	doneList = { point }
-	todoList = {}
-	for i = 1, 3 do
-		local bounce = 5 - i
-
-		for _, pos in pairs(todoList) do
-			--
-
-			--Add adjacent tiles to todo list if they aren't already in the todo or done list:
-			for dir = DIR_START, DIR_END do
-				local curr = pos + DIR_VECTORS[dir]
-				if not list_contains(doneList, curr) and list_contains(todoList, curr) then
-					table.insert(todoList, p)
-				end
-			end
-
-			--Remove from todo list
-		end
-	end
-	]]
 
 	--Add effect to Board
 	Board:AddEffect(ripple)
@@ -296,6 +260,27 @@ function computeOrbitalPrecisionStrike(point)
 	Board:AddEffect(damage)
 end
 
+function computeOrbitalWalkingBarrage(point, dir)
+	local damage = SpaceDamage(point, 2)
+	damage.sAnimation = "/weapons/bomb_strafe"
+	Board:AddEffect(damage)
+
+	local curr = point + DIR_VECTORS[dir]
+	if not Board:IsBuilding(curr) then
+		local damage = SpaceDamage(point + DIR_VECTORS[dir], 2)
+		damage.sAnimation = "/weapons/bomb_strafe"
+		Board:AddEffect(damage)
+
+		--Continue! { point, dir, id }
+		truelch_MechDivers_AddOrbitalStrike(curr, dir, 1)
+	end
+end
+
+--[[
+function computeOrbital()
+end
+]]
+
 --Happens AFTER enemies' actions
 local function resolveOrbitalStrikes()
 	--LOG("resolveOrbitalStrikes()")
@@ -306,16 +291,15 @@ local function resolveOrbitalStrikes()
 		local se = SkillEffect()
 
 		local point = orbitalStrike[1]
-		local dir   = orbitalStrike[2] --not used
+		local dir   = orbitalStrike[2] --not used (well, maybe?)
 		local id    = orbitalStrike[3]
 
 		--LOG(string.format(" --- point: %s, dir: %s, id: %s", point:GetString(), tostring(dir), tostring(id)))
 
 		if id == 0 then
 			computeOrbitalPrecisionStrike(point)
-
-		--elseif id == 1 then
-			----- ??? -----
+		elseif id == 1 then
+			computeOrbitalWalkingBarrage(point, dir)
 		end
 	end
 
@@ -1022,36 +1006,16 @@ end
 ---------------------------------------------------------
 --Orbital strikes effects will happen AFTER Vek act.
 
--------------------- MODE 12: Orbital Strike --------------------
+-------------------- MODE 12: Orbital Precision Strike --------------------
 truelch_OrbitalPrecisionStrikeMode = truelch_NapalmAirstrikeMode:new{
 	aFM_name = "Orbital Precision Strike",
 	aFM_desc = "Command a precision orbital strike that'll kill anything below."..
 		"\nOrbital strikes happen after enemy turn, so you'll need to anticipate enemies' movement!",
 	aFM_icon = "img/modes/icon_orbital_precision_strike.png",
 	aFM_twoClick = false,
-	Anim = "", --TODO
 }
 
---[[
-function truelch_OrbitalPrecisionStrikeMode:targeting(point)
-	local points = {}
-
-    for dir = DIR_START, DIR_END do
-    	for i = 1, 7 do
-    		local curr = point + DIR_VECTORS[dir]*i
-    		points[#points+1] = curr
-    		if not Board:IsValid(curr) then
-    			break
-    		end
-    	end
-    end
-
-	return points
-end
-]]
-
 function truelch_OrbitalPrecisionStrikeMode:fire(p1, p2, se)
-
 	if IsTestMechScenario() then
 		se:AddScript(string.format("computeOrbitalPrecisionStrike(%s)", p2:GetString()))
 		se:AddScript(string.format([[Board:AddAlert(%s, "After queued actions")]], p1:GetString()))
@@ -1069,6 +1033,60 @@ function truelch_OrbitalPrecisionStrikeMode:fire(p1, p2, se)
 	--dir might not be used
 	--point, dir, id
 	se:AddScript(string.format("truelch_MechDivers_AddOrbitalStrike(%s, -1, 0)", p2:GetString()))
+end
+
+-------------------- MODE 13: Orbital Walking Barrage --------------------
+truelch_OrbitalWalkingBarrageMode = truelch_NapalmAirstrikeMode:new{
+	aFM_name = "Orbital Walking Barrage",
+	aFM_desc = "Target a point and a direction for salvos that will be fired from space, dealing 2 damage to the tile and the next one."..
+		"\nEvery turn, it'll move forward by one tile, until it detects a building."..
+		"\nOrbital strikes happen after enemy turn, so you'll need to anticipate enemies' movement!",
+	aFM_icon = "img/modes/icon_orbital_walking_barrage.png",
+}
+
+--computeOrbitalWalkingBarrage(point, dir)
+function truelch_OrbitalWalkingBarrageMode:fire(p1, p2, se)
+	local damage = SpaceDamage(p2, 0)    
+    se:AddArtillery(damage, self.UpShot, FULL_DELAY)
+
+	--Fake Mark
+	local damage = SpaceDamage(p2, 0)
+	damage.sImageMark = "combat/icons/icon_orbital_walking_barrage.png"
+	se:AddDamage(damage)
+end
+
+function truelch_OrbitalWalkingBarrageMode:second_targeting(p1, p2)
+    local ret = PointList()
+
+	for dir = DIR_START, DIR_END do
+		ret:push_back(p2 + DIR_VECTORS[dir])
+	end
+
+    return ret
+end
+
+function truelch_OrbitalWalkingBarrageMode:second_fire(p1, p2, p3)
+    local ret = SkillEffect()
+
+    local dir = GetDirection(p3 - p2)
+
+    if IsTestMechScenario() then
+		ret:AddScript(string.format("computeOrbitalWalkingBarrage(%s, %s)", p2:GetString(), tostring(dir)))
+		ret:AddScript(string.format([[Board:AddAlert(%s, "After queued actions")]], p1:GetString()))
+		return
+	end
+
+	local damage = SpaceDamage(p2 + DIR_VECTORS[dir], 0)
+	damage.sImageMark = "combat/icons/icon_orbital_walking_barrage.png"
+	ret:AddDamage(damage)
+
+	local damage = SpaceDamage(p2, 0)
+	damage.sImageMark = "combat/icons/icon_orbital_walking_barrage.png"
+    ret:AddArtillery(damage, self.UpShot, FULL_DELAY)    
+
+    ret:AddScript(string.format("truelch_MechDivers_AddOrbitalStrike(%s, %s, 1)", p2:GetString(), tostring(dir)))
+
+    return ret
 end
 
 
@@ -1115,6 +1133,7 @@ truelch_StratagemFMW = aFM_WeaponTemplate:new{
 
 		--Orbital strikes
 		"truelch_OrbitalPrecisionStrikeMode",
+		"truelch_OrbitalWalkingBarrageMode",
 	},
 	aFM_ModeSwitchDesc = "Click to change mode.",
 
@@ -1162,15 +1181,6 @@ end
 function truelch_StratagemFMW:GetTargetArea_Normal(point)
 	local pl = PointList()
 	local currentMode = _G[self:FM_GetMode(point)]
-
-	--[[
-	local fmwUses = self:FM_GetUses(point, currentMode)
-	local isUseOk = true
-	if fmwUses == nil or fmwUses <= 0 then isUseOk = false end
-	]]
-
-	--LOG("truelch_StratagemFMW:GetTargetArea_Normal - fmwUses: "..tostring(fmwUses)) --nil
-	--LOG("truelch_StratagemFMW:GetTargetArea_Normal -> currentMode: "..tostring(currentMode))
     
 	--Okay this is very experimental
 	local isOk = Pawn:GetId() <= 2 --respawned mechs aren't allowed to use stratagems!
@@ -1202,53 +1212,35 @@ end
 function truelch_StratagemFMW:GetFinalEffect_TipImage()
 	local ret = SkillEffect()
 
-	--LOG("truelch_StratagemFMW:GetFinalEffect_TipImage() -> self.TipIndex: "..tostring(self.TipIndex))
-
 	local p1 = Point(2, 1)
 	local p2 = Point(2, 3)
 
 	if self.TipIndex == 0 then
-		--LOG("self.TipIndex == 0 -------------- A")
 		self.TipIndex = 1
-		--LOG("self.TipIndex == 0 -------------- B")
 		local pawn = Board:GetPawn(Point(2, 3))
-		--LOG("self.TipIndex == 0 -------------- C")
 		if pawn ~= nil then
-			--LOG("self.TipIndex == 0 -------------- C bis pawn ~= nil")
 			pawn:SetSpace(Point(2, 1))
-			--LOG("----------------- pawn id: "..tostring(pawn:GetId())) --93?!
 		end
-		--LOG("self.TipIndex == 0 -------------- D")
     	local damage = SpaceDamage(p2, 0)
-    	--LOG("self.TipIndex == 0 -------------- E")
     	--damage.sImageMark = "combat/blue_stratagem_grenade.png" --doesn't show up in the tip image
 	    ret:AddArtillery(p1, damage, "effects/truelch_shotup_stratagem_ball.png", FULL_DELAY)    
-	    --LOG("self.TipIndex == 0 -------------- F")
 	    local dropAnim = SpaceDamage(p2, 0)
-	    --LOG("self.TipIndex == 0 -------------- G")
 	    dropAnim.sAnimation = "truelch_anim_pod_land_2"
-	    --LOG("self.TipIndex == 0 -------------- H")
 	    ret:AddDamage(dropAnim)
-	    --LOG("self.TipIndex == 0 -------------- I")
 	elseif self.TipIndex == 1 then
 		self.TipIndex = 2
 		Board:SetItem(p2, "truelch_Item_WeaponPod_Mg43")
 		ret:AddMove(Board:GetPath(p1, Point(2, 3), PATH_GROUND), FULL_DELAY)
 	elseif self.TipIndex == 2 then
-		--LOG("self.TipIndex == 2 -------------- A")
 		self.TipIndex = 0
-		--LOG("self.TipIndex == 2 -------------- B")
 		local pawn = Board:GetPawn(Point(2, 1))
 		if pawn ~= nil then
 			pawn:SetSpace(Point(2, 3))
 		else
 			--LOG("------------- pawn is nil!!")
 		end
-		--LOG("self.TipIndex == 2 -------------- C")
-		
-		--LOG("self.TipIndex == 2 -------------- D")
+
 		Board:AddAlert(Point(2, 3), "WEAPON ACQUIRED") --I want to make this happen AFTER move.
-		--LOG("self.TipIndex == 2 -------------- E")
 	end
 
 	--LOG("truelch_StratagemFMW:GetFinalEffect_TipImage() - END")
@@ -1259,14 +1251,8 @@ end
 function truelch_StratagemFMW:GetSkillEffect_Normal(p1, p2)
 	local se = SkillEffect()
 	local currentMode = self:FM_GetMode(p1)
-
-	--[[
-	local fmwUses = self:FM_GetUses(p1, currentMode)
-	local isUseOk = true
-	if fmwUses == nil or fmwUses <= 0 then isUseOk = false end
-	]]
 	
-	if self:FM_CurrentModeReady(p1) --[[and isUseOk]] then
+	if self:FM_CurrentModeReady(p1) then
 		_G[currentMode]:fire(p1, p2, se)
 	end
 
@@ -1275,94 +1261,33 @@ end
 
 
 function truelch_StratagemFMW:GetSkillEffect(p1, p2)
-	--[[
-	LOG("truelch_StratagemFMW:GetSkillEffect")
-	if p1 == nil or p2 == nil then
-		LOG(">>> truelch_StratagemFMW:GetSkillEffect(PROBLEM WITH P1 AND / OR P2) <<<")
-		if p1 == nil then LOG("p1 == nil") end
-		if p2 == nil then LOG("p2 == nil") end
-	else
-		LOG(string.format(">>> truelch_StratagemFMW:GetSkillEffect(p1: %s, p2: %s)", p1:GetString(), p2:GetString()))
-	end
-	]]
 
 	if not Board:IsTipImage() then
 		return self:GetSkillEffect_Normal(p1, p2)
 	else
-		return self:GetSkillEffect_TipImage(--[[p1, p2]])
+		return self:GetSkillEffect_TipImage()
 	end
 end
 
 function truelch_StratagemFMW:IsTwoClickException(p1, p2)
-	--[[
-	LOG(" ---------------- truelch_StratagemFMW:IsTwoClickException() ---------------- ")
-	if p1 == nil or p2 == nil then
-		LOG(">>> truelch_StratagemFMW:IsTwoClickException(PROBLEM WITH P1 AND / OR P2) <<<")
-		if p1 == nil then LOG("p1 == nil") end
-		if p2 == nil then LOG("p2 == nil") end
-	else
-		LOG(string.format(">>> truelch_StratagemFMW:IsTwoClickException(p1: %s, p2: %s)", p1:GetString(), p2:GetString()))
-	end
-	]]
-
 	--WHY WHY WHY WHY WHY
 	truelch_strat_p1 = p1
 	truelch_strat_p2 = p2
 
-	--return not _G[self:FM_GetMode(p1)].aFM_twoClick
 	if _G[self:FM_GetMode(p1)].isTwoClickExc then
-		--[[
-		LOG("----------- [IF] isTwoClickExc exists!")
-		local mode = self:FM_GetMode(p1)
-		LOG("----------- mode: "..tostring(mode).." p1, p2 after:...")
-
-		if p1 == nil or p2 == nil then
-			if p1 == nil then LOG("p1 == nil") end
-			if p2 == nil then LOG("p2 == nil") end
-		else
-			LOG(string.format("p1: %s, p2: %s", p1:GetString(), p2:GetString()))
-			LOG(string.format("test_p1: %s, test_p2: %s", p1:GetString(), p2:GetString()))
-		end
-		]]
-
-		--[[
-		local isTCexc = _G[self:FM_GetMode(p1)].isTwoClickExc(p1, p2)
-		LOG("-----------> isTCexc: "..tostring(isTCexc))
-		]]
 		return _G[self:FM_GetMode(p1)].isTwoClickExc(p1, p2)
 	else
-		--[[
-		LOG("----------- [ELSE] isTwoClickExc DOES NOT EXIST")
-		local isTCexc = not _G[self:FM_GetMode(p1)].aFM_twoClick
-		LOG("-----------> isTCexc: "..tostring(isTCexc))
-		]]
 		return not _G[self:FM_GetMode(p1)].aFM_twoClick
 	end
 end
 
 
 function truelch_StratagemFMW:GetSecondTargetArea(p1, p2)
-	--[[
-	LOG("truelch_StratagemFMW:GetSecondTargetArea")
-	if p1 == nil or p2 == nil then
-		LOG(">>> truelch_StratagemFMW:GetSecondTargetArea(PROBLEM WITH P1 AND / OR P2) <<<")
-		if p1 == nil then LOG("p1 == nil") end
-		if p2 == nil then LOG("p2 == nil") end
-	else
-		LOG(string.format(">>> truelch_StratagemFMW:GetSecondTargetArea(p1: %s, p2: %s) <<<", p1:GetString(), p2:GetString()))
-	end
-	]]
-
 	if not Board:IsTipImage() then
 		local currentShell = _G[self:FM_GetMode(p1)]
 	    local pl = PointList()
-
-	    --LOG("--------------- currentShell: "..tostring(currentShell))
-	    --local mode = self:FM_GetMode(p1) --debug
-		--LOG("----------- mode: "..tostring(mode))
 	    
 		if self:FM_CurrentModeReady(p1) and currentShell.aFM_twoClick then
-			--LOG("--------------- HERE")
 			pl = currentShell:second_targeting(p1, p2)
 		end
 	    
@@ -1375,16 +1300,6 @@ end
 
 
 function truelch_StratagemFMW:GetFinalEffect_Normal(p1, p2, p3)
-	--[[
-	if p1 == nil or p2 == nil then
-		LOG(">>> truelch_StratagemFMW:GetFinalEffect_Normal(PROBLEM WITH P1 AND / OR P2) <<<")
-		if p1 == nil then LOG("p1 == nil") end
-		if p2 == nil then LOG("p2 == nil") end
-	else
-		LOG(string.format(">>> truelch_StratagemFMW:GetFinalEffect_Normal(p1: %s, p2: %s, p3: %s) <<<", p1:GetString(), p2:GetString(), p3:GetString()))
-	end
-	]]
-
     local se = SkillEffect()
 	local currentShell = _G[self:FM_GetMode(p1)]
 
@@ -1399,37 +1314,12 @@ function truelch_StratagemFMW:GetFinalEffect(p1, p2, p3)
 	if not Board:IsTipImage() then
 		return self:GetFinalEffect_Normal(p1, p2, p3)
 	else
-		return self:GetFinalEffect_TipImage(--[[p1, p2, p3]])
+		return self:GetFinalEffect_TipImage()
 	end
 end
 
 
 ----------------------------------------------- HOOKS / EVENTS SUBSCRIPTION -----------------------------------------------
-
-
-local truelch_statagemNames = {
-	--Weapons
-	"Call-in a Machine Gun",
-	"Call-in a Sniper Rifle",
-	"Call-in a Flamethrower",
-	"Call-in a Railgun",
-
-	--Deployables
-	"Deploy a MG Sentry",
-	"Deploy a Mortar Sentry",
-	"Deploy a Tesla Tower",
-	"Unleash Guard Dog",
-
-	--Airstrikes
-	"Napalm Airstrike",
-	"Smoke Airstrike",
-	"500kg Airstrike",
-
-	--Orbital strikes
-	"Orbital Precision Strike",
-
-	--Misc (shield?)
-}
 
 --TODO: final mission second phase
 local HOOK_onMissionStarted = function(mission)
@@ -1512,27 +1402,10 @@ local function computeStratagems()
 	end
 end
 
-local testMode = false
+local testMode = true
 
 local HOOK_onNextTurn = function(mission)
 	if Game:GetTeamTurn() ~= TEAM_PLAYER then
-
-		--[[
-		--Okay so newly spawned mech will have a new id (something like 105).
-		--But once a new mission starts, all mechs will reset to 0 - 2 ids! (thankfully)
-		--TMP STUF --->
-		for j = 0, 7 do
-			for i = 0, 7 do
-				local curr = Point(i, j)
-				local pawn = Board:GetPawn(curr)
-				if pawn ~= nil and pawn:IsMech() then
-					LOG(string.format("Mech found: %s, id: %s", pawn:GetMechName(), tostring(pawn:GetId())))
-				end
-			end
-		end
-		-- <--- TMP STUFF
-		]]
-
 		if truelch_stratagem_flag == true and not testMode then
 			truelch_stratagem_flag = false
 			computeStratagems()
@@ -1543,7 +1416,6 @@ local HOOK_onNextTurn = function(mission)
 end
 
 local HOOK_onPreEnv = function(mission)
-	--LOG("HOOK_onPreEnv")
 	resolveAirstrikes()
 end
 
@@ -1640,13 +1512,20 @@ local HOOK_onMissionUpdate = function(mission)
 	--Orbital strikes
 		for _, orbitalStrike in pairs(missionData().orbitalStrikes) do
 			local point = orbitalStrike[1]
-			--local dir = orbitalStrike[2] --not used
+			local dir = orbitalStrike[2] --not used (actually, it is!)
 			local id = orbitalStrike[3]
 
 			if id == 0 then
-				--Orbital strike
+				--Orbital precision strike
 				Board:MarkSpaceImage(point, "combat/tile_icon/tile_truelch_orbital_precision_strike.png", GL_Color(255, 180, 0, 0.75))
 				Board:MarkSpaceDesc(point, "orbital_precision_strike")
+			elseif id == 1 then
+				--Orbital walking barrage
+				Board:MarkSpaceImage(point, "combat/tile_icon/tile_truelch_orbital_walking_barrage.png", GL_Color(255, 180, 0, 0.75))
+				Board:MarkSpaceDesc(point, "orbital_walking_barrage")
+
+				Board:MarkSpaceImage(point + DIR_VECTORS[dir], "combat/tile_icon/tile_truelch_orbital_walking_barrage.png", GL_Color(255, 180, 0, 0.75))
+				Board:MarkSpaceDesc(point + DIR_VECTORS[dir], "orbital_walking_barrage")
 			end
 		end
 end
