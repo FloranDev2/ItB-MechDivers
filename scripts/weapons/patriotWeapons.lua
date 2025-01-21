@@ -210,7 +210,7 @@ truelch_PatriotWeapons = aFM_WeaponTemplate:new{
 	PowerCost = 1,
 
 	--KO
-	OnKill = "Enhanced effect (if upgraded)",
+	OnKill = "(Upgrade)",
 
 	--Artillery Arc
 	ArtilleryHeight = 0,

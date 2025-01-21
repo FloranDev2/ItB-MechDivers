@@ -48,11 +48,10 @@ Squad's name changed to Hell Breachers (was Mech Divers). This was proposed by G
 #### Gameplay changes
 
 Patriot Mech:
-- Reduced damage of Machine Gun (and Rocket Pod??) by 1
+- Reduced base damage of the Machine Gun (mode) by 1
 - Added a 1-core upgrade to increase ALL damage by 1 (including rocket pod area of effect when KO upgrade is enabled)
 
-- Eagle Mech:
-	- No longer have Patriotism trait (both to increase poor use of Delivery's Strafing run mode and prevent a bug with Patriotism)
+- Shuttle Mech:
 	- Delivery's base range reduced from 3 to 2
 	- Delivery's range upgrade will effectively increase its range (from 2 to 3)
 	- New: with delivery's range upgrade, the Supply Drop can drop up to 2 supply (between start and end point)

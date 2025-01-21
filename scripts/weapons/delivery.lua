@@ -555,10 +555,6 @@ function truelch_Delivery:GetSkillEffect_Normal(p1, p2)
 end
 
 function truelch_Delivery:GetSkillEffect(p1, p2)
-	--LOG("truelch_Delivery:GetSkillEffect -> up1: "..tostring(self.Up1)..", up2: "..tostring(self.Up2))
-	--LOG(" -> test: "..tostring(self))
-	--return self:GetSkillEffect_Normal(p1, p2)
-
 	if not Board:IsTipImage() then
 		return self:GetSkillEffect_Normal(p1, p2)
 	else

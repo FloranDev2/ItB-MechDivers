@@ -229,7 +229,7 @@ BoardEvents.onItemRemoved:subscribe(function(loc, removed_item)
 	local pawn = Board:GetPawn(loc)
 	if pawn == nil then return end
 	local weaponSuffix = "\n(de-select and re-select the Mech to see it)"
-	LOG("BoardEvents.onItemRemoved(removed_item: "..tostring(removed_item))
+	--LOG("BoardEvents.onItemRemoved(removed_item: "..tostring(removed_item))
 	if removed_item == "truelch_Item_ResupplyPod" then
 		if not pawn:IsEnemy() then
 			truelch_ItemReload(pawn:GetId(), 1)

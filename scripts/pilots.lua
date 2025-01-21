@@ -10,16 +10,15 @@ local mod = modApi:getCurrentMod()
 local resourcePath = mod.resourcePath
 
 -- add pilot images
---Example from tosx:
 --[[
-modApi:appendAsset("img/portraits/npcs/tosx_rocks1.png", resourcePath.."img/corp/pilot.png")
-modApi:appendAsset("img/portraits/npcs/tosx_rocks1_2.png", resourcePath.."img/corp/pilot_2.png")
-modApi:appendAsset("img/portraits/npcs/tosx_rocks1_blink.png", resourcePath.."img/corp/pilot_blink.png")
-]]
---Temporary stuff:
 modApi:appendAsset("img/portraits/npcs/truelch_mechDiver.png",       resourcePath.."img/portraits/pilots/Pilot_Artificial.png")
 modApi:appendAsset("img/portraits/npcs/truelch_mechDiver_2.png",     resourcePath.."img/portraits/pilots/Pilot_Artificial_2.png")
 modApi:appendAsset("img/portraits/npcs/truelch_mechDiver_blink.png", resourcePath.."img/portraits/pilots/Pilot_Artificial_blink.png")
+]]
+
+modApi:appendAsset("img/portraits/npcs/truelch_hellbreacher.png",       resourcePath.."img/portraits/pilots/Pilot_HellBreacher.png")
+modApi:appendAsset("img/portraits/npcs/truelch_hellbreacher_2.png",     resourcePath.."img/portraits/pilots/Pilot_HellBreacher_2.png")
+modApi:appendAsset("img/portraits/npcs/truelch_hellbreacher_blink.png", resourcePath.."img/portraits/pilots/Pilot_HellBreacher_blink.png")
 
 -- create personality
 local personality = CreatePilotPersonality("MechDiver")
@@ -36,7 +35,7 @@ CreatePilot{
 	Personality = "MechDiver",
 	Rarity = 0,
 	Cost = 1,
-	Portrait = "npcs/truelch_mechDiver",
+	Portrait = "npcs/truelch_hellbreacher",
 	--Name = "Test", --V3
 	Voice = "/voice/detritus",
 }
@@ -84,12 +83,9 @@ end
 
 local function EVENT_onModsLoaded()
 	modApi:addPreMissionAvailableHook(HOOK_PreMissionAvailable)
-
 	--Metalo's suggestion:
 	--modApi.modLoaderDictionary["Pilot_Artificial"].Name = "Test1"
-	--modApi.modLoaderDictionary["Pilot_Artificial_Name"] = "Test2"
-
-	
+	--modApi.modLoaderDictionary["Pilot_Artificial_Name"] = "Test2"	
 end
 
 modApi.events.onModsLoaded:subscribe(EVENT_onModsLoaded)

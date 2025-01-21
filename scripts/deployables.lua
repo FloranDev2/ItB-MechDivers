@@ -25,6 +25,11 @@ local files = {
 	"truelch_guard_dog_a.png",
 	"truelch_guard_dog_death.png",
 	"truelch_guard_dog_ns.png",
+
+	"truelch_guard_dog_laser.png",
+	"truelch_guard_dog_laser_a.png",
+	"truelch_guard_dog_laser_death.png",
+	"truelch_guard_dog_laser_ns.png",
 }
 
 for _, file in ipairs(files) do
@@ -59,6 +64,13 @@ a.truelch_guard_doga =   a.MechUnit:new{ Image = "units/player/truelch_guard_dog
 a.truelch_guard_dogd =   a.MechUnit:new{ Image = "units/player/truelch_guard_dog_death.png", PosX = -18, PosY = -8, NumFrames = 9, Loop = false, Time = 0.14 }
 a.truelch_guard_dog_ns = a.MechIcon:new{ Image = "units/player/truelch_guard_dog_ns.png" }
 
+--- GUARD DOG (LASER) ---
+local a = ANIMS
+a.truelch_guard_dog_laser =    a.MechUnit:new{ Image = "units/player/truelch_guard_dog_laser.png",       PosX = -18, PosY = -8 }
+a.truelch_guard_dog_lasera =   a.MechUnit:new{ Image = "units/player/truelch_guard_dog_laser_a.png",     PosX = -18, PosY = -8, NumFrames = 4 }
+a.truelch_guard_dog_laserd =   a.MechUnit:new{ Image = "units/player/truelch_guard_dog_laser_death.png", PosX = -18, PosY = -8, NumFrames = 9, Loop = false, Time = 0.14 }
+a.truelch_guard_dog_laser_ns = a.MechIcon:new{ Image = "units/player/truelch_guard_dog_laser_ns.png" }
+
 ----------------------------------------------------------------------------------------------------
 ---------------------------------------- MACHINE GUN SENTRY ----------------------------------------
 ----------------------------------------------------------------------------------------------------
@@ -84,7 +96,8 @@ AddPawn("truelch_Amg43MachineGunSentry")
 truelch_Amg43MachineGunSentry_Weapon = Skill:new{
 	--Infos
 	Name = "Machine Gun",
-	Description = "Shoots a projectile at a random aligned enemy.",
+	Description = "Shoots a projectile at a random aligned enemy."..
+		"\nIt tries to avoid buildings, but doesn't care at all about damage against allied units!",
 	Class = "Unique",
 
 	--Art
@@ -107,10 +120,15 @@ truelch_Amg43MachineGunSentry_Weapon = Skill:new{
 }
 
 function truelch_Amg43MachineGunSentry_Weapon:GetTargetScore(p1, p2)
-	local effect = SkillEffect()
+	local target = Board:GetPawn(p2)
 
-	if Board:GetPawnTeam(p2) == TEAM_ENEMY then
-		return 100 --no idea what the range should be
+	if target ~= nil then
+		local behind = p2 + DIR_VECTORS[GetDirection(p2 - p1)]
+		if Board:IsBuilding(behind) and target:IsPushable() then --What's the difference between IsGuarding() and (not) IsPushable()??
+			return -200 --I hope this will be enough to prevent bump damage toward buildings
+		elseif target:IsEnemy() then
+			return 100
+		end
 	end
 
 	return -10
@@ -211,13 +229,18 @@ function truelch_Am12MortarSentry_Weapon:GetTargetScore(p1, p2)
 		local curr = p2 + DIR_VECTORS[dir]
 		pawn = Board:GetPawn(curr)
 		if pawn ~= nil then
-			if pawn:IsEnemy() then
+			local behind = curr + DIR_VECTORS[dir]
+			if Board:IsBuilding(behind) and target:IsPushable() then --What's the difference between IsGuarding() and (not) IsPushable()??
+				score = -100
+				break
+			elseif pawn:IsEnemy() then
 				score = score + 50
 			else
 				score = score - 10
 			end
 		elseif Board:IsBuilding(curr) then
-			score = score - 50
+			score = -100
+			break
 		end
 	end
 
@@ -284,7 +307,8 @@ AddPawn("truelch_TeslaTower")
 truelch_TeslaTower_Weapon = Skill:new{
 	--Infos
 	Name = "Tesla Discharge",
-	Description = "Chain damage through adjacent targets.",
+	Description = "Chain damage through adjacent targets."..
+		"\nIt doesn't care about friendly fire. (but at least, it won't damage buildings!)",
 	Class = "Unique",
 
 	--Art
@@ -308,9 +332,8 @@ truelch_TeslaTower_Weapon = Skill:new{
 
 --If I do a weapon managed by the AI
 function truelch_TeslaTower_Weapon:GetTargetScore(p1, p2)
-	local effect = SkillEffect()
-
 	local score = 0
+
 	if Board:GetPawnTeam(p2) == TEAM_ENEMY then
 		score = score + 100
 	else
@@ -402,7 +425,8 @@ AddPawn("truelch_GuardDog")
 truelch_GuardDog_Weapon = Skill:new{
 	--Infos
 	Name = "AR-23P Liberator Penetrator",
-	Description = "Shoot a projectile at melee range, prioritizing enemies adjacent with Mechs.",
+	Description = "Shoot a projectile at melee range, prioritizing enemies adjacent with Mechs."..
+		"It'll avoid bump damage towards buildings, but not against allies!",
 	Class = "Unique",
 
 	--Art
@@ -426,21 +450,27 @@ truelch_GuardDog_Weapon = Skill:new{
 }
 
 function truelch_GuardDog_Weapon:GetTargetScore(p1, p2)
-	local effect = SkillEffect()
-
 	local score = -10
 
-	--TODO: reduce score if there's a Building behind target
-
-	if Board:GetPawnTeam(p2) == TEAM_ENEMY then
+	local target = Board:GetPawn(p2)
+	if target ~= nil and target:IsEnemy() then
 		score = score + 50
-		for dir = DIR_START, DIR_END do
-			local curr = p2 + DIR_VECTORS[dir]
-			local pawn = Board:GetPawn(curr)
-			if pawn ~= nil and pawn:IsMech() then
-				score = score + 100
+
+		local forwardDir = GetDirection(p2 - p1)
+		local behind = p2 + DIR_VECTORS[forwardDir]
+
+		--What's the difference between IsGuarding() and IsPushable()??
+		if Board:IsBuilding(behind) and target:IsPushable() then
+			score = score -200 --I hope this will be enough to prevent bump damage toward buildings
+		else
+			for dir = DIR_START, DIR_END do
+				local curr = p2 + DIR_VECTORS[dir]
+				local adjacentPawn = Board:GetPawn(curr)
+				if adjacentPawn ~= nil and adjacentPawn:IsMech() and curr ~= behind then
+					score = score + 100
+				end
 			end
-		end
+		end		
 	end
 
 	return score
@@ -461,5 +491,85 @@ function truelch_GuardDog_Weapon:GetSkillEffect(p1, p2)
     local dir = GetDirection(p2 - p1)
     local damage = SpaceDamage(p2, self.Damage, dir)
     ret:AddProjectile(p1, damage, self.ProjectileArt, NO_DELAY)
+    return ret
+end
+
+
+
+
+---------------------------------------------------------------------------------------------------
+---------------------------------------- GUARD DOG (LASER) ----------------------------------------
+---------------------------------------------------------------------------------------------------
+
+truelch_GuardDogLaser = Pawn:new{
+	Name = [[AX/LAS-5 "Guard Dog" Rover]],
+	Health = 1,
+	MoveSpeed = 3,
+	Image = "truelch_guard_dog_laser",
+	SkillList = { "truelch_GuardDogLaser_Weapon" },
+	SoundLocation = "/mech/flying/jet_mech/",
+	ImageOffset = mechDiversBlack,
+	DefaultTeam = TEAM_PLAYER,
+	ImpactMaterial = IMPACT_METAL,
+	Corpse = false,
+	Neutral = true,
+	Flying = true,
+}
+AddPawn("truelch_GuardDogLaser")
+
+--"Neutral" weapon
+truelch_GuardDogLaser_Weapon = LaserDefault:new{
+	--Infos
+	Name = "LAS-5 Scythe",
+	Description = "Fire a piercing beam that decreases in damage the further it goes."..
+		"It'll avoid damaging buildings, but won't care about friendlies in the line of fire!",
+	Class = "Unique",
+
+	--Art
+	Icon = "weapons/prime_laser.png",
+	LaserArt = "effects/laser_push",
+
+	--Gameplay
+	Damage = 2,
+
+	--Tip image
+	TipImage = {
+		Unit     = Point(2, 4),
+		Enemy    = Point(2, 3),
+		Friendly = Point(2, 1),
+		Target   = Point(2, 3),
+		Mountain = Point(2, 0)
+	}
+}
+
+function truelch_GuardDogLaser_Weapon:GetTargetScore(p1, p2)
+	local score = -10
+
+	local dir = GetDirection(p2 - p1)
+
+	for i = 1, 7 do
+		local curr = p2 + DIR_VECTORS[dir] * i
+		if Board:GetPawnTeam(curr) == TEAM_ENEMY then
+			score = score + 100
+		elseif Board:IsBuilding(curr) then
+			score = -1000
+			break
+		elseif Board:IsBlocked(curr, PATH_PROJECTILE) then
+			break
+		end
+	end
+
+	return score
+end
+
+--We just evaluate all 4 directions so no need to put all the laser path (will be actually easier for target score calculation)
+function truelch_GuardDogLaser_Weapon:GetTargetArea(point)
+    local ret = PointList()
+
+    for dir = DIR_START, DIR_END do
+    	local curr = point + DIR_VECTORS[dir]
+    	ret:push_back(point + DIR_VECTORS[dir])
+    end
+
     return ret
 end

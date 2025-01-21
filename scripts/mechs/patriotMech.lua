@@ -50,8 +50,6 @@ truelch_PatriotMech = Pawn:new{
 	
 	--Having two FMWeapons isn't an issue, not sure how (...)
 	SkillList = { "truelch_PatriotWeapons", "truelch_StratagemFMW" },
-	--SkillList = { "atlas_Mortar" , "truelch_StratagemFMW" },
-	--SkillList = { "truelch_TestWeapon" , "truelch_StratagemFMW" },
 
 	SoundLocation = "/mech/prime/punch_mech/",
 	ImpactMaterial = IMPACT_METAL,

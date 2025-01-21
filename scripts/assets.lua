@@ -14,10 +14,11 @@ modApi:appendAsset("img/modes/icon_apw1.png",   resourcePath.."img/modes/icon_ap
 modApi:appendAsset("img/modes/icon_flam40.png", resourcePath.."img/modes/icon_flam40.png")
 modApi:appendAsset("img/modes/icon_rs422.png",  resourcePath.."img/modes/icon_rs422.png")
 
-modApi:appendAsset("img/modes/icon_mg_sentry.png",     resourcePath.."img/modes/icon_mg_sentry.png")
-modApi:appendAsset("img/modes/icon_mortar_sentry.png", resourcePath.."img/modes/icon_mortar_sentry.png")
-modApi:appendAsset("img/modes/icon_tesla_tower.png",   resourcePath.."img/modes/icon_tesla_tower.png")
-modApi:appendAsset("img/modes/icon_guard_dog.png",     resourcePath.."img/modes/icon_guard_dog.png")
+modApi:appendAsset("img/modes/icon_mg_sentry.png",       resourcePath.."img/modes/icon_mg_sentry.png")
+modApi:appendAsset("img/modes/icon_mortar_sentry.png",   resourcePath.."img/modes/icon_mortar_sentry.png")
+modApi:appendAsset("img/modes/icon_tesla_tower.png",     resourcePath.."img/modes/icon_tesla_tower.png")
+modApi:appendAsset("img/modes/icon_guard_dog.png",       resourcePath.."img/modes/icon_guard_dog.png")
+modApi:appendAsset("img/modes/icon_guard_dog_laser.png", resourcePath.."img/modes/icon_guard_dog_laser.png")
 
 modApi:appendAsset("img/modes/icon_napalm_airstrike.png", resourcePath.."img/modes/icon_napalm_airstrike.png")
 modApi:appendAsset("img/modes/icon_smoke_airstrike.png",  resourcePath.."img/modes/icon_smoke_airstrike.png")
@@ -25,7 +26,6 @@ modApi:appendAsset("img/modes/icon_500kg_airstrike.png",  resourcePath.."img/mod
 
 modApi:appendAsset("img/modes/icon_orbital_precision_strike.png", resourcePath.."img/modes/icon_orbital_precision_strike.png")
 modApi:appendAsset("img/modes/icon_orbital_walking_barrage.png", resourcePath.."img/modes/icon_orbital_walking_barrage.png")
---modApi:appendAsset("img/modes/icon_orbital_walking_barrage.png", resourcePath.."img/modes/icon_orbital_walking_barrage.png")
 
 --Items
 --Note: this is also temporary; these effects are kinda like ENV icons
@@ -35,7 +35,7 @@ modApi:appendAsset("img/combat/blue_stratagem_grenade.png", resourcePath.."img/c
 modApi:appendAsset("img/combat/red_stratagem_grenade.png", resourcePath.."img/combat/red_stratagem_grenade.png")
 	Location["combat/red_stratagem_grenade.png"] = Point(-7, -22)
 
-modApi:appendAsset("img/combat/item_ammo.png", resourcePath.."img/combat/item_apw1.png")
+modApi:appendAsset("img/combat/item_ammo.png", resourcePath.."img/combat/item_ammo.png")
 	Location["combat/item_ammo.png"] = Point(-25, -10)
 
 modApi:appendAsset("img/combat/item_apw1.png", resourcePath.."img/combat/item_apw1.png")
@@ -119,6 +119,45 @@ modApi:appendAsset("img/combat/icons/icon_orbital_precision_strike.png", resourc
 modApi:appendAsset("img/combat/icons/icon_orbital_walking_barrage.png", resourcePath.."img/combat/icons/icon_orbital_walking_barrage.png")
 	Location["combat/icons/icon_orbital_walking_barrage.png"] = Point(-18, 5)
 
+--Smoke push / Smoke push blocked
+--[[
+modApi:appendAsset("img/combat/truelch_smoke_push_0.png", resourcePath.."img/combat/truelch_smoke_push_0.png")
+		Location["combat/truelch_smoke_push_0.png"] = Point(-12, -14)
+modApi:appendAsset("img/combat/truelch_smoke_push_blocked_0.png", resourcePath.."img/combat/truelch_smoke_push_blocked_0.png")
+		Location["combat/truelch_smoke_push_blocked_0.png"] = Point(-12, -14)
+
+modApi:appendAsset("img/combat/truelch_smoke_push_1.png", resourcePath.."img/combat/truelch_smoke_push_1.png")
+		Location["combat/truelch_smoke_push_1.png"] = Point(-14, 19)
+modApi:appendAsset("img/combat/truelch_smoke_push_blocked_1.png", resourcePath.."img/combat/truelch_smoke_push_blocked_1.png")
+		Location["combat/truelch_smoke_push_blocked_1.png"] = Point(-14, 19)
+
+modApi:appendAsset("img/combat/truelch_smoke_push_2.png", resourcePath.."img/combat/truelch_smoke_push_2.png")
+		Location["combat/truelch_smoke_push_2.png"] = Point(-14, 19)
+modApi:appendAsset("img/combat/truelch_smoke_push_blocked_2.png", resourcePath.."img/combat/truelch_smoke_push_blocked_2.png")
+		Location["combat/truelch_smoke_push_blocked_2.png"] = Point(-14, 19)
+
+modApi:appendAsset("img/combat/truelch_smoke_push_3.png", resourcePath.."img/combat/truelch_smoke_push_3.png")
+		Location["combat/truelch_smoke_push_3.png"] = Point(-14, 19)
+modApi:appendAsset("img/combat/truelch_smoke_push_blocked_3.png", resourcePath.."img/combat/truelch_smoke_push_blocked_3.png")
+		Location["combat/truelch_smoke_push_blocked_3.png"] = Point(-14, 19)
+]]
+
+--[[
+for i = 0, 3 do
+	--Smoke push
+	modApi:appendAsset("img/combat/truelch_smoke_push_"..tostring(i)..".png", resourcePath.."img/combat/truelch_smoke_push_"..tostring(i)..".png")
+		Location["combat/truelch_smoke_push_"..tostring(i)..".png"] = Point(-14, 19)
+
+	--Smoke push blocked
+	modApi:appendAsset("img/combat/truelch_smoke_push_blocked_"..tostring(i)..".png", resourcePath.."img/combat/truelch_smoke_push_blocked_"..tostring(i)..".png")
+		Location["combat/truelch_smoke_push_blocked_"..tostring(i)..".png"] = Point(0, 0)
+end
+]]
+
+--Test
+modApi:appendAsset("img/combat/icons/truelch_test_square.png", resourcePath.."img/combat/icons/truelch_test_square.png")
+	Location["combat/icons/truelch_test_square.png"] = Point(-10, 10)
+
 for i = 1, 15 do --dimension: 10x15 -> 13x15
 	--Protecc normal damage
 	modApi:appendAsset("img/combat/icons/icon_protecc_"..tostring(i)..".png", resourcePath.."img/combat/icons/icon_protecc_"..tostring(i)..".png")
@@ -135,12 +174,13 @@ modApi:appendAsset("img/combat/icons/icon_protecc.png", resourcePath.."img/comba
 
 --Artillery shotups
 modApi:appendAsset("img/effects/truelch_shotup_stratagem_ball.png", resourcePath.."img/effects/truelch_shotup_stratagem_ball.png")
-modApi:appendAsset("img/effects/truelch_shotup_mortar.png", resourcePath.."img/effects/truelch_shotup_mortar.png")
-modApi:appendAsset("img/effects/truelch_mg_drone_shotup.png", resourcePath.."img/effects/truelch_mg_drone_shotup.png")
+modApi:appendAsset("img/effects/truelch_shotup_mortar.png",         resourcePath.."img/effects/truelch_shotup_mortar.png")
+modApi:appendAsset("img/effects/truelch_mg_drone_shotup.png",       resourcePath.."img/effects/truelch_mg_drone_shotup.png")
+modApi:appendAsset("img/effects/truelch_laser_drone_shotup.png",    resourcePath.."img/effects/truelch_laser_drone_shotup.png")
 
 --Projectiles
-modApi:appendAsset("img/effects/truelch_weak_shot_R.png", resourcePath.."img/effects/truelch_weak_shot_R.png")
-modApi:appendAsset("img/effects/truelch_weak_shot_U.png", resourcePath.."img/effects/truelch_weak_shot_U.png")
+modApi:appendAsset("img/effects/truelch_weak_shot_R.png",     resourcePath.."img/effects/truelch_weak_shot_R.png")
+modApi:appendAsset("img/effects/truelch_weak_shot_U.png",     resourcePath.."img/effects/truelch_weak_shot_U.png")
 modApi:appendAsset("img/effects/truelch_strong_sniper_R.png", resourcePath.."img/effects/truelch_strong_sniper_R.png")
 modApi:appendAsset("img/effects/truelch_strong_sniper_U.png", resourcePath.."img/effects/truelch_strong_sniper_U.png")
 
@@ -148,16 +188,16 @@ modApi:appendAsset("img/effects/truelch_strong_sniper_U.png", resourcePath.."img
 modApi:appendAsset("img/effects/truelch_eagle.png", resourcePath.."img/effects/truelch_eagle.png")
 
 --Weapons icons
-modApi:appendAsset("img/weapons/truelch_delivery.png", resourcePath.."img/weapons/truelch_delivery.png")
+modApi:appendAsset("img/weapons/truelch_delivery.png",              resourcePath.."img/weapons/truelch_delivery.png")
 modApi:appendAsset("img/weapons/truelch_reinforcement_passive.png", resourcePath.."img/weapons/truelch_reinforcement_passive.png")
-modApi:appendAsset("img/weapons/truelch_dual_autocannon.png", resourcePath.."img/weapons/truelch_dual_autocannon.png")
-modApi:appendAsset("img/weapons/truelch_patriot_weapons.png", resourcePath.."img/weapons/truelch_patriot_weapons.png")
-modApi:appendAsset("img/weapons/truelch_stratagem.png", resourcePath.."img/weapons/truelch_stratagem.png")
+modApi:appendAsset("img/weapons/truelch_dual_autocannon.png",       resourcePath.."img/weapons/truelch_dual_autocannon.png")
+modApi:appendAsset("img/weapons/truelch_patriot_weapons.png",       resourcePath.."img/weapons/truelch_patriot_weapons.png")
+modApi:appendAsset("img/weapons/truelch_stratagem.png",             resourcePath.."img/weapons/truelch_stratagem.png")
 
-modApi:appendAsset("img/weapons/truelch_strat_mg43.png", resourcePath.."img/weapons/truelch_strat_mg43.png")
-modApi:appendAsset("img/weapons/truelch_strat_apw1.png", resourcePath.."img/weapons/truelch_strat_apw1.png")
+modApi:appendAsset("img/weapons/truelch_strat_mg43.png",   resourcePath.."img/weapons/truelch_strat_mg43.png")
+modApi:appendAsset("img/weapons/truelch_strat_apw1.png",   resourcePath.."img/weapons/truelch_strat_apw1.png")
 modApi:appendAsset("img/weapons/truelch_strat_flam40.png", resourcePath.."img/weapons/truelch_strat_flam40.png")
-modApi:appendAsset("img/weapons/truelch_strat_rs422.png", resourcePath.."img/weapons/truelch_strat_rs422.png")
+modApi:appendAsset("img/weapons/truelch_strat_rs422.png",  resourcePath.."img/weapons/truelch_strat_rs422.png")
 
 
 --Tile icons
