@@ -926,35 +926,26 @@ end
 --Oh, it was, for the shuttle move!
 --Maybe I should write a TC exception for the case we don't target shuttle at p2
 function truelch_500kgAirstrikeMode:fire(p1, p2, se)
-	LOG("truelch_500kgAirstrikeMode:fire - A")
     local damage = SpaceDamage(p2, 0)
-    LOG("truelch_500kgAirstrikeMode:fire - B")
     se:AddArtillery(damage, self.UpShot, FULL_DELAY)
-    LOG("truelch_500kgAirstrikeMode:fire - C")
 
 	if isShuttle(p2) then
     	local damage = SpaceDamage(p2, 0)
     	se:AddDamage(damage)
     else
-    	LOG("truelch_500kgAirstrikeMode:fire - Not Shuttle - A")
     	--Let's do the final effect here since we are in a TC exception here...
 
     	--Fake Mark (Center)
 		local damage = SpaceDamage(p2, 0)
-		LOG("truelch_500kgAirstrikeMode:fire - Not Shuttle - B")
 		damage.sImageMark = "combat/icons/icon_500kg_inner.png"
-		LOG("truelch_500kgAirstrikeMode:fire - Not Shuttle - C")
     	se:AddDamage(damage)
-    	LOG("truelch_500kgAirstrikeMode:fire - Not Shuttle - D")
 
 		--Fake Mark (Outer)
 		for dir = DIR_START, DIR_END do
-			LOG("truelch_500kgAirstrikeMode:fire - Not Shuttle - dir A")
 			local curr = p2 + DIR_VECTORS[dir]
 			local damage = SpaceDamage(curr, 0)
 			damage.sImageMark = "combat/icons/icon_500kg_outer.png"
 			se:AddDamage(damage)
-			LOG("truelch_500kgAirstrikeMode:fire - Not Shuttle - dir B")
 		end
 
 	    if IsTestMechScenario() then
