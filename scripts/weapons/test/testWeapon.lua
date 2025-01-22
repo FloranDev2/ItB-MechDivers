@@ -36,9 +36,18 @@ truelch_TestWeapon = Skill:new{
 function truelch_TestWeapon:GetTargetArea(point)
 	local ret = PointList()
 
+	--[[
 	for j = 0, 7 do
 		for i = 0, 7 do
 			local curr = Point(i, j)
+			ret:push_back(curr)
+		end
+	end
+	]]
+
+	for dir = DIR_START, DIR_END do
+		for i = 1, 7 do
+			local curr = point + DIR_VECTORS[dir]*i
 			ret:push_back(curr)
 		end
 	end
@@ -50,17 +59,25 @@ function truelch_TestWeapon:GetSkillEffect(p1, p2)
 	local ret = SkillEffect()
 
 	--Just to show bunch of damage
+	--[[
 	local dmg = 0
 	for j = 0, 7 do
 		for i = 0, 7 do
 			local curr = Point(i, j)
 
+			--Test mark
+			local damage = SpaceDamage(curr, 1)
+			damage.sImageMark = "combat/truelch_test_square.png"
+			ret:AddDamage(damage)
+
 			--ACID
+
 			local damage = SpaceDamage(curr, dmg)
 			damage.iAcid = EFFECT_CREATE
 			ret:AddDamage(damage)
 
-			--[[
+
+
 			--DAMAGE
 			local damage = SpaceDamage(curr, dmg)
 			ret:AddDamage(damage)
@@ -69,16 +86,20 @@ function truelch_TestWeapon:GetSkillEffect(p1, p2)
 			if dmg < 15 then --it seems to be the hardcoded limit!
 				dmg = dmg + 1
 			end
-			]]
 		end
 	end
 
+	]]
+
 	--DAMAGE_DEATH
 
-	--[[
-	local damage = SpaceDamage(p2, DAMAGE_DEATH)
+
+	local damage = SpaceDamage(p2, 0)
+	--damage.sImageMark = "combat/icons/truelch_test_square.png"
+	local dir = GetDirection(p2 - p1)
+	damage.sImageMark = "combat/icons/truelch_smoke_push_"..tostring(dir)..".png"
 	ret:AddDamage(damage)
-	]]
+
 
 	--[[
 	local damage = SpaceDamage(p2, self.Damage)

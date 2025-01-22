@@ -119,44 +119,31 @@ modApi:appendAsset("img/combat/icons/icon_orbital_precision_strike.png", resourc
 modApi:appendAsset("img/combat/icons/icon_orbital_walking_barrage.png", resourcePath.."img/combat/icons/icon_orbital_walking_barrage.png")
 	Location["combat/icons/icon_orbital_walking_barrage.png"] = Point(-18, 5)
 
---Smoke push / Smoke push blocked
---[[
-modApi:appendAsset("img/combat/truelch_smoke_push_0.png", resourcePath.."img/combat/truelch_smoke_push_0.png")
-		Location["combat/truelch_smoke_push_0.png"] = Point(-12, -14)
-modApi:appendAsset("img/combat/truelch_smoke_push_blocked_0.png", resourcePath.."img/combat/truelch_smoke_push_blocked_0.png")
-		Location["combat/truelch_smoke_push_blocked_0.png"] = Point(-12, -14)
-
-modApi:appendAsset("img/combat/truelch_smoke_push_1.png", resourcePath.."img/combat/truelch_smoke_push_1.png")
-		Location["combat/truelch_smoke_push_1.png"] = Point(-14, 19)
-modApi:appendAsset("img/combat/truelch_smoke_push_blocked_1.png", resourcePath.."img/combat/truelch_smoke_push_blocked_1.png")
-		Location["combat/truelch_smoke_push_blocked_1.png"] = Point(-14, 19)
-
-modApi:appendAsset("img/combat/truelch_smoke_push_2.png", resourcePath.."img/combat/truelch_smoke_push_2.png")
-		Location["combat/truelch_smoke_push_2.png"] = Point(-14, 19)
-modApi:appendAsset("img/combat/truelch_smoke_push_blocked_2.png", resourcePath.."img/combat/truelch_smoke_push_blocked_2.png")
-		Location["combat/truelch_smoke_push_blocked_2.png"] = Point(-14, 19)
-
-modApi:appendAsset("img/combat/truelch_smoke_push_3.png", resourcePath.."img/combat/truelch_smoke_push_3.png")
-		Location["combat/truelch_smoke_push_3.png"] = Point(-14, 19)
-modApi:appendAsset("img/combat/truelch_smoke_push_blocked_3.png", resourcePath.."img/combat/truelch_smoke_push_blocked_3.png")
-		Location["combat/truelch_smoke_push_blocked_3.png"] = Point(-14, 19)
-]]
-
---[[
-for i = 0, 3 do
-	--Smoke push
-	modApi:appendAsset("img/combat/truelch_smoke_push_"..tostring(i)..".png", resourcePath.."img/combat/truelch_smoke_push_"..tostring(i)..".png")
-		Location["combat/truelch_smoke_push_"..tostring(i)..".png"] = Point(-14, 19)
-
-	--Smoke push blocked
-	modApi:appendAsset("img/combat/truelch_smoke_push_blocked_"..tostring(i)..".png", resourcePath.."img/combat/truelch_smoke_push_blocked_"..tostring(i)..".png")
-		Location["combat/truelch_smoke_push_blocked_"..tostring(i)..".png"] = Point(0, 0)
-end
-]]
 
 --Test
+--[[
 modApi:appendAsset("img/combat/icons/truelch_test_square.png", resourcePath.."img/combat/icons/truelch_test_square.png")
-	Location["combat/icons/truelch_test_square.png"] = Point(-10, 10)
+	Location["combat/icons/truelch_test_square.png"] = Point(-25, -2)
+]]
+
+for i = 0, 3 do
+	--Airstrike smoke push
+	modApi:appendAsset("img/combat/icons/truelch_airstrike_smoke_push_"..tostring(i)..".png", resourcePath.."img/combat/icons/truelch_airstrike_smoke_push_"..tostring(i)..".png")
+		Location["combat/icons/truelch_airstrike_smoke_push_"..tostring(i)..".png"] = Point(-50, -27)
+
+	--Airstrike smoke push blocked
+	modApi:appendAsset("img/combat/icons/truelch_airstrike_smoke_push_blocked_"..tostring(i)..".png", resourcePath.."img/combat/icons/truelch_airstrike_smoke_push_blocked_"..tostring(i)..".png")
+		Location["combat/icons/truelch_airstrike_smoke_push_blocked_"..tostring(i)..".png"] = Point(-50, -27)
+
+	--Smoke push
+	modApi:appendAsset("img/combat/icons/truelch_smoke_push_"..tostring(i)..".png", resourcePath.."img/combat/icons/truelch_smoke_push_"..tostring(i)..".png")
+		Location["combat/icons/truelch_smoke_push_"..tostring(i)..".png"] = Point(-50, -27)
+
+	--Smoke push blocked
+	modApi:appendAsset("img/combat/icons/truelch_smoke_push_blocked_"..tostring(i)..".png", resourcePath.."img/combat/icons/truelch_smoke_push_blocked_"..tostring(i)..".png")
+		Location["combat/icons/truelch_smoke_push_blocked_"..tostring(i)..".png"] = Point(-50, -27)
+end
+
 
 for i = 1, 15 do --dimension: 10x15 -> 13x15
 	--Protecc normal damage

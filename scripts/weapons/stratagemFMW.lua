@@ -738,7 +738,6 @@ function truelch_NapalmAirstrikeMode:fire(p1, p2, se)
     if pawn ~= nil and pawn:GetType() == "truelch_EagleMech" then
     	--Fake damage (just for test)
     	local damage = SpaceDamage(p2, 0)
-    	--damage.sImageMark = "combat/icons/icon_napalm_airstrike.png"
     	se:AddDamage(damage)
     else
 		local damage = SpaceDamage(p2, 0)
@@ -771,14 +770,12 @@ function truelch_NapalmAirstrikeMode:second_fire(p1, p2, p3)
     local dir = GetDirection(p3 - p2)
 
     if IsTestMechScenario() then
-		--Fake marks
-
-		--Center
+		--Fake marks (Center)
 		local damage = SpaceDamage(p2, 0)		
 		damage.sImageMark = self.FakeMark
 		ret:AddDamage(damage)
 
-		--Forward, left, right		
+		--Fake marks (Forward, left, right)
 		local dirOffsets = {0, -1, 1} 
 		for _, offset in ipairs(dirOffsets) do
 			local curr = p2 + DIR_VECTORS[(dir + offset)% 4]
@@ -804,15 +801,13 @@ function truelch_NapalmAirstrikeMode:second_fire(p1, p2, p3)
 		--Instant damage effect
 		computeNapalmAirstrike(ret, p2, dir)
 	else
-		--Fake marks
-
-		--Center
+		--Fake marks (Center)
 		local damage = SpaceDamage(p2, 0)		
 		damage.sImageMark = self.FakeMark
 		ret:AddDamage(damage)
 
-		--Forward, left, right		
-		local dirOffsets = {0, -1, 1} 
+		--Fake marks (Forward, left, right)
+		local dirOffsets = {0, -1, 1}
 		for _, offset in ipairs(dirOffsets) do
 			local curr = p2 + DIR_VECTORS[(dir + offset)% 4]
 			local damage = SpaceDamage(curr, 0)
@@ -840,39 +835,35 @@ truelch_SmokeAirstrikeMode = truelch_NapalmAirstrikeMode:new{
 function truelch_SmokeAirstrikeMode:second_fire(p1, p2, p3)
     local ret = SkillEffect()
 
-    --local damage = SpaceDamage(p2, 0)    
-    --ret:AddArtillery(damage, self.UpShot, FULL_DELAY)
+    local damage = SpaceDamage(p2, 0)    
+    ret:AddArtillery(damage, self.UpShot, FULL_DELAY)
 
     local dir = GetDirection(p3 - p2)
 
     if IsTestMechScenario() then
-		--Fake marks (Center)
-		local damage = SpaceDamage(p2, 0)
-		damage.sImageMark = self.FakeMark
+		--Fake marks (Center)		
 		local next = p2 + DIR_VECTORS[dir]
 		if not Board:IsBlocked(next, PATH_PROJECTILE) then
-			--damage.sImageMark = "combat/truelch_smoke_push_"..tostring(dir)..".png"
-			damage.sImageMark = "combat/truelch_test_square.png"
-			--damage.sImageMark = self.FakeMark
-			--LOG("------------ A")
+			local damage = SpaceDamage(p2, 0)
+			damage.sImageMark = "combat/icons/truelch_airstrike_smoke_push_"..tostring(dir)..".png"
+			ret:AddDamage(damage)
 		else
-			--damage.sImageMark = "combat/truelch_smoke_push_blocked_"..tostring(dir)..".png"
-			damage.sImageMark = "combat/truelch_test_square.png"
-			--damage.sImageMark = self.FakeMark
-			--LOG("------------ B")
-		end
-		ret:AddDamage(damage)
+			local damage = SpaceDamage(p2, 0)
+			damage.sImageMark = "combat/icons/truelch_airstrike_smoke_push_blocked_"..tostring(dir)..".png"
+			ret:AddDamage(damage)
+		end		
 
 		--Fake marks (Forward, left, right)
 		local dirOffsets = {0, -1, 1} 
 		for _, offset in ipairs(dirOffsets) do
 			local curr = p2 + DIR_VECTORS[(dir + offset)% 4]
 			local damage = SpaceDamage(curr, 0)
-			damage.sImageMark = self.FakeMark
+			damage.sImageMark = "combat/icons/truelch_smoke_push_blocked_0.png"
 			ret:AddDamage(damage)
 		end
 
 		computeSmokeAirstrike(ret, p2, dir, true)
+		return ret
     end
 
     --Shuttle's move
@@ -886,21 +877,19 @@ function truelch_SmokeAirstrikeMode:second_fire(p1, p2, p3)
 
 		--Instant damage effect
 		computeSmokeAirstrike(p2, dir)
-	else
-		--Fake marks
-		
-		--Center
+	else		
+		--Fake marks (Center)
 		local damage = SpaceDamage(p2, 0)		
 		--damage.sImageMark = self.FakeMark
 		local next = p2 + DIR_VECTORS[dir]
 		if not Board:IsBlocked(next, PATH_PROJECTILE) then
-			damage.sImageMark = "combat/truelch_smoke_push_"..tostring(dir)..".png"
+			damage.sImageMark = "combat/truelch_airstrike_smoke_push_"..tostring(dir)..".png"
 		else
-			damage.sImageMark = "combat/truelch_smoke_push_blocked_"..tostring(dir)..".png"
+			damage.sImageMark = "combat/truelch_airstrike_smoke_push_blocked_"..tostring(dir)..".png"
 		end
 		ret:AddDamage(damage)
 
-		--Forward, left, right		
+		--Fake marks (Forward, left, right)
 		local dirOffsets = {0, -1, 1} 
 		for _, offset in ipairs(dirOffsets) do
 			local curr = p2 + DIR_VECTORS[(dir + offset)% 4]
