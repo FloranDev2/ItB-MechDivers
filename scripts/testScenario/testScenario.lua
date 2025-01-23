@@ -46,5 +46,6 @@ truelch_TestScenarioPawn = Pawn:new{
 	ImpactMaterial = IMPACT_METAL,
 	Corpse = false,
 	Flying = true,
+	Pushable = false, --just to test airstrike push against stable targets!
 }
 AddPawn("truelch_TestScenarioPawn")

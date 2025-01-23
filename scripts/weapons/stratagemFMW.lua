@@ -70,6 +70,134 @@ local truelch_stratagem_flag = false --moved this here
 local truelch_strat_p1
 local truelch_strat_p2
 
+
+--[[
+Arguments:
+	se: SkillEffect
+	point: Point
+	dir: integer telling the direction (from 0 to 3)
+	isAirstrike: boolean telling if it's an instant effect (no plane icon) or delayed (with plane icon)
+Return value: (boolean)
+	return true if it should override vanilla icon, false otherwise
+]]
+local function computeSmokeIcon(se, point, dir, isAirstrike)
+	--LOG("------------- computeSmokeIcon")
+	local pushedPawn = Board:GetPawn(point)
+	local next = point + DIR_VECTORS[dir]
+	if isAirstrike then
+		--LOG("------------- computeSmokeIcon - airstrike")
+		--Airstrike
+		if pushedPawn ~= nil  then
+			if not pushedPawn:IsPushable() then
+				--Guard
+				--LOG("------------- Guard")
+				local damage = SpaceDamage(point, 0)
+				damage.sImageMark = "combat/icons/truelch_airstrike_smoke_push_guard_"..tostring(dir)..".png"
+				se:AddDamage(damage)
+			elseif Board:IsBlocked(next, PATH_PROJECTILE) then
+				--Push blocked
+				--LOG("------------- Push blocked")
+				local damage = SpaceDamage(point, 0)
+				damage.sImageMark = "combat/icons/truelch_airstrike_smoke_push_blocked_"..tostring(dir)..".png"
+				se:AddDamage(damage)
+			else
+				--Regular push
+				--LOG("------------- Regular push")
+				local damage = SpaceDamage(point, 0)
+				damage.sImageMark = "combat/icons/truelch_airstrike_smoke_push_"..tostring(dir)..".png"
+				se:AddDamage(damage)
+			end
+		else
+			--Off
+			--LOG("------------- Off")
+			local damage = SpaceDamage(point, 0)
+			damage.sImageMark = "combat/icons/truelch_airstrike_smoke_push_off_"..tostring(dir)..".png"
+			se:AddDamage(damage)
+		end
+	else
+		--LOG("------------- computeSmokeIcon - just smoke icon")
+		--Just smoke icon with other information (push, off, guard, etc.)
+		if pushedPawn ~= nil  then
+			--LOG("------------- computeSmokeIcon - pushedPawn ~= nil")
+			if not pushedPawn:IsPushable() then
+				--LOG("------------- computeSmokeIcon - pushedPawn ~= nil -> Guard")
+				--Guard
+				local damage = SpaceDamage(point, 0)
+				damage.sImageMark = "combat/icons/truelch_smoke_push_guard_"..tostring(dir)..".png"
+				se:AddDamage(damage)
+			elseif Board:IsBlocked(next, PATH_PROJECTILE) then
+				--LOG("------------- computeSmokeIcon - pushedPawn ~= nil -> Push blocked")
+				--Push blocked
+				local damage = SpaceDamage(point, 0)
+				damage.sImageMark = "combat/icons/truelch_smoke_push_blocked_"..tostring(dir)..".png"
+				se:AddDamage(damage)
+			else
+				--LOG("------------- computeSmokeIcon - pushedPawn ~= nil -> Regular push")
+				--Regular push
+				local damage = SpaceDamage(point, 0)
+				damage.sImageMark = "combat/icons/truelch_smoke_push_"..tostring(dir)..".png"
+				se:AddDamage(damage)
+			end
+		else
+			--LOG("------------- computeSmokeIcon - pushedPawn ~= nil -> Off")
+			--Off
+			local damage = SpaceDamage(point, 0)
+			damage.sImageMark = "combat/icons/truelch_smoke_push_off_"..tostring(dir)..".png"
+			se:AddDamage(damage)
+		end
+	end
+
+	--LOG("------------- computeSmokeIcon -----> END!")
+
+	--In any case, we want to override icon
+	return true
+end
+
+--[[
+Arguments:
+	se: SkillEffect
+	point: Point
+	dir: integer telling the direction (from 0 to 3)
+	isAirstrike: boolean telling if it's an instant effect (no plane icon) or delayed (with plane icon)
+Return value: (boolean)
+	return true if it should override vanilla icon, false otherwise
+]]
+local function computeNapalmIcon(se, point, dir, isAirstrike)
+	local pushedPawn = Board:GetPawn(point)
+	local next = point + DIR_VECTORS[dir]
+	if isAirstrike then
+		--Airstrike
+		if pushedPawn ~= nil  then
+			if not pushedPawn:IsPushable() then
+				--Guard
+				local damage = SpaceDamage(point, 0)
+				damage.sImageMark = "combat/icons/truelch_airstrike_fire_push_guard_"..tostring(dir)..".png"
+				se:AddDamage(damage)
+			elseif Board:IsBlocked(next, PATH_PROJECTILE) then
+				--Push blocked
+				local damage = SpaceDamage(point, 0)
+				damage.sImageMark = "combat/icons/truelch_airstrike_fire_push_blocked_"..tostring(dir)..".png"
+				se:AddDamage(damage)
+			else
+				--Regular push
+				local damage = SpaceDamage(point, 0)
+				damage.sImageMark = "combat/icons/truelch_airstrike_fire_push_"..tostring(dir)..".png"
+				se:AddDamage(damage)
+			end
+		else
+			--Off
+			local damage = SpaceDamage(point, 0)
+			damage.sImageMark = "combat/icons/truelch_airstrike_fire_push_off_"..tostring(dir)..".png"
+			se:AddDamage(damage)
+		end
+		return true
+	else
+		--This is handled by vanilla game already...
+		return false
+	end
+end
+
+
 local function isShuttle(point)
 	return Board:IsPawnSpace(point) and Board:GetPawn(point):GetType() == "truelch_EagleMech"
 end
@@ -104,11 +232,16 @@ function computeNapalmAirstrike(se, point, dir, playAnim)
 		end
 	end
 
-	--Center
+	--Center (fake marks)
+	computeNapalmIcon(se, point, dir, not playAnim)
+
+	--Center (real damage)
 	local curr = point
 	local damage = SpaceDamage(curr, 0)
 	damage.iFire = EFFECT_CREATE
-	damage.iPush = dir --new so that it's actually interesting to have the instant effect
+	damage.bHide = playAnim
+	--Edit: no, we target this point for the shuttle move
+	--damage.iPush = dir --new so that it's actually interesting to have the instant effect
 	se:AddDamage(damage)
 	se:AddBounce(curr, 2)
 
@@ -118,6 +251,10 @@ function computeNapalmAirstrike(se, point, dir, playAnim)
 		local curr = point + DIR_VECTORS[(dir + offset)% 4]
 		local damage = SpaceDamage(curr, 0)
 		damage.iFire = EFFECT_CREATE
+		damage.bHide = playAnim
+		if offset ~= 0 then
+			damage.iPush = dir --test
+		end
 		se:AddDamage(damage)
 		se:AddBounce(curr, 2)
 	end
@@ -133,15 +270,17 @@ function computeSmokeAirstrike(se, point, dir, playAnim)
 		end
 	end
 
-	--Center
-	local curr = point
-	local damage = SpaceDamage(curr, 0)
+	--Center (fake marks)
+	computeSmokeIcon(se, point, dir, true)
 
-	--Smoke push icon
-	damage.iSmoke = EFFECT_CREATE --let's uncomment after and pray	
-	damage.iPush = dir --new so that it's actually interesting to have the instant effect
+	--Center (real damage)
+	local damage = SpaceDamage(point, 0)
+	damage.iSmoke = EFFECT_CREATE
+	damage.bHide = playAnim
+	--Edit: no, we target this point for the shuttle move
+	--damage.iPush = dir --new so that it's actually interesting to have the instant effect
 	se:AddDamage(damage)
-	se:AddBounce(curr, 2)
+	se:AddBounce(point, 2)
 
 	--Forward, left, right
 	local dirOffsets = {0, -1, 1} 
@@ -149,12 +288,17 @@ function computeSmokeAirstrike(se, point, dir, playAnim)
 		local curr = point + DIR_VECTORS[(dir + offset)% 4]
 		local damage = SpaceDamage(curr, 0)
 		damage.iSmoke = EFFECT_CREATE
+		damage.bHide = playAnim
+		--damage.sImageMark = "combat/icons/icon_smoke_airstrike.png" --if effect is instant, don't show the plane icon
+		if offset ~= 0 then
+			damage.iPush = dir --test
+		end
 		se:AddDamage(damage)
 		se:AddBounce(curr, 2)
 	end
 end
 
-function compute500KgAirstrike(se, point)
+function compute500KgAirstrike(se, point, playAnim)
 	if playAnim then
 		se:AddSound("/weapons/airstrike") --almost forgot that!
 		if dir == 0 or dir == 2 then
@@ -179,8 +323,8 @@ function compute500KgAirstrike(se, point)
 
 	--Center
 	local damage = SpaceDamage(point, 4)
+	damage.sImageMark = "combat/icons/icon_500kg_inner.png" --specifically for test mech scenario
 	damage.sSound = "/impact/generic/explosion"
-	--damage.sAnimation = "ExploArt3" --TODO
 	se:AddDamage(damage)
 	se:AddBounce(point, 3)
 
@@ -188,7 +332,7 @@ function compute500KgAirstrike(se, point)
 	for dir = DIR_START, DIR_END do
 		local curr = point + DIR_VECTORS[dir]
 		local damage = SpaceDamage(curr, 2)
-		--damage.sAnimation = "ExploArt1"
+		damage.sImageMark = "combat/icons/icon_500kg_outer.png" --specifically for test mech scenario
 		--Does it have a dir?
 		damage.sAnimation = "exploout2_" --Replacement proposed by Metalocif
 		se:AddDamage(damage)
@@ -370,8 +514,6 @@ truelch_Mg43Mode = truelch_StratMode:new{
 	Message = "Acquired a MG-43 Machine Gun!", --"\n(de-select and re-select the Mech to see it)"
 }
 
---CreateClass(truelch_Mg43Mode)
-
 --p2 is FUCKING nil FOR NO REASON. So I'm using this external variable. FFS. GAAAH
 function truelch_Mg43Mode:isTwoClickExc(p1, p2)
 	--return not isShuttle(p2) or IsTestMechScenario() --p2 nil...
@@ -506,8 +648,7 @@ function truelch_Mg43Mode:second_fire(p1, p2, p3)
 			zogZogMsg = self.Message   --daijobu
 			ret:AddScript("ZogZog()")
 		else
-			LOG("Certainly an enemy or a deployable or whatever")
-
+			--LOG("Certainly an enemy or a deployable or whatever")
 		end		
 	else
 		--Should NOT happen
@@ -701,8 +842,6 @@ truelch_GuardDogLaserMode = truelch_GuardDogMode:new{
 --Airstrikes after Mechs' turn but before Vek act. If the Shuttle Mech is in range, it can fires the effect itself, making it instant.
 
 -------------------- MODE 10: Napalm Airstrike --------------------
---truelch_StratMode
---truelch_NapalmAirstrikeMode = truelch_Mg43Mode:new{
 truelch_NapalmAirstrikeMode = truelch_StratMode:new{
 	aFM_name = "Napalm Airstrike",
 	aFM_desc = "Ignite 4 tiles in an arrow shapes and push the central tile."..
@@ -762,6 +901,7 @@ function truelch_NapalmAirstrikeMode:second_targeting(p1, p2)
 end
 
 function truelch_NapalmAirstrikeMode:second_fire(p1, p2, p3)
+	LOG("truelch_NapalmAirstrikeMode:second_fire - A")
     local ret = SkillEffect()
 
     local damage = SpaceDamage(p2, 0)    
@@ -769,11 +909,30 @@ function truelch_NapalmAirstrikeMode:second_fire(p1, p2, p3)
 
     local dir = GetDirection(p3 - p2)
 
+    LOG("truelch_NapalmAirstrikeMode:second_fire - B")
     if IsTestMechScenario() then
+    	LOG("truelch_NapalmAirstrikeMode:second_fire - IsTestMechScenario - A")
+    	computeNapalmAirstrike(ret, p2, dir, true)
+
 		--Fake marks (Center)
-		local damage = SpaceDamage(p2, 0)		
-		damage.sImageMark = self.FakeMark
-		ret:AddDamage(damage)
+		--[[
+		local next = p2 + DIR_VECTORS[dir]
+		local pushedPawn = Board:GetPawn(p2)
+		if Board:IsBlocked(next, PATH_PROJECTILE) and pushedPawn ~= nil and pushedPawn:IsPushable() then
+			local damage = SpaceDamage(p2, 0)
+			damage.sImageMark = "combat/icons/truelch_airstrike_fire_push_blocked_"..tostring(dir)..".png"
+			ret:AddDamage(damage)
+		else			
+			local damage = SpaceDamage(p2, 0)
+			damage.sImageMark = "combat/icons/truelch_airstrike_fire_push_"..tostring(dir)..".png"
+			ret:AddDamage(damage)
+		end
+		]]
+		LOG("truelch_NapalmAirstrikeMode:second_fire - IsTestMechScenario - B")
+
+		computeNapalmIcon(ret, p2, dir, true)
+
+		LOG("truelch_NapalmAirstrikeMode:second_fire - IsTestMechScenario - C")
 
 		--Fake marks (Forward, left, right)
 		local dirOffsets = {0, -1, 1} 
@@ -782,15 +941,14 @@ function truelch_NapalmAirstrikeMode:second_fire(p1, p2, p3)
 			local damage = SpaceDamage(curr, 0)
 			damage.sImageMark = self.FakeMark
 			ret:AddDamage(damage)
-		end
-
-    	computeNapalmAirstrike(ret, p2, dir, true)
+		end    	
 
     	return ret
     end
 
     --Shuttle's move
     if isShuttle(p2) then
+    	LOG("truelch_NapalmAirstrikeMode:second_fire - isShuttle(p2)")
     	--Shuttle move
 		local move = PointList()
 		move:push_back(p2)
@@ -799,12 +957,13 @@ function truelch_NapalmAirstrikeMode:second_fire(p1, p2, p3)
 		ret:AddLeap(move, 0.25)
 
 		--Instant damage effect
-		computeNapalmAirstrike(ret, p2, dir)
+		computeNapalmAirstrike(ret, p2, dir, false)
 	else
-		--Fake marks (Center)
-		local damage = SpaceDamage(p2, 0)		
-		damage.sImageMark = self.FakeMark
-		ret:AddDamage(damage)
+		LOG("truelch_NapalmAirstrikeMode:second_fire - before napalm icon")
+
+		computeNapalmIcon(ret, p2, dir, true)
+
+		LOG("truelch_NapalmAirstrikeMode:second_fire - after napalm icon")
 
 		--Fake marks (Forward, left, right)
 		local dirOffsets = {0, -1, 1}
@@ -814,6 +973,8 @@ function truelch_NapalmAirstrikeMode:second_fire(p1, p2, p3)
 			damage.sImageMark = self.FakeMark
 			ret:AddDamage(damage)
 		end
+
+		LOG("truelch_NapalmAirstrikeMode:second_fire - dirs")
 
 		--Add Airstrike
 		ret:AddScript(string.format("truelch_MechDivers_AddAirstrike(%s, %s, 0)", p2:GetString(), tostring(dir)))
@@ -840,32 +1001,6 @@ function truelch_SmokeAirstrikeMode:second_fire(p1, p2, p3)
 
     local dir = GetDirection(p3 - p2)
 
-    if IsTestMechScenario() then
-		--Fake marks (Center)		
-		local next = p2 + DIR_VECTORS[dir]
-		if not Board:IsBlocked(next, PATH_PROJECTILE) then
-			local damage = SpaceDamage(p2, 0)
-			damage.sImageMark = "combat/icons/truelch_airstrike_smoke_push_"..tostring(dir)..".png"
-			ret:AddDamage(damage)
-		else
-			local damage = SpaceDamage(p2, 0)
-			damage.sImageMark = "combat/icons/truelch_airstrike_smoke_push_blocked_"..tostring(dir)..".png"
-			ret:AddDamage(damage)
-		end		
-
-		--Fake marks (Forward, left, right)
-		local dirOffsets = {0, -1, 1} 
-		for _, offset in ipairs(dirOffsets) do
-			local curr = p2 + DIR_VECTORS[(dir + offset)% 4]
-			local damage = SpaceDamage(curr, 0)
-			damage.sImageMark = "combat/icons/truelch_smoke_push_blocked_0.png"
-			ret:AddDamage(damage)
-		end
-
-		computeSmokeAirstrike(ret, p2, dir, true)
-		return ret
-    end
-
     --Shuttle's move
     if isShuttle(p2) then
     	--Shuttle move
@@ -876,18 +1011,13 @@ function truelch_SmokeAirstrikeMode:second_fire(p1, p2, p3)
 		ret:AddLeap(move, 0.25)
 
 		--Instant damage effect
-		computeSmokeAirstrike(p2, dir)
-	else		
+		computeSmokeAirstrike(ret, p2, dir, false)
+	else
+		--LOG("---------- before computeSmokeIcon()")
 		--Fake marks (Center)
-		local damage = SpaceDamage(p2, 0)		
-		--damage.sImageMark = self.FakeMark
-		local next = p2 + DIR_VECTORS[dir]
-		if not Board:IsBlocked(next, PATH_PROJECTILE) then
-			damage.sImageMark = "combat/truelch_airstrike_smoke_push_"..tostring(dir)..".png"
-		else
-			damage.sImageMark = "combat/truelch_airstrike_smoke_push_blocked_"..tostring(dir)..".png"
-		end
-		ret:AddDamage(damage)
+		computeSmokeIcon(ret, p2, dir, true)
+
+		--LOG("---------- after computeSmokeIcon()")
 
 		--Fake marks (Forward, left, right)
 		local dirOffsets = {0, -1, 1} 
@@ -899,7 +1029,11 @@ function truelch_SmokeAirstrikeMode:second_fire(p1, p2, p3)
 		end
 
 		--point, dir, id (1 = Smoke Airstrike)
-		ret:AddScript(string.format("truelch_MechDivers_AddAirstrike(%s, %s, 1)", p2:GetString(), tostring(dir)))
+		if IsTestMechScenario() then
+			computeSmokeAirstrike(ret, p2, dir, true)
+		else
+			ret:AddScript(string.format("truelch_MechDivers_AddAirstrike(%s, %s, 1)", p2:GetString(), tostring(dir)))
+		end
     end
 
     return ret
@@ -935,6 +1069,9 @@ function truelch_500kgAirstrikeMode:fire(p1, p2, se)
     else
     	--Let's do the final effect here since we are in a TC exception here...
 
+    	--For 500kg, fake marks don't work in test mech scenario for some reason, so I'm adding them in the compute 500kg airstrike
+    	--(yes I've tried putting the compute after and before the fake marks, didn't changed a thing)
+
     	--Fake Mark (Center)
 		local damage = SpaceDamage(p2, 0)
 		damage.sImageMark = "combat/icons/icon_500kg_inner.png"
@@ -950,9 +1087,9 @@ function truelch_500kgAirstrikeMode:fire(p1, p2, se)
 
 	    if IsTestMechScenario() then
 			compute500KgAirstrike(se, p2, true)
-		else			
+		else
 			se:AddScript(string.format("truelch_MechDivers_AddAirstrike(%s, -1, 2)", p2:GetString()))
-		end		
+		end
     end
 end
 
@@ -988,26 +1125,7 @@ function truelch_500kgAirstrikeMode:second_fire(p1, p2, p3)
 		ret:AddBounce(p2, 2)
 		ret:AddLeap(move, 0.25)
 
-		compute500KgAirstrike(ret, p2)
-	else
-		LOG("Shouldn't happen anyway. RIGHT????????????????????")
-
-		--[[
-		--Fake Mark (Center)
-		local damage = SpaceDamage(p2, 0)
-		damage.sImageMark = "combat/icons/icon_500kg_inner.png"
-		ret:AddDamage(damage)
-
-		--Fake Mark (Outer)
-		for dir = DIR_START, DIR_END do		
-			local curr = p2 + DIR_VECTORS[dir]
-			local damage = SpaceDamage(curr, 0)
-			damage.sImageMark = "combat/icons/icon_500kg_outer.png"
-			ret:AddDamage(damage)
-		end
-
-		ret:AddScript(string.format("truelch_MechDivers_AddAirstrike(%s, %s, 2)", p2:GetString(), tostring(dir)))
-		]]
+		compute500KgAirstrike(ret, p2, false) --not putting a 3rd argument would be equivalent to put false anyway
     end
 
     return ret
