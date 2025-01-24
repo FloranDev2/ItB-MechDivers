@@ -901,7 +901,6 @@ function truelch_NapalmAirstrikeMode:second_targeting(p1, p2)
 end
 
 function truelch_NapalmAirstrikeMode:second_fire(p1, p2, p3)
-	LOG("truelch_NapalmAirstrikeMode:second_fire - A")
     local ret = SkillEffect()
 
     local damage = SpaceDamage(p2, 0)    
@@ -909,30 +908,9 @@ function truelch_NapalmAirstrikeMode:second_fire(p1, p2, p3)
 
     local dir = GetDirection(p3 - p2)
 
-    LOG("truelch_NapalmAirstrikeMode:second_fire - B")
     if IsTestMechScenario() then
-    	LOG("truelch_NapalmAirstrikeMode:second_fire - IsTestMechScenario - A")
     	computeNapalmAirstrike(ret, p2, dir, true)
-
-		--Fake marks (Center)
-		--[[
-		local next = p2 + DIR_VECTORS[dir]
-		local pushedPawn = Board:GetPawn(p2)
-		if Board:IsBlocked(next, PATH_PROJECTILE) and pushedPawn ~= nil and pushedPawn:IsPushable() then
-			local damage = SpaceDamage(p2, 0)
-			damage.sImageMark = "combat/icons/truelch_airstrike_fire_push_blocked_"..tostring(dir)..".png"
-			ret:AddDamage(damage)
-		else			
-			local damage = SpaceDamage(p2, 0)
-			damage.sImageMark = "combat/icons/truelch_airstrike_fire_push_"..tostring(dir)..".png"
-			ret:AddDamage(damage)
-		end
-		]]
-		LOG("truelch_NapalmAirstrikeMode:second_fire - IsTestMechScenario - B")
-
 		computeNapalmIcon(ret, p2, dir, true)
-
-		LOG("truelch_NapalmAirstrikeMode:second_fire - IsTestMechScenario - C")
 
 		--Fake marks (Forward, left, right)
 		local dirOffsets = {0, -1, 1} 
@@ -948,7 +926,6 @@ function truelch_NapalmAirstrikeMode:second_fire(p1, p2, p3)
 
     --Shuttle's move
     if isShuttle(p2) then
-    	LOG("truelch_NapalmAirstrikeMode:second_fire - isShuttle(p2)")
     	--Shuttle move
 		local move = PointList()
 		move:push_back(p2)
@@ -957,13 +934,11 @@ function truelch_NapalmAirstrikeMode:second_fire(p1, p2, p3)
 		ret:AddLeap(move, 0.25)
 
 		--Instant damage effect
-		computeNapalmAirstrike(ret, p2, dir, false)
+		--NEW: effect will be dealt just behind shuttle landing point
+		local point = p3 - DIR_VECTORS[dir]*2
+		computeNapalmAirstrike(ret, point, dir, false)
 	else
-		LOG("truelch_NapalmAirstrikeMode:second_fire - before napalm icon")
-
 		computeNapalmIcon(ret, p2, dir, true)
-
-		LOG("truelch_NapalmAirstrikeMode:second_fire - after napalm icon")
 
 		--Fake marks (Forward, left, right)
 		local dirOffsets = {0, -1, 1}
@@ -973,8 +948,6 @@ function truelch_NapalmAirstrikeMode:second_fire(p1, p2, p3)
 			damage.sImageMark = self.FakeMark
 			ret:AddDamage(damage)
 		end
-
-		LOG("truelch_NapalmAirstrikeMode:second_fire - dirs")
 
 		--Add Airstrike
 		ret:AddScript(string.format("truelch_MechDivers_AddAirstrike(%s, %s, 0)", p2:GetString(), tostring(dir)))
@@ -1011,13 +984,12 @@ function truelch_SmokeAirstrikeMode:second_fire(p1, p2, p3)
 		ret:AddLeap(move, 0.25)
 
 		--Instant damage effect
-		computeSmokeAirstrike(ret, p2, dir, false)
+		--NEW: effect will be dealt just behind shuttle landing point
+		local point = p3 - DIR_VECTORS[dir]*2
+		computeSmokeAirstrike(ret, point, dir, false)
 	else
-		--LOG("---------- before computeSmokeIcon()")
 		--Fake marks (Center)
 		computeSmokeIcon(ret, p2, dir, true)
-
-		--LOG("---------- after computeSmokeIcon()")
 
 		--Fake marks (Forward, left, right)
 		local dirOffsets = {0, -1, 1} 
@@ -1125,7 +1097,9 @@ function truelch_500kgAirstrikeMode:second_fire(p1, p2, p3)
 		ret:AddBounce(p2, 2)
 		ret:AddLeap(move, 0.25)
 
-		compute500KgAirstrike(ret, p2, false) --not putting a 3rd argument would be equivalent to put false anyway
+		--NEW: effect will be dealt just behind shuttle landing point
+		local point = p3 - DIR_VECTORS[dir]*2
+		compute500KgAirstrike(ret, point, false)
     end
 
     return ret
@@ -1378,24 +1352,15 @@ function truelch_StratagemFMW:GetFinalEffect_TipImage()
 end
 
 function truelch_StratagemFMW:GetSkillEffect_Normal(p1, p2)
-	--LOG("truelch_StratagemFMW:GetSkillEffect_Normal - A")
 	local se = SkillEffect()
-	--LOG("truelch_StratagemFMW:GetSkillEffect_Normal - B")
 	local currentMode = self:FM_GetMode(p1)
-	--LOG("truelch_StratagemFMW:GetSkillEffect_Normal - C")
-
-	--LOG("currentMode: "..tostring(currentMode))
 	
 	if self:FM_CurrentModeReady(p1) then
-		--LOG("truelch_StratagemFMW:GetSkillEffect_Normal - D")
 		_G[currentMode]:fire(p1, p2, se)
-		--LOG("truelch_StratagemFMW:GetSkillEffect_Normal - E")
 	end
-	--LOG("truelch_StratagemFMW:GetSkillEffect_Normal - F")
 
 	return se
 end
-
 
 function truelch_StratagemFMW:GetSkillEffect(p1, p2)
 	if not Board:IsTipImage() then
