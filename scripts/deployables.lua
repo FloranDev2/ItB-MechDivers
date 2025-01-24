@@ -552,7 +552,7 @@ function truelch_GuardDogLaser_Weapon:GetTargetScore(p1, p2)
 		if Board:GetPawnTeam(curr) == TEAM_ENEMY then
 			score = score + 100
 		elseif Board:IsBuilding(curr) then
-			score = -1000
+			score = -1000 --it still shot at a building, wtf??
 			break
 		elseif Board:IsBlocked(curr, PATH_PROJECTILE) then
 			break

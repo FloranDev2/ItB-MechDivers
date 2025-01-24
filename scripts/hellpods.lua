@@ -48,7 +48,7 @@ end
 ----------------------------------------------- HOOKS -----------------------------------------------
 
 local function computeDrops(list)
-    --LOG("computeDrops (count: "..tostring(#list)..")")
+    LOG("-------------- computeDrops (count: "..tostring(#list)..")")
     --Kill pawns, play anim and spawn items
 
     --for _, hellPod in pairs(missionData().hellPods) do
@@ -60,7 +60,8 @@ local function computeDrops(list)
         local loc  = hellPod[1]
         local item = hellPod[2]        
 
-        --LOG(" -> loc: "..loc:GetString()..", item: "..item)
+        LOG("--------------- hellpod:")
+        LOG("---------------> loc: "..loc:GetString()..", item: "..item)
 
         --Play anim
         local dropAnim = SpaceDamage(loc, 0)
@@ -109,6 +110,8 @@ local function computeDrops(list)
             --Lil' delay (idk if it'd destroy the item otherwise)
             effect:AddDelay(0.5) --doesn't work to prevent item being recovered / destroyed
         else
+            LOG("-------------- No pawn: let's create the item now")
+            LOG("-------------- item: "..item)
             --No pawn: let's create the item now (otherwise, we wait to see if the pawn dies to create an item)
             --Add item
             local spawnItem = SpaceDamage(loc, 0)
@@ -118,7 +121,7 @@ local function computeDrops(list)
 
         --Add effect to the board
         Board:AddEffect(effect)
-        --LOG("-------------- Here")
+        LOG("-----------------> Here (effect added")
     end
 end
 
@@ -183,7 +186,7 @@ local HOOK_onMissionUpdate = function(mission)
             if pawn == nil then
                 LOG("[OK] Good: "..loc:GetString())
 
-                if Board:IsValid(curr) and
+                if Board:IsValid(loc) and
                         not Board:IsBlocked(loc, PATH_PROJECTILE) and
                         not Board:IsPod(loc) and
                         not Board:IsTerrain(loc, TERRAIN_HOLE) and
