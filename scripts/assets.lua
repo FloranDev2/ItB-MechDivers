@@ -95,27 +95,16 @@ ANIMS.truelch_anim_orbital_laser = Animation:new{
 }
 
 --Test
-modApi:appendAsset("img/effects/pilot_gray.png", resourcePath.."img/effects/pilot_gray.png")
-	Location["effects/pilot_gray.png"] = Point(-25, -165)
-ANIMS.PilotGrayBlast = Animation:new{
-	Image = "effects/pilot_gray.png",
+modApi:appendAsset("img/effects/truelch_charged.png", resourcePath.."img/effects/truelch_charged.png")
+	Location["effects/truelch_charged.png"] = Point(-25, -165)
+ANIMS.truelch_anim_charged = Animation:new{
+	Image = "effects/truelch_charged.png",
 	NumFrames = 8,
-	Time = 0.08,
-	PosX = -33,
-	PosY = -14
-}
-ANIMS.PilotGrayFlame = Animation:new{
-	Image = "effects/pilot_gray.png", --test
-	NumFrames = 8,
-	Time = 0.06,
-	PosX = -33,
-	PosY = -14
-}
-ANIMS.PilotGrayFlameL = ANIMS.PilotGrayFlame:new{
 	Time = 0.15,
+	PosX = -33,
+	PosY = -14,	
 	Loop = true
 }
-
 
 --Damage mark
 modApi:appendAsset("img/combat/icons/icon_resupply.png", resourcePath.."img/combat/icons/icon_resupply.png")

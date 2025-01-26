@@ -85,9 +85,9 @@ end
 --because putting this logic directly in the AddScript didn't work for some reason...
 function truelch_setCharged(pawnId, value)
     if value == true then
-        customAnim:add(pawnId, "PilotGrayFlameL")
+        customAnim:add(pawnId, "truelch_anim_charged")
     else
-        customAnim:rem(pawnId, "PilotGrayFlameL")
+        customAnim:rem(pawnId, "truelch_anim_charged")
     end
     
     missionData().isCharged[pawnId] = value
