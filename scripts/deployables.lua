@@ -543,6 +543,7 @@ truelch_GuardDogLaser_Weapon = LaserDefault:new{
 }
 
 function truelch_GuardDogLaser_Weapon:GetTargetScore(p1, p2)
+	
 	local score = -10
 
 	local dir = GetDirection(p2 - p1)
@@ -558,6 +559,8 @@ function truelch_GuardDogLaser_Weapon:GetTargetScore(p1, p2)
 			break
 		end
 	end
+
+	LOG(string.format("truelch_GuardDogLaser_Weapon:GetTargetScore(p1: %s, p2: %s) -> score: %s", p1:GetString(), p2:GetString(), tostring(score)))
 
 	return score
 end

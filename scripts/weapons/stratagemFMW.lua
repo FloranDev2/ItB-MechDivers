@@ -209,6 +209,7 @@ end
 
 --Warning: this is a global function. Hence the very specific name.
 function truelch_MechDivers_AddPodData(point, item)
+	LOG(string.format("truelch_MechDivers_AddPodData(point: %s, item: %s)", point:GetString(), tostring(item)))
 	table.insert(missionData().hellPods, { point, item })
 end
 
@@ -587,7 +588,7 @@ function truelch_Mg43Mode:fire(p1, p2, se)
 
     --tip image would not reach here anyway (i think?)
     if not Board:IsTipImage() and isMission() then
-	    se:AddScript(string.format("truelch_MechDivers_AddPodData(%s, %s)", p2:GetString(), self.Item))
+	    se:AddScript(string.format([[truelch_MechDivers_AddPodData(%s, "%s")]], p2:GetString(), self.Item))
 	end
 end
 
@@ -1175,11 +1176,11 @@ function truelch_OrbitalWalkingBarrageMode:second_fire(p1, p2, p3)
     local dir = GetDirection(p3 - p2)
 
 	local damage = SpaceDamage(p2 + DIR_VECTORS[dir], 0)
-	damage.sImageMark = "combat/icons/icon_orbital_walking_barrage.png"
+	damage.sImageMark = "combat/icons/icon_orbital_walking_barrage_end_"..tostring(dir)..".png"
 	ret:AddDamage(damage)
 
 	local damage = SpaceDamage(p2, 0)
-	damage.sImageMark = "combat/icons/icon_orbital_walking_barrage.png"
+	damage.sImageMark = "combat/icons/icon_orbital_walking_barrage_start_"..tostring(dir)..".png"
     ret:AddArtillery(damage, self.UpShot, FULL_DELAY)
 
     if IsTestMechScenario() then
@@ -1209,7 +1210,7 @@ truelch_StratagemFMW = aFM_WeaponTemplate:new{
 	Class = "",
 	TwoClick = true, --!!!!
 	Rarity = 1,
-	PowerCost = 1,
+	PowerCost = 0,
 	--Limited = 1, --what happens if I use the vanilla limited here?
 
 	--Art
@@ -1500,7 +1501,7 @@ local function computeStratagems()
 	end
 end
 
-local testMode = false
+local testMode = true
 
 local HOOK_onNextTurn = function(mission)
 	if Game:GetTeamTurn() ~= TEAM_PLAYER then
@@ -1544,6 +1545,8 @@ local HOOK_onMissionUpdate = function(mission)
     	--Retrieve data
         local loc = hellPod[1]
         local item = hellPod[2]
+
+        --LOG(".................. item: "..tostring(item))
 
         --thx tosx and Metalocif!
 		Board:MarkSpaceImage(loc, "combat/tile_icon/tile_truelch_drop.png", GL_Color(255, 180, 0, 0.75))
@@ -1619,10 +1622,12 @@ local HOOK_onMissionUpdate = function(mission)
 				Board:MarkSpaceDesc(point, "orbital_precision_strike")
 			elseif id == 1 then
 				--Orbital walking barrage
-				Board:MarkSpaceImage(point, "combat/tile_icon/tile_truelch_orbital_walking_barrage.png", GL_Color(255, 180, 0, 0.75))
+				--Board:MarkSpaceImage(point, "combat/tile_icon/tile_truelch_orbital_walking_barrage.png", GL_Color(255, 180, 0, 0.75))
+				Board:MarkSpaceImage(point, "combat/tile_icon/tile_truelch_orbital_walking_barrage_"..tostring(dir)..".png", GL_Color(255, 180, 0, 0.75))
 				Board:MarkSpaceDesc(point, "orbital_walking_barrage")
 
-				Board:MarkSpaceImage(point + DIR_VECTORS[dir], "combat/tile_icon/tile_truelch_orbital_walking_barrage.png", GL_Color(255, 180, 0, 0.75))
+				--Board:MarkSpaceImage(point + DIR_VECTORS[dir], "combat/tile_icon/tile_truelch_orbital_walking_barrage.png", GL_Color(255, 180, 0, 0.75))
+				Board:MarkSpaceImage(point + DIR_VECTORS[dir], "combat/tile_icon/tile_truelch_orbital_walking_barrage_"..tostring(dir)..".png", GL_Color(255, 180, 0, 0.75))
 				Board:MarkSpaceDesc(point + DIR_VECTORS[dir], "orbital_walking_barrage")
 			end
 		end

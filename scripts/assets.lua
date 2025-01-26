@@ -94,6 +94,29 @@ ANIMS.truelch_anim_orbital_laser = Animation:new{
 	NumFrames = 10,
 }
 
+--Test
+modApi:appendAsset("img/effects/pilot_gray.png", resourcePath.."img/effects/pilot_gray.png")
+	Location["effects/pilot_gray.png"] = Point(-25, -165)
+ANIMS.PilotGrayBlast = Animation:new{
+	Image = "effects/pilot_gray.png",
+	NumFrames = 8,
+	Time = 0.08,
+	PosX = -33,
+	PosY = -14
+}
+ANIMS.PilotGrayFlame = Animation:new{
+	Image = "effects/pilot_gray.png", --test
+	NumFrames = 8,
+	Time = 0.06,
+	PosX = -33,
+	PosY = -14
+}
+ANIMS.PilotGrayFlameL = ANIMS.PilotGrayFlame:new{
+	Time = 0.15,
+	Loop = true
+}
+
+
 --Damage mark
 modApi:appendAsset("img/combat/icons/icon_resupply.png", resourcePath.."img/combat/icons/icon_resupply.png")
 	Location["combat/icons/icon_resupply.png"] = Point(-10, 16)
@@ -117,7 +140,15 @@ modApi:appendAsset("img/combat/icons/icon_orbital_precision_strike.png", resourc
 	Location["combat/icons/icon_orbital_precision_strike.png"] = Point(-18, 5)
 
 modApi:appendAsset("img/combat/icons/icon_orbital_walking_barrage.png", resourcePath.."img/combat/icons/icon_orbital_walking_barrage.png")
-	Location["combat/icons/icon_orbital_walking_barrage.png"] = Point(-18, 5)
+	Location["combat/icons/icon_orbital_walking_barrage.png"] = Point(-20, 3)
+
+for i = 0, 3 do
+	modApi:appendAsset("img/combat/icons/icon_orbital_walking_barrage_start_"..tostring(i)..".png", resourcePath.."img/combat/icons/icon_orbital_walking_barrage_start_"..tostring(i)..".png")
+		Location["combat/icons/icon_orbital_walking_barrage_start_"..tostring(i)..".png"] = Point(-20, 3)
+
+	modApi:appendAsset("img/combat/icons/icon_orbital_walking_barrage_end_"..tostring(i)..".png", resourcePath.."img/combat/icons/icon_orbital_walking_barrage_end_"..tostring(i)..".png")
+		Location["combat/icons/icon_orbital_walking_barrage_end_"..tostring(i)..".png"] = Point(-20, 3)
+end
 
 
 for i = 0, 3 do
@@ -231,5 +262,11 @@ modApi:appendAsset("img/combat/tile_icon/tile_truelch_500kg_airstrike.png", mod.
 
 modApi:appendAsset("img/combat/tile_icon/tile_truelch_orbital_precision_strike.png", mod.resourcePath.."img/combat/tile_icon/tile_truelch_orbital_precision_strike.png")
 	Location["combat/tile_icon/tile_truelch_orbital_precision_strike.png"] = Point(-27, 2)
+
 modApi:appendAsset("img/combat/tile_icon/tile_truelch_orbital_walking_barrage.png", mod.resourcePath.."img/combat/tile_icon/tile_truelch_orbital_walking_barrage.png")
 	Location["combat/tile_icon/tile_truelch_orbital_walking_barrage.png"] = Point(-27, 2)
+
+for i = 0, 3 do
+	modApi:appendAsset("img/combat/tile_icon/tile_truelch_orbital_walking_barrage_"..tostring(i)..".png", mod.resourcePath.."img/combat/tile_icon/tile_truelch_orbital_walking_barrage_"..tostring(i)..".png")
+		Location["combat/tile_icon/tile_truelch_orbital_walking_barrage_"..tostring(i)..".png"] = Point(-27, 2)
+end

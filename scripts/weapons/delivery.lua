@@ -250,7 +250,7 @@ truelch_Delivery = aFM_WeaponTemplate:new{
 	Description = "Leap in a direction and either bombard nearby tiles (with damage reduced for each unit or building hit) or drop a reloading pod.",
 	Class = "Science",
 	Rarity = 1,
-	PowerCost = 0,
+	PowerCost = 1,
 
 	--Art
 	Icon = "weapons/truelch_delivery.png",

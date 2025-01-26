@@ -25,7 +25,7 @@ function mod:init()
 	require(self.scriptPath.."libs/artilleryArc") --weaponArmed is imported by artilleryArc
 	require(self.scriptPath.."libs/boardEvents")
 	require(self.scriptPath.."libs/trait")
-	--require(self.scriptPath.."libs/weaponArmed") --even though it's imported by artilleryArc, I'll need it for QTE's too
+	require(self.scriptPath.."libs/customAnim") --for the charged weapon
 
 	--FMW
 	self.FMW_hotkeyConfigTitle = "Mode Selection Hotkey" -- title of hotkey config in mod config
@@ -45,11 +45,6 @@ function mod:init()
 	require(self.scriptPath.."mechs/patriotMech")
 	require(self.scriptPath.."mechs/emancipatorMech")
 	require(self.scriptPath.."mechs/eagleMech")
-
-	--Test
-	require(self.scriptPath.."/weapons/test/testWeapon")
-	require(self.scriptPath.."/weapons/test/debugMechs")
-	require(self.scriptPath.."/weapons/test/testTCexc")
 
 	--Regular weapons
 	require(self.scriptPath.."/weapons/dualAutocannons")
@@ -84,7 +79,7 @@ function mod:init()
 
 	--Env tooltips (might move that stuff in a separate file)
 	---> Hell Pods
-	TILE_TOOLTIPS["hell_drop"] = {"Hell Drop", "A Hell Pod will land here soon. If there's a unit there, it'll take 1 damage. If the unit dies, the pod will spawn, otherwise it'll be destroyed."}
+	TILE_TOOLTIPS["hell_drop"] = {"Hell Drop", "A Hell Pod will land here soon, dealing 1 damage to unit underneath and spawn an item."}
 	---> Airstrikes
 	TILE_TOOLTIPS["airstrike_napalm"]     = {"Napalm Airstrike", "This tile will be ignited before enemy turn."}
 	TILE_TOOLTIPS["airstrike_smoke"]      = {"Smoke Airstrike",  "This tile will be smoked before enemy turn."}

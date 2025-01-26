@@ -1,3 +1,6 @@
+local path = mod_loader.mods[modApi.currentMod].scriptPath
+local customAnim = require(path.."libs/customAnim")
+
 ----------------------------------------------- MISSION / GAME FUNCTIONS -----------------------------------------------
 
 local function isGame()
@@ -81,6 +84,12 @@ end
 
 --because putting this logic directly in the AddScript didn't work for some reason...
 function truelch_setCharged(pawnId, value)
+    if value == true then
+        customAnim:add(pawnId, "PilotGrayFlameL")
+    else
+        customAnim:rem(pawnId, "PilotGrayFlameL")
+    end
+    
     missionData().isCharged[pawnId] = value
 end
 

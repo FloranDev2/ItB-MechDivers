@@ -42,7 +42,7 @@ truelch_EagleMech = Pawn:new{
 	Name = "Shuttle Mech", --Support Mech? (already used in WotP) / (Aerospace) Assault (Craft) Mech?
 	Class = "Science", --or Brute? But since it'll have a lot of support stuff + passive, makes more sense to make it Science, right?
 
-	Health = 3,
+	Health = 2,
 	MoveSpeed = 3,
 	Massive = true,
 
@@ -52,11 +52,7 @@ truelch_EagleMech = Pawn:new{
 	ImageOffset = mechDiversBlack,
 	
 	SkillList = { "truelch_Delivery", "truelch_Reinforcements_Passive" },
-	--SkillList = { "truelch_Rs422Railgun", "truelch_Rs422Railgun_Shop" },
 
-	--[[
-	"/mech/flying/jet_mech/"	
-	]]
 	SoundLocation = "/mech/flying/jet_mech/",
 	ImpactMaterial = IMPACT_METAL,
 	

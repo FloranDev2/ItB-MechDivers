@@ -48,7 +48,7 @@ end
 ----------------------------------------------- HOOKS -----------------------------------------------
 
 local function computeDrops(list)
-    LOG("-------------- computeDrops (count: "..tostring(#list)..")")
+    --LOG("-------------- computeDrops (count: "..tostring(#list)..")")
     --Kill pawns, play anim and spawn items
 
     --for _, hellPod in pairs(missionData().hellPods) do
@@ -60,8 +60,8 @@ local function computeDrops(list)
         local loc  = hellPod[1]
         local item = hellPod[2]        
 
-        LOG("--------------- hellpod:")
-        LOG("---------------> loc: "..loc:GetString()..", item: "..item)
+        --LOG("--------------- hellpod:")
+        --LOG("---------------> loc: "..loc:GetString()..", item: "..item)
 
         --Play anim
         local dropAnim = SpaceDamage(loc, 0)
@@ -100,18 +100,11 @@ local function computeDrops(list)
             --local killSd = SpaceDamage(loc, 1)
             effect:AddDamage(killSd)
 
-            --Kill not guaranteed anymore
-            --[[
-            if pawn:IsEnemy() then
-                truelch_completeDropKill()
-            end
-            ]]
-
             --Lil' delay (idk if it'd destroy the item otherwise)
             effect:AddDelay(0.5) --doesn't work to prevent item being recovered / destroyed
         else
-            LOG("-------------- No pawn: let's create the item now")
-            LOG("-------------- item: "..item)
+            --LOG("-------------- No pawn: let's create the item now")
+            --LOG("-------------- item: "..item)
             --No pawn: let's create the item now (otherwise, we wait to see if the pawn dies to create an item)
             --Add item
             local spawnItem = SpaceDamage(loc, 0)
@@ -121,7 +114,7 @@ local function computeDrops(list)
 
         --Add effect to the board
         Board:AddEffect(effect)
-        LOG("-----------------> Here (effect added")
+        --LOG("-----------------> Here (effect added)")
     end
 end
 
@@ -155,7 +148,7 @@ local HOOK_onPawnKilled = function(mission, pawn)
         --LOG(string.format("hellPod: loc: %s, item: %s", loc:GetString(), tostring(item)))
 
         if loc == pawn:GetSpace() then
-            LOG("pawn killed by drop!")
+            --LOG("pawn killed by drop!")
             if pawn:IsEnemy() then
                 truelch_completeDropKill()
             end
@@ -184,7 +177,7 @@ local HOOK_onMissionUpdate = function(mission)
 
             local pawn = Board:GetPawn(loc)
             if pawn == nil then
-                LOG("[OK] Good: "..loc:GetString())
+                --LOG("[OK] Good: "..loc:GetString())
 
                 if Board:IsValid(loc) and
                         not Board:IsBlocked(loc, PATH_PROJECTILE) and
@@ -197,7 +190,7 @@ local HOOK_onMissionUpdate = function(mission)
 
 
             else
-                LOG("[WAIT] Pawn found at: "..loc:GetString())
+                --LOG("[WAIT] Pawn found at: "..loc:GetString())
                 --Corpse can f*ck our logic, maybe just remove the data
             end
 

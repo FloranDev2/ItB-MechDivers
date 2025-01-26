@@ -9,7 +9,7 @@ truelch_Reinforcements_Passive = PassiveSkill:new{
 	--Infos
 	Name = "Reinforcements",
 	Description = "The first time a Mech is destroyed, drop a new Mech randomly on the map the next turn.",
-	PowerCost = 1,
+	PowerCost = 0,
 	Icon = "weapons/truelch_reinforcement_passive.png",
 
 	--Upgrades
