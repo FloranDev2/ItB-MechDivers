@@ -81,28 +81,23 @@ Return value: (boolean)
 	return true if it should override vanilla icon, false otherwise
 ]]
 local function computeSmokeIcon(se, point, dir, isAirstrike)
-	--LOG("------------- computeSmokeIcon")
 	local pushedPawn = Board:GetPawn(point)
 	local next = point + DIR_VECTORS[dir]
 	if isAirstrike then
-		--LOG("------------- computeSmokeIcon - airstrike")
 		--Airstrike
 		if pushedPawn ~= nil  then
 			if not pushedPawn:IsPushable() then
 				--Guard
-				--LOG("------------- Guard")
 				local damage = SpaceDamage(point, 0)
 				damage.sImageMark = "combat/icons/truelch_airstrike_smoke_push_guard_"..tostring(dir)..".png"
 				se:AddDamage(damage)
 			elseif Board:IsBlocked(next, PATH_PROJECTILE) then
 				--Push blocked
-				--LOG("------------- Push blocked")
 				local damage = SpaceDamage(point, 0)
 				damage.sImageMark = "combat/icons/truelch_airstrike_smoke_push_blocked_"..tostring(dir)..".png"
 				se:AddDamage(damage)
 			else
 				--Regular push
-				--LOG("------------- Regular push")
 				local damage = SpaceDamage(point, 0)
 				damage.sImageMark = "combat/icons/truelch_airstrike_smoke_push_"..tostring(dir)..".png"
 				se:AddDamage(damage)
@@ -115,39 +110,31 @@ local function computeSmokeIcon(se, point, dir, isAirstrike)
 			se:AddDamage(damage)
 		end
 	else
-		--LOG("------------- computeSmokeIcon - just smoke icon")
 		--Just smoke icon with other information (push, off, guard, etc.)
 		if pushedPawn ~= nil  then
-			--LOG("------------- computeSmokeIcon - pushedPawn ~= nil")
 			if not pushedPawn:IsPushable() then
-				--LOG("------------- computeSmokeIcon - pushedPawn ~= nil -> Guard")
 				--Guard
 				local damage = SpaceDamage(point, 0)
 				damage.sImageMark = "combat/icons/truelch_smoke_push_guard_"..tostring(dir)..".png"
 				se:AddDamage(damage)
 			elseif Board:IsBlocked(next, PATH_PROJECTILE) then
-				--LOG("------------- computeSmokeIcon - pushedPawn ~= nil -> Push blocked")
 				--Push blocked
 				local damage = SpaceDamage(point, 0)
 				damage.sImageMark = "combat/icons/truelch_smoke_push_blocked_"..tostring(dir)..".png"
 				se:AddDamage(damage)
 			else
-				--LOG("------------- computeSmokeIcon - pushedPawn ~= nil -> Regular push")
 				--Regular push
 				local damage = SpaceDamage(point, 0)
 				damage.sImageMark = "combat/icons/truelch_smoke_push_"..tostring(dir)..".png"
 				se:AddDamage(damage)
 			end
 		else
-			--LOG("------------- computeSmokeIcon - pushedPawn ~= nil -> Off")
 			--Off
 			local damage = SpaceDamage(point, 0)
 			damage.sImageMark = "combat/icons/truelch_smoke_push_off_"..tostring(dir)..".png"
 			se:AddDamage(damage)
 		end
 	end
-
-	--LOG("------------- computeSmokeIcon -----> END!")
 
 	--In any case, we want to override icon
 	return true
@@ -273,6 +260,7 @@ function computeSmokeAirstrike(se, point, dir, playAnim)
 
 	--Center (fake marks)
 	computeSmokeIcon(se, point, dir, true)
+
 
 	--Center (real damage)
 	local damage = SpaceDamage(point, 0)
@@ -1501,7 +1489,7 @@ local function computeStratagems()
 	end
 end
 
-local testMode = true
+local testMode = false
 
 local HOOK_onNextTurn = function(mission)
 	if Game:GetTeamTurn() ~= TEAM_PLAYER then
