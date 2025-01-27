@@ -551,8 +551,12 @@ function truelch_GuardDogLaser_Weapon:GetTargetScore(p1, p2)
 	for i = 1, 7 do
 		local curr = p2 + DIR_VECTORS[dir] * i
 		if Board:GetPawnTeam(curr) == TEAM_ENEMY then
-			score = score + 100
-		elseif Board:IsBuilding(curr) then
+			if p2:Manhattan(curr) == 1 then
+				score = score + 100
+			else
+				score = score + 60
+			end
+		elseif Board:IsBuilding(curr) or Board:IsPod(curr) then
 			score = -1000 --it still shot at a building, wtf??
 			break
 		elseif Board:IsBlocked(curr, PATH_PROJECTILE) then
@@ -560,7 +564,7 @@ function truelch_GuardDogLaser_Weapon:GetTargetScore(p1, p2)
 		end
 	end
 
-	LOG(string.format("truelch_GuardDogLaser_Weapon:GetTargetScore(p1: %s, p2: %s) -> score: %s", p1:GetString(), p2:GetString(), tostring(score)))
+	--LOG(string.format("truelch_GuardDogLaser_Weapon:GetTargetScore(p1: %s, p2: %s) -> score: %s", p1:GetString(), p2:GetString(), tostring(score)))
 
 	return score
 end

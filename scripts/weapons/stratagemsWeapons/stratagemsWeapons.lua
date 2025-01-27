@@ -436,10 +436,11 @@ truelch_Apw1AntiMaterielRifle_Shop_A = truelch_Apw1AntiMaterielRifle_Shop:new{
 
 function truelch_Apw1AntiMaterielRifle:GetTargetArea(point)
     local ret = PointList()
+
     for dir = DIR_START, DIR_END do
-        for i = self.MinRange, 7 do
+        for i = 1, 7 do
             local curr = Point(point + DIR_VECTORS[dir] * i)
-            if Board:IsValid(curr) then
+            if Board:IsValid(curr) and i >= self.MinRange then
                 ret:push_back(curr)
             end
             
@@ -448,6 +449,7 @@ function truelch_Apw1AntiMaterielRifle:GetTargetArea(point)
             end
         end
     end
+
     return ret
 end
 
@@ -461,7 +463,6 @@ function truelch_Apw1AntiMaterielRifle:GetSkillEffect(p1, p2)
     if self.Snipe then
         closestDist = 16
         for _, id in ipairs(extract_table(Board:GetPawns(TEAM_ENEMY))) do
-            --LOG("------------ id: "..tostring(id)..", _: "..tostring(_))
             local enemy = Board:GetPawn(id)
             if enemy ~= nil then --certainly unnecessary
                 local dist = p1:Manhattan(enemy:GetSpace())
@@ -688,10 +689,17 @@ function truelch_Rs422Railgun:GetTargetArea_TipImage(point)
     return ret
 end
 
+--local testMissionCharged = false
 function truelch_Rs422Railgun:GetTargetArea_Normal(point)
     local ret = PointList()
 
-    if isMission() and missionData().isCharged and  missionData().isCharged[Board:GetPawn(point):GetId()] then
+    --[[
+    local isCharged = (isMission() and missionData().isCharged and missionData().isCharged[Board:GetPawn(point):GetId()]) 
+        or (IsTestMechScenario() and testMissionCharged)
+        ]]
+
+    --if isCharged then
+    if --[[isMission() and]] missionData().isCharged and missionData().isCharged[Board:GetPawn(point):GetId()] then
         --Charged: projectile
         for dir = DIR_START, DIR_END do
             for i = 1, 7 do
@@ -728,8 +736,6 @@ function truelch_Rs422Railgun:GetTargetArea(point)
 end
 
 function truelch_Rs422Railgun:GetSkillEffect_TipImage(p1, p2)
-    --LOG("truelch_Rs422Railgun:GetSkillEffect_TipImage")
-
     local ret = SkillEffect()
     local dir = GetDirection(p2 - p1)
 
@@ -766,11 +772,10 @@ function truelch_Rs422Railgun:GetSkillEffect_TipImage(p1, p2)
 end
 
 function truelch_Rs422Railgun:GetSkillEffect_Normal(p1, p2)
-    --LOG("truelch_Rs422Railgun:GetSkillEffect_Normal")
     local ret = SkillEffect()
     local dir = GetDirection(p2 - p1)
 
-    if isMission() and missionData().isCharged and missionData().isCharged[Board:GetPawn(p1):GetId()] then
+    if missionData().isCharged and missionData().isCharged[Board:GetPawn(p1):GetId()] then
         --Charged
         local target = GetProjectileEnd(p1, p2)
         local damage = SpaceDamage(target, self.Damage, dir)
@@ -821,17 +826,11 @@ local function isStratagemWeapon(weaponId)
         weaponId = weaponId.__Id
     end
 
-    --LOG("isStratagemWeapon(weaponId:"..tostring(weaponId)..")")
-
     for _, stratagemWeapon in pairs(stratagemWeapons) do
-        --if weaponId ~= nil and string.find(weaponId, stratagemWeapon) ~= nil then
         if weaponId == stratagemWeapon then --I go back to this because _Shop and _A are weapons I DON'T want to remove actually
-            --LOG("----------- return true -> weaponId: "..weaponId..", stratagemWeapon: "..stratagemWeapon)
             return true
         end
     end
-
-    --LOG("----------- return false")
 
     return false
 end

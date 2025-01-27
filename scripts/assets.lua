@@ -125,6 +125,9 @@ modApi:appendAsset("img/combat/icons/icon_500kg_outer.png", resourcePath.."img/c
 modApi:appendAsset("img/combat/icons/icon_500kg_inner.png", resourcePath.."img/combat/icons/icon_500kg_inner.png")
 	Location["combat/icons/icon_500kg_inner.png"] = Point(-11, 11)
 
+modApi:appendAsset("img/combat/icons/icon_truelch_too_close.png", resourcePath.."img/combat/icons/icon_truelch_too_close.png")
+	Location["combat/icons/icon_truelch_too_close.png"] = Point(-20, 3)
+
 modApi:appendAsset("img/combat/icons/icon_orbital_precision_strike.png", resourcePath.."img/combat/icons/icon_orbital_precision_strike.png")
 	Location["combat/icons/icon_orbital_precision_strike.png"] = Point(-18, 5)
 

@@ -104,7 +104,6 @@ local function computeSmokeIcon(se, point, dir, isAirstrike)
 			end
 		else
 			--Off
-			--LOG("------------- Off")
 			local damage = SpaceDamage(point, 0)
 			damage.sImageMark = "combat/icons/truelch_airstrike_smoke_push_off_"..tostring(dir)..".png"
 			se:AddDamage(damage)
@@ -196,7 +195,7 @@ end
 
 --Warning: this is a global function. Hence the very specific name.
 function truelch_MechDivers_AddPodData(point, item)
-	LOG(string.format("truelch_MechDivers_AddPodData(point: %s, item: %s)", point:GetString(), tostring(item)))
+	--LOG(string.format("truelch_MechDivers_AddPodData(point: %s, item: %s)", point:GetString(), tostring(item)))
 	table.insert(missionData().hellPods, { point, item })
 end
 
@@ -624,7 +623,10 @@ function truelch_Mg43Mode:second_fire(p1, p2, p3)
 		local pawn = Board:GetPawn(middle)
 		if pawn == nil then
 			--Create an item (instantly)
-			ret.sItem = self.Item
+			local damage = SpaceDamage(middle, 0)
+			damage.sItem = self.Item
+			ret:AddDamage(damage)
+			--ret.sItem = self.Item
 		elseif pawn:IsMech() then
 			--Give this mech the weapon
 			--TryAddWeapon(middle, self.Weapon, self.Message) --don't want to happen during preview but when the weapon is actually fired
@@ -741,10 +743,27 @@ end
 function truelch_MgSentryMode:fire(p1, p2, se)
     local damage = SpaceDamage(p2, 0)
     se:AddArtillery(damage, self.UpShot, FULL_DELAY)
+
     local dropAnim = SpaceDamage(p2, 0)
     dropAnim.sAnimation = "truelch_anim_pod_land_2"
     se:AddDamage(dropAnim)
+
     se:AddDelay(1.9)
+
+    se:AddScript("Board:StartShake(0.5)")
+
+    local sfx = SpaceDamage(p2, 0)
+    sfx.sSound = "/mech/land"
+    se:AddDamage(sfx)
+
+    --Dust
+    for dir = DIR_START, DIR_END do
+        local curr = p2 + DIR_VECTORS[dir]
+        local dust = SpaceDamage(curr, 0)
+        dust.sAnimation = "airpush_"..dir
+        se:AddDamage(dust)
+    end
+
     local spawn = SpaceDamage(p2, 0)
     spawn.sPawn = self.Pawn
     se:AddDamage(spawn)
@@ -899,15 +918,24 @@ function truelch_NapalmAirstrikeMode:second_fire(p1, p2, p3)
 
     if IsTestMechScenario() then
     	computeNapalmAirstrike(ret, p2, dir, true)
-		computeNapalmIcon(ret, p2, dir, true)
+
+    	--Center: no longer push, it's left and right
+		--computeNapalmIcon(ret, p2, dir, true)
+		local damage = SpaceDamage(p2, 0)
+		damage.sImageMark = self.FakeMark
+		ret:AddDamage(damage)
 
 		--Fake marks (Forward, left, right)
 		local dirOffsets = {0, -1, 1} 
 		for _, offset in ipairs(dirOffsets) do
-			local curr = p2 + DIR_VECTORS[(dir + offset)% 4]
-			local damage = SpaceDamage(curr, 0)
-			damage.sImageMark = self.FakeMark
-			ret:AddDamage(damage)
+			local curr = p2 + DIR_VECTORS[(dir + offset)% 4]			
+			if offset == 0 then
+				local damage = SpaceDamage(curr, 0)
+				damage.sImageMark = self.FakeMark
+				ret:AddDamage(damage)
+			else
+				computeNapalmIcon(ret, curr, dir, true)
+			end
 		end    	
 
     	return ret
@@ -927,15 +955,23 @@ function truelch_NapalmAirstrikeMode:second_fire(p1, p2, p3)
 		local point = p3 - DIR_VECTORS[dir]*2
 		computeNapalmAirstrike(ret, point, dir, false)
 	else
-		computeNapalmIcon(ret, p2, dir, true)
+		--Center
+		--computeNapalmIcon(ret, p2, dir, true)
+		local damage = SpaceDamage(p2, 0)
+		damage.sImageMark = self.FakeMark
+		ret:AddDamage(damage)
 
 		--Fake marks (Forward, left, right)
 		local dirOffsets = {0, -1, 1}
 		for _, offset in ipairs(dirOffsets) do
 			local curr = p2 + DIR_VECTORS[(dir + offset)% 4]
-			local damage = SpaceDamage(curr, 0)
-			damage.sImageMark = self.FakeMark
-			ret:AddDamage(damage)
+			if offset == 0 then
+				local damage = SpaceDamage(curr, 0)
+				damage.sImageMark = self.FakeMark
+				ret:AddDamage(damage)
+			else
+				computeNapalmIcon(ret, curr, dir, true)
+			end
 		end
 
 		--Add Airstrike
@@ -978,15 +1014,22 @@ function truelch_SmokeAirstrikeMode:second_fire(p1, p2, p3)
 		computeSmokeAirstrike(ret, point, dir, false)
 	else
 		--Fake marks (Center)
-		computeSmokeIcon(ret, p2, dir, true)
+		--computeSmokeIcon(ret, p2, dir, true)
+		local damage = SpaceDamage(p2, 0)
+		damage.sImageMark = self.FakeMark
+		ret:AddDamage(damage)
 
 		--Fake marks (Forward, left, right)
 		local dirOffsets = {0, -1, 1} 
 		for _, offset in ipairs(dirOffsets) do
 			local curr = p2 + DIR_VECTORS[(dir + offset)% 4]
-			local damage = SpaceDamage(curr, 0)
-			damage.sImageMark = self.FakeMark
-			ret:AddDamage(damage)
+			if offset == 0 then
+				local damage = SpaceDamage(curr, 0)
+				damage.sImageMark = self.FakeMark
+				ret:AddDamage(damage)
+			else
+				computeSmokeIcon(ret, curr, dir, true)
+			end
 		end
 
 		--point, dir, id (1 = Smoke Airstrike)
@@ -1233,7 +1276,7 @@ truelch_StratagemFMW = aFM_WeaponTemplate:new{
 
 	--Upgrades
 	Upgrades = 1,
-	UpgradeCost = { 2 --[[, 3]] },
+	UpgradeCost = { 1 --[[, 3]] },
 
 	--TipImage
 	TipIndex = 0,
@@ -1321,6 +1364,21 @@ function truelch_StratagemFMW:GetFinalEffect_TipImage()
 	    local dropAnim = SpaceDamage(p2, 0)
 	    dropAnim.sAnimation = "truelch_anim_pod_land_2"
 	    ret:AddDamage(dropAnim)
+
+        ret:AddScript("Board:StartShake(0.5)")
+
+        --No sound in tip image anyway
+	    --local sfx = SpaceDamage(p2, 0)
+	    --sfx.sSound = "/mech/land"
+	    --ret:AddDamage(sfx)
+
+	    --Dust
+	    for dir = DIR_START, DIR_END do
+	        local curr = p2 + DIR_VECTORS[dir]
+	        local dust = SpaceDamage(curr, 0)
+	        dust.sAnimation = "airpush_"..dir
+	        ret:AddDamage(dust)
+	    end
 	elseif self.TipIndex == 1 then
 		self.TipIndex = 2
 		Board:SetItem(p2, "truelch_Item_WeaponPod_Mg43")
@@ -1610,11 +1668,9 @@ local HOOK_onMissionUpdate = function(mission)
 				Board:MarkSpaceDesc(point, "orbital_precision_strike")
 			elseif id == 1 then
 				--Orbital walking barrage
-				--Board:MarkSpaceImage(point, "combat/tile_icon/tile_truelch_orbital_walking_barrage.png", GL_Color(255, 180, 0, 0.75))
 				Board:MarkSpaceImage(point, "combat/tile_icon/tile_truelch_orbital_walking_barrage_"..tostring(dir)..".png", GL_Color(255, 180, 0, 0.75))
 				Board:MarkSpaceDesc(point, "orbital_walking_barrage")
 
-				--Board:MarkSpaceImage(point + DIR_VECTORS[dir], "combat/tile_icon/tile_truelch_orbital_walking_barrage.png", GL_Color(255, 180, 0, 0.75))
 				Board:MarkSpaceImage(point + DIR_VECTORS[dir], "combat/tile_icon/tile_truelch_orbital_walking_barrage_"..tostring(dir)..".png", GL_Color(255, 180, 0, 0.75))
 				Board:MarkSpaceDesc(point + DIR_VECTORS[dir], "orbital_walking_barrage")
 			end
@@ -1630,7 +1686,8 @@ end
 local function computeStratagemAfterUse(pawn, weaponId)
     if type(weaponId) == 'table' then weaponId = weaponId.__Id end
 
-    local p = pawn:GetId()
+    if pawn == nil then return end
+    local p = pawn:GetId() --happened to be nil at some point
     local weapons = pawn:GetPoweredWeapons()
     local fmw
     for weaponIdx = 1, 3 do

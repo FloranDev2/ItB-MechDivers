@@ -51,7 +51,6 @@ local function computeDrops(list)
     --LOG("-------------- computeDrops (count: "..tostring(#list)..")")
     --Kill pawns, play anim and spawn items
 
-    --for _, hellPod in pairs(missionData().hellPods) do
     for _, hellPod in pairs(list) do
 
         local effect = SkillEffect() --so I can have delays
@@ -60,28 +59,18 @@ local function computeDrops(list)
         local loc  = hellPod[1]
         local item = hellPod[2]        
 
-        --LOG("--------------- hellpod:")
-        --LOG("---------------> loc: "..loc:GetString()..", item: "..item)
-
         --Play anim
         local dropAnim = SpaceDamage(loc, 0)
         dropAnim.sAnimation = "truelch_anim_pod_land"
         effect:AddDamage(dropAnim)
 
         --Delay
-        effect:AddDelay(2) --enough?
+        effect:AddDelay(1.9)
 
         effect:AddScript("Board:StartShake(0.5)")
-
-        --[[
-        https://gist.github.com/Tarmean/bf415d920eecb4b2bbdd32de2ba75924
-        /props/pylon_fall
-        /props/pylon_impact
-        /ui/battle/mech_drop
-        ]]
-        --TODO: play sound
+        
         local sfx = SpaceDamage(loc, 0)
-        sfx.sSound = "/ui/battle/mech_drop" --that should be it. It doesn't seem to play a sound...
+        sfx.sSound = "/mech/land" --https://gist.github.com/Tarmean/bf415d920eecb4b2bbdd32de2ba75924
         effect:AddDamage(sfx)
 
         --Dust
@@ -96,15 +85,13 @@ local function computeDrops(list)
         --NEW: nerfed to 1 damage
         local pawn = Board:GetPawn(loc)
         if pawn ~= nil then            
-            local killSd = SpaceDamage(loc, DAMAGE_DEATH) --old, but just to test item spawn again
-            --local killSd = SpaceDamage(loc, 1)
+            --local killSd = SpaceDamage(loc, DAMAGE_DEATH) --old, but just to test item spawn again
+            local killSd = SpaceDamage(loc, 1)
             effect:AddDamage(killSd)
 
             --Lil' delay (idk if it'd destroy the item otherwise)
             effect:AddDelay(0.5) --doesn't work to prevent item being recovered / destroyed
         else
-            --LOG("-------------- No pawn: let's create the item now")
-            --LOG("-------------- item: "..item)
             --No pawn: let's create the item now (otherwise, we wait to see if the pawn dies to create an item)
             --Add item
             local spawnItem = SpaceDamage(loc, 0)
@@ -114,7 +101,6 @@ local function computeDrops(list)
 
         --Add effect to the board
         Board:AddEffect(effect)
-        --LOG("-----------------> Here (effect added)")
     end
 end
 
@@ -197,11 +183,8 @@ local HOOK_onMissionUpdate = function(mission)
             --in any case
             table.remove(missionData().afterKill, index)
             index = index - 1 --necessary, right?
-
         end
-
     end
-
 end
 
 

@@ -4,7 +4,6 @@ local mod = modApi:getCurrentMod()
 local scriptPath = mod.scriptPath
 
 local truelch_divers_fmwApi = require(scriptPath.."fmw/api") --that's what I needed!
---LOG("hooks - truelch_divers_fmwApi: "..tostring(truelch_divers_fmwApi))
 
 
 ----------------------------------------------- MISSION / GAME FUNCTIONS -----------------------------------------------
@@ -38,14 +37,6 @@ local function missionData()
     if mission.truelch_MechDivers.isRespawnUsed == nil then
         mission.truelch_MechDivers.isRespawnUsed = false
     end
-
-    --This needs to be put in game data because transitioning from final mission first to second phase will erase mission data (!)
-    --[[
-    if mission.truelch_MechDivers.secPartCheck == nil then
-        mission.truelch_MechDivers.secPartCheck = false
-        --LOG("[A] mission.truelch_MechDivers.secPartCheck == nil -> secPartCheck = false")
-    end
-    ]]
 
     return mission.truelch_MechDivers
 end

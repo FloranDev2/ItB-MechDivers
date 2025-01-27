@@ -47,10 +47,10 @@ function mod:init()
 	require(self.scriptPath.."mechs/eagleMech")
 
 	--Regular weapons
+	require(self.scriptPath.."/weapons/test") --tmp
 	require(self.scriptPath.."/weapons/dualAutocannons")
 	require(self.scriptPath.."/weapons/patriotWeapons")
 	require(self.scriptPath.."/weapons/stratagemFMW")
-	--require(self.scriptPath.."/weapons/stratagemFMW_BU")
 	require(self.scriptPath.."/weapons/delivery")
 	require(self.scriptPath.."/weapons/passive_respawn")
 

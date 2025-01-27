@@ -40,12 +40,12 @@ function truelch_PatriotWeaponsMode1:targeting(point)
 	return points
 end
 
-function truelch_PatriotWeaponsMode1:fire(p1, p2, se, betterKO)
+function truelch_PatriotWeaponsMode1:fire(p1, p2, se, betterKO, bonusDmg)
 	local direction = GetDirection(p2 - p1)
 
 	local target = GetProjectileEnd(p1, p2, PATH_PROJECTILE)
 
-	local damage = self.BaseDamage
+	local damage = self.BaseDamage + bonusDmg
 	local pawn = Board:GetPawn(target)
 	if pawn ~= nil then
 		damage = damage + pawn:GetMaxHealth() - pawn:GetHealth()
@@ -83,14 +83,14 @@ function truelch_PatriotWeaponsMode1:fire(p1, p2, se, betterKO)
 				return
 			end
 
-			local sd2 = SpaceDamage(target2, excessDamage)
+			local sd2 = SpaceDamage(target2, excessDamage + bonusDmg) --also add the bonus damage here?
 			sd2.iPush = direction
 
 			se:AddProjectile(target, sd2, self.ProjectileArt, FULL_DELAY)
 		end
 	else --test
 		spaceDamage.iPush = direction
-		se:AddProjectile(spaceDamage, self.ProjectileArt--[[, FULL_DELAY]])
+		se:AddProjectile(spaceDamage, self.ProjectileArt)
 	end
 end
 
@@ -129,23 +129,6 @@ function truelch_PatriotWeaponsMode2:targeting(point)
 	local points = {}
 	local offsets = { Point(-1, -1), Point(-1, 1), Point(1, -1), Point(1, 1) }
 
-	--[[
-	for range = 1, self.MaxRange do
-        for _, offset in pairs(offsets) do
-        	local curr = offset*range + point
-        	points[#points+1] = curr
-        end
-	end
-	]]
-
-	--Show directly projectile end
-	--[[
-    for _, offset in pairs(offsets) do
-    	local projEnd = self:getProjEnd(point, offset)
-    	points[#points+1] = projEnd
-    end
-    ]]
-
     --Actually, show it like a regular projectile
     --(is still different than the first version, because the first version would actually add all tiles regardless of obstacles)
     for _, offset in pairs(offsets) do
@@ -161,7 +144,7 @@ function truelch_PatriotWeaponsMode2:targeting(point)
 	return points
 end
 
-function truelch_PatriotWeaponsMode2:fire(p1, p2, se, betterKO)
+function truelch_PatriotWeaponsMode2:fire(p1, p2, se, betterKO, bonusDmg)
 	--Compute offset
 	local diff = p2 - p1
 
@@ -174,15 +157,14 @@ function truelch_PatriotWeaponsMode2:fire(p1, p2, se, betterKO)
 
 	if offset ~= Point(0, 0) then
 		local endProj = self:getProjEnd(p1, offset)
-		--LOG("endProj: "..endProj:GetString())
-	    local spaceDamage = SpaceDamage(endProj, 3)
+	    local spaceDamage = SpaceDamage(endProj, 2 + bonusDmg)
 	    se:AddArtillery(spaceDamage, self.UpShot)
 	    if Board:IsDeadly(spaceDamage, Pawn) and betterKO then
 		    for dir = DIR_START, DIR_END do
 		    	local curr = endProj + DIR_VECTORS[dir]
 		    	local pawn = Board:GetPawn(curr)
 		    	if pawn ~= nil then
-		    		local aoeDamage = SpaceDamage(curr, 1)
+		    		local aoeDamage = SpaceDamage(curr, 1 + bonusDmg)
 		    		se:AddDamage(aoeDamage)
 		    	end
 		    end
@@ -197,13 +179,10 @@ end
 
 truelch_PatriotWeapons = aFM_WeaponTemplate:new{
 	Name = "Patriot's weapons",
-	--[[
 	Description = "Two fire modes:"..
 		"\n\nMinigun: shoot a projectile dealing more damage to damaged units and that can pierce through its target if it kills it."..
 		"\n\nRocket pod: shoot a powerful rocket diagonally."..
 		"\n\n(more details on the modes buttons' descriptions)",
-	]]
-	Description = "Shoot a pushing projectile that deals additional damage equal to the target's health lost.",
 	Class = "Prime",
 	Icon = "weapons/truelch_patriot_weapons.png",
 	Rarity = 1,
@@ -222,9 +201,9 @@ truelch_PatriotWeapons = aFM_WeaponTemplate:new{
 	aFM_ModeSwitchDesc = "Click to change mode.",
 
 	--Upgrades
-	Upgrades = 1,
-	UpgradeCost = { 1 },
-	RocketEnabled = true, --just for custom tip
+	BonusDamage = 0,
+	Upgrades = 2,
+	UpgradeCost = { 1, 3 },
 	BetterOnKill = false,
 
 	--Tip image
@@ -252,13 +231,24 @@ truelch_PatriotWeapons = aFM_WeaponTemplate:new{
 
 Weapon_Texts.truelch_PatriotWeapons_Upgrade1 = "KO Effect"
 --Weapon_Texts.truelch_PatriotWeapons_Upgrade2 = "Enable Rockets" --not sure about this
---Weapon_Texts.truelch_PatriotWeapons_Upgrade2 = "+1 Damage" --MAYBE???? (on damage. ALL)
+Weapon_Texts.truelch_PatriotWeapons_Upgrade2 = "+1 Damage" --MAYBE???? (on damage. ALL)
 
 truelch_PatriotWeapons_A = truelch_PatriotWeapons:new{
     UpgradeDescription = "Enables an effect when the primary target dies."..
     	"\nGatling: shoots another projectile."..
     	"\nRocket: damage adjacent units.",
     BetterOnKill = true,
+}
+
+truelch_PatriotWeapons_B = truelch_PatriotWeapons:new{
+    UpgradeDescription = "All damage are increased by 1.",
+    aFM_ModeList = { "truelch_PatriotWeaponsMode1", "truelch_PatriotWeaponsMode2" },    
+    BonusDamage = 1,
+}
+
+truelch_PatriotWeapons_AB = truelch_PatriotWeapons:new{
+    BetterOnKill = true,
+    BonusDamage = 1,
 }
 
 --[[
@@ -269,7 +259,6 @@ truelch_PatriotWeapons_B = truelch_PatriotWeapons:new{
     aFM_ModeList = { "truelch_PatriotWeaponsMode1", "truelch_PatriotWeaponsMode2" },    
     RocketEnabled = true, --just for tip
 }
-
 
 truelch_PatriotWeapons_AB = truelch_PatriotWeapons:new{
     aFM_ModeList = { "truelch_PatriotWeaponsMode1", "truelch_PatriotWeaponsMode2" },
@@ -328,7 +317,7 @@ function truelch_PatriotWeapons:GetSkillEffect_TipImage(p1, p2)
 	end
 
 	if self.PatriotTipIndex <= 2 then
-		truelch_PatriotWeaponsMode1:fire(p1, p2, se, self.BetterOnKill)
+		truelch_PatriotWeaponsMode1:fire(p1, p2, se, self.BetterOnKill, self.BonusDamage)
 	else
 		if self.PatriotTipIndex == 3 then
 			p2 = Point(0, 1)
@@ -336,7 +325,7 @@ function truelch_PatriotWeapons:GetSkillEffect_TipImage(p1, p2)
 			p2 = Point(3, 2)
 		end
 
-		truelch_PatriotWeaponsMode2:fire(p1, p2, se, self.BetterOnKill)
+		truelch_PatriotWeaponsMode2:fire(p1, p2, se, self.BetterOnKill, self.BonusDamage)
 	end
 
 	self.PatriotTipIndex = self.PatriotTipIndex + 1
@@ -353,7 +342,7 @@ function truelch_PatriotWeapons:GetSkillEffect_Normal(p1, p2)
 	local currentMode = self:FM_GetMode(p1)
 	
 	if self:FM_CurrentModeReady(p1) then
-		_G[currentMode]:fire(p1, p2, se, self.BetterOnKill)
+		_G[currentMode]:fire(p1, p2, se, self.BetterOnKill, self.BonusDamage)
 	end
 
 	return se
