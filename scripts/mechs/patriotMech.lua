@@ -49,8 +49,7 @@ truelch_PatriotMech = Pawn:new{
 	ImageOffset = mechDiversBlack,
 	
 	--Having two FMWeapons isn't an issue, not sure how (...)
-	--SkillList = { "truelch_PatriotWeapons", "truelch_StratagemFMW" },
-	SkillList = { "truelch_Mg43MachineGun_Shop", "truelch_StratagemFMW" },
+	SkillList = { "truelch_PatriotWeapons", "truelch_StratagemFMW" },
 
 	SoundLocation = "/mech/prime/punch_mech/",
 	ImpactMaterial = IMPACT_METAL,

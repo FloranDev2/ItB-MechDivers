@@ -64,6 +64,8 @@ end
 
 -------------------- TEST --------------------
 
+local truelch_max_strat = 2 --when not upgraded
+
 local truelch_stratagem_flag = false --moved this here
 
 --WHY WHY WHY WHY WHY
@@ -1237,7 +1239,8 @@ truelch_StratagemFMW = aFM_WeaponTemplate:new{
 		"\nA random stratagem is added at the start of a mission."..
 		"\nWeapons acquired by stratagems are removed at the end of the mission."..
 		"\nSome stratagems are free actions (generally the calls for weapons)."..
-		"\nIf you have a Shuttle Mech in range, the call-in can be instant. (airstrikes and weapons drops)",
+		"\nIf you have a Shuttle Mech in range, the call-in can be instant. (airstrikes and weapons drops)"..
+		"\nYou can store up to 2 stratagems max.",
 	Class = "",
 	TwoClick = true, --!!!!
 	Rarity = 1,
@@ -1292,7 +1295,7 @@ Weapon_Texts.truelch_StratagemFMW_Upgrade1 = "+1 Stratagem"
 --Weapon_Texts.truelch_StratagemFMW_Upgrade2 = "Veteran Stratagems" --Will be done in the future
 
 truelch_StratagemFMW_A = truelch_StratagemFMW:new{
-	UpgradeDescription = "+1 stratagem acquired at the start of each mission",
+	UpgradeDescription = "+1 stratagem acquired at the start of each mission.\nYou can store all the possible stratagems.",
 }
 
 --[[
@@ -1473,7 +1476,6 @@ local HOOK_onMissionStarted = function(mission)
 end
 
 local function computeStratagems()
-	--LOG("computeStratagems()")
 	local size = Board:GetSize()
 	for j = 0, size.y do
 		for i = 0, size.x do
@@ -1481,7 +1483,6 @@ local function computeStratagems()
 			if pawn ~= nil and pawn:IsMech() then
 				local weapons = pawn:GetPoweredWeapons()
 				local p = pawn:GetId()
-				--for weaponIdx = 0, 2 do --rather 1 -> 2 (or even to 3 with an additionnal weapon)
 				for weaponIdx = 1, 3 do
 					local fmw = truelch_divers_fmwApi:GetSkill(p, weaponIdx, false)
 					if fmw ~= nil then
@@ -1491,6 +1492,7 @@ local function computeStratagems()
 						end
 
 						if isStratagemWeapon(weapon) then
+							local currAmount = 0 --new!
 							local list = {}
 							--LOG(" --------- StratagemFMW found! Mode list:")
 							for k, mode in pairs(_G[weapon].aFM_ModeList) do
@@ -1498,15 +1500,20 @@ local function computeStratagems()
 								if gameData().stratagems[p] ~= nil and list_contains(gameData().stratagems[p], mode) then
 									--LOG(" -> This is an active mode in the game data!")
 									fmw:FM_SetActive(p, mode, true)
+									currAmount = currAmount + 1
 								else
 									fmw:FM_SetActive(p, mode, false)
 									table.insert(list, {mode, k})
 								end
 							end
 
+							--LOG("currAmount: "..tostring(currAmount))
+
+							local max = truelch_max_strat --new!
 							local stratIncr = 1 --amount of Stratagem modes added at the start of the mission (+2 with an upgrade)
 							if weapon == "truelch_StratagemFMW_A" or weapon == "truelch_StratagemFMW_AB" then
 								stratIncr = 2
+								max = 14
 							end
 
 							for i = 1, stratIncr do
@@ -1514,7 +1521,9 @@ local function computeStratagems()
 								--TODO: max amount of stratagems
 								--LOG("i: "..tostring(i).." / stratIncr: "..tostring(stratIncr)..", list size: "..tostring(#list))
 
-								if #list >= 1 then
+								--LOG("currAmount: "..tostring(currAmount).." / max: "..tostring(max))
+
+								if #list >= 1 and currAmount < max then
 									local randIndex = math.random(#list)
 									--LOG("randIndex: "..tostring(randIndex))
 									local randMode = list[randIndex][1]
@@ -1533,6 +1542,8 @@ local function computeStratagems()
 										gameData().stratagems[p] = {}
 									end							
 									table.insert(gameData().stratagems[p], randMode)
+
+									currAmount = currAmount + 1
 								else
 									LOG("Cannot add more stratagems!")
 								end
@@ -1547,7 +1558,7 @@ local function computeStratagems()
 	end
 end
 
-local testMode = true
+local testMode = false
 
 local HOOK_onNextTurn = function(mission)
 	if Game:GetTeamTurn() ~= TEAM_PLAYER then
@@ -1591,8 +1602,6 @@ local HOOK_onMissionUpdate = function(mission)
     	--Retrieve data
         local loc = hellPod[1]
         local item = hellPod[2]
-
-        --LOG(".................. item: "..tostring(item))
 
         --thx tosx and Metalocif!
 		Board:MarkSpaceImage(loc, "combat/tile_icon/tile_truelch_drop.png", GL_Color(255, 180, 0, 0.75))
