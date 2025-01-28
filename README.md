@@ -37,7 +37,17 @@ This mod is likely to break with other mods since it does some "experimental stu
 This new Mech has a new id, so any mod that assumes that Mechs are Pawns with ids ranging from 0 to 2 will break with this.
 
 ## Known bugs / incompatibilies with other mods
-Pilot pot luck has an error with my mod (...)
+- Sometimes, at the start of a mission, you'll get something like Stratagem Get Target Area encountered an error.
+	-> Leaving an returning to the game should solve this error
+
+- There are also case where the mod will cause error with other mods: (especially after a new Mech has been spawned)
+	- Pilot Potluck (scripts/pilots/pilot_hedera.lua:191: attempt to index a nil value)
+	- Vextra (scripts/achievements.lua:451: attempt to index local 'pawn' (a nil value))
+	-> These errors don't crash the game or bug the weapon and it's even not visible, so you might no even notice these
+
+- The biggest and most nasty error happens at the start of a run and make all FMWeapons unusable. At least, it doesn't happen during the run
+
+Unfortunately, I couldn't pinpoint these errors yet.
 
 
 ## Versions
@@ -48,28 +58,38 @@ Squad's name changed to Hell Breachers (was Mech Divers). This was proposed by G
 #### Gameplay changes
 
 Patriot Mech:
-- Reduced base damage of the Machine Gun (mode) by 1
+- Reduced damage of Machine Gun and Rocket Pod by 1
 - Added a 1-core upgrade to increase ALL damage by 1 (including rocket pod area of effect when KO upgrade is enabled)
 
-- Shuttle Mech:
-	- Delivery's base range reduced from 3 to 2
-	- Delivery's range upgrade will effectively increase its range (from 2 to 3)
-	- New: with delivery's range upgrade, the Supply Drop can drop up to 2 supply (between start and end point)
-	- Reinforcements passive can only respawn a Mech once per mission (technical limitation I couldn't solve)
+Eagle Mech:
+- HP reduced to 2 (from 3)
+- Delivery's base range reduced from 3 to 2
+- Delivery's range upgrade will effectively increase its range (from 2 to 3)
+- New: with delivery's range upgrade, the Supply Drop can drop up to 2 supply (between start and end point)
+
+Stratagems:
+- 2 new stratagems:
+   - Orbital walking barrage: deal 2 damage on two tiles. The barrage will move by one tile every turn until it detects a building
+   - AX/LAS-5 "Guard Dog" Rover: a flying drone carrying a laser weapon (dealing 2 damage at range 1 and 1 damage to the other tiles)
+- Weapon drops will now deal only 1 damage on units underneath instead of kill damage
+- Smoke and fire airstrikes left and right tile will now push
+- Weapons' drops can be called by the Shuttle Mech to be instant (like the airstrikes)
+- You can store up to 2 stratagems (but you have no limit with the upgrade)
 
 #### Improvements / polishing
 - Delivery tip image improved:
-	- Will display the Delivery's Supply drop mode
-	- Won't display incorrect information anymore
-- 500kg Bomb has more impactful effect (thx Metalocif for the suggestion!): added a Board Shake and better outer explosion effects + timing.
+   - Will display the Delivery's Supply drop mode
+   - Won't display incorrect information anymore
+- All stratagems can be tested in test mech mission!
+- 500kg Bomb has more impactful effect (thx Metalocif for the suggestion!): added a Board Shake, some Bounce and better outer explosion effects.
 - Added tosx' Frozen Hulks as bots in "Remember Malevelon Creek" achievement calculation
+- Hell drops effects improved and unified (finally added the sound too!)
+- A lot of visual improvements (charged effect for the railgun, airstrikes have now a preview effect, improved orbital icons, dual cannons' long / short range projectiles, added missing stratagem weapons icons)
 
-#### Bug fixes
+Bug fixes:
+- Fixed reinforcement passive (now, you can only respawn 1 Mech per mission at most)
 - Patriotism redirected damage wasn't reset everytime it was evaluating a damage, resulting in new redirected damage being higher than expected
 - Airstrikes and Orbital strikes will be able to target an occupied tile (as it should be)
-
-#### Other changes
-- Since Reinforcements passive can only respawn one Mech per mission, I've change the "Extraordinary" Patriotism achievement requirement to: "Have a new Mech spawn for each mission of your run."
 
 ### v1.0.0
 Release!
