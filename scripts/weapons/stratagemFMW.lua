@@ -1547,7 +1547,7 @@ local function computeStratagems()
 	end
 end
 
-local testMode = false
+local testMode = true
 
 local HOOK_onNextTurn = function(mission)
 	if Game:GetTeamTurn() ~= TEAM_PLAYER then

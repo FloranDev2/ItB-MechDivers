@@ -354,6 +354,11 @@ function truelch_Mg43MachineGun:GetSkillEffect_Normal(p1, p2)
 
         local shots = missionData().mg43ShootStatus[Pawn:GetId()][1]
 
+        --Preview shot
+        local shotPreview = SpaceDamage(p1, 0)
+        shotPreview.sImageMark = "combat/icons/truelch_mg43_x"..tostring(shots)..".png"
+        ret:AddDamage(shotPreview)
+
         if shots >= 2 then
             local queuedDamage = SpaceDamage(target, self.Damage, direction)
             ret:AddQueuedProjectile(queuedDamage, self.Projectile)
