@@ -1,4 +1,4 @@
-# Hell Breachers (v1.1.0)
+# Hell Breachers (v1.1.1)
 (previously named Mech Divers)
 
 A cup of Liber-Tea.
@@ -51,6 +51,9 @@ Unfortunately, I couldn't pinpoint these errors yet.
 
 
 ## Versions
+
+### v1.1.1
+Fixed the error that would randomly display a black screen stating that there is an issue with Stratagem targeting.
 
 ### v1.1.0
 Squad's name changed to Hell Breachers (was Mech Divers). This was proposed by Generic and won the poll!
