@@ -2,7 +2,6 @@ local mod = modApi:getCurrentMod()
 local squad = "truelch_MechDivers"
 
 -- --- CONSTANT VARIABLES --- --
---local DEAD_MECHS_GOAL = 6
 local ROBOTS_KILL_GOAL = 10
 
 -- -- ADD ACHIEVEMENTS --- --
@@ -17,7 +16,6 @@ local achievements = {
 	truelch_RespawnAbuse = modApi.achievements:add{
 		id = "truelch_RespawnAbuse",
 		name = "Extraordinary Patriotism",
-		--tooltip = "Have "..tostring(DEAD_MECHS_GOAL).." Mechs die in a mission.",
 		tooltip = "Have a new Mech spawn for each mission of your run.",
 		image = mod.resourcePath.."img/achievements/truelch_RespawnAbuse.png",
 		squad = squad,
@@ -139,12 +137,6 @@ local function achievementData()
 	end
 
 	--Initializing other data here
-	--[[
-	if game.truelch_MechDivers.achievementData.mechsKilled == nil then
-		game.truelch_MechDivers.achievementData.mechsKilled = 0
-	end
-	]]
-
 	if game.truelch_MechDivers.achievementData.botsKilled == nil then
 		game.truelch_MechDivers.achievementData.botsKilled = 0
 	end
@@ -159,7 +151,49 @@ end
 
 --- MISC FUNCTIONS ---
 --Units that are bot but don't have DefaultFaction == FACTION_BOTS:
-moreBots = { "tosx_mission_IceHulk" }
+moreBots = {
+	--tosx: frozen hulk and juggernaut
+	"tosx_mission_IceHulk",
+
+	--machin mission: bots buddies
+	"Machin_mission_artillery_buddy",
+	"Machin_mission_laser_buddy",
+
+	--Mini's bots
+	"Mini_KnightBot",
+	"Mini_KnightBotA",
+	"Mini_KnightBotB",
+	"Mini_KnightBotAB",
+
+	"Mini_LaserBot",
+	"Mini_LaserBotA",
+	"Mini_LaserBotB",
+	"Mini_LaserBotAB",
+
+	"Mini_JudoBot",
+	"Mini_JudoBotA",
+	"Mini_JudoBotB",
+	"Mini_JudoBotAB",
+
+	"Mini_LeapBot",
+	"Mini_LeapBotA",
+	"Mini_LeapBotB",
+	"Mini_LeapBotAB",
+
+	--Generic's deployable bots
+	"Nico_Snowmine",
+	"Nico_SnowmineA",
+	"Nico_Snowmine2",
+	"Nico_Snowmine2A",
+	"Nico_laserbloom",
+	"Nico_cannonbloom",
+	"Nico_artillerybloom",
+	"Copter_Bloom_Bot",
+
+	--Nico pilot's deployable
+	"Deploy_NicoBot",
+}
+
 function isBot(pawn)
 	if pawn == nil then
 		return false
@@ -186,15 +220,8 @@ achievements.truelch_RespawnAbuse.getTooltip = function(self)
 
 	local status = ""
 
-	--No need to check if we're in a mission
-	--[[
-	if isMission() and not achievements.truelch_RespawnAbuse:isComplete() then
-		status = "\nMartyrs: "..tostring(achievementData().mechsKilled.." / "..tostring(DEAD_MECHS_GOAL))
-	end
-	]]
-
 	--Can also be helpful to know if the passive if up even though you're not looking for the achievement.
-	if isMission() --[[and not achievements.truelch_RespawnAbuse:isComplete()]] then
+	if isMission() then
 		status = status.."\nHas Mech respawned this mission? "..tostring(missionData("getTooltip").isRespawnUsed)
 		status = status.."\nIs this achievement still doable? "..tostring(achievementData().isRespawnAchvStillOk)
 	end
@@ -231,43 +258,7 @@ local HOOK_onPawnKilled = function(mission, pawn)
 			truelch_completeKillRobots()
 		end
 	end
-
-	--[[
-	if pawn:IsMech() then
-		achievementData().mechsKilled = achievementData().mechsKilled + 1
-		if achievementData().mechsKilled >= DEAD_MECHS_GOAL then
-			truelch_completeRespawnAbuse()
-		end
-	end
-	]]
 end
-
---[[
-local HOOK_onMissionStarted = function(mission)
-	local exit = false
-		or isSquad() == false
-		or isMission() == false
-
-	if exit then
-		return
-	end
-
-	achievementData().mechsKilled = 0
-end
-
-local HOOK_onNextPhaseCreated = function(prevMission, nextMission)
-	local exit = false
-		or isSquad() == false
-		or isMission() == false
-
-	if exit then
-		return
-	end
-
-	achievementData().mechsKilled = 0
-end
-]]
-
 
 local HOOK_onMissionEnded = function(mission)
 	local exit = false
@@ -302,8 +293,6 @@ end)
 --Inspired from my previous work:
 local function EVENT_onModsLoaded()
 	modapiext:addPawnKilledHook(HOOK_onPawnKilled)
-	--modApi:addMissionStartHook(HOOK_onMissionStarted)
-	--modApi:addMissionNextPhaseCreatedHook(HOOK_onNextPhaseCreated)
 	modApi:addMissionEndHook(HOOK_onMissionEnded)
 end
 

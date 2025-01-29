@@ -1,4 +1,4 @@
-# Hell Breachers (v1.1.1)
+# Hell Breachers (v1.1.2)
 (previously named Mech Divers)
 
 A cup of Liber-Tea.
@@ -51,6 +51,10 @@ Unfortunately, I couldn't pinpoint these errors yet.
 
 
 ## Versions
+
+### v1.1.2
+Added more bots to the achievement: mostly deployable bots, but also mission bots.
+Cleaned up unused image files.
 
 ### v1.1.1
 Fixed the error that would randomly display a black screen stating that there is an issue with Stratagem targeting.
