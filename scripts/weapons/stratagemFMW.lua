@@ -1323,7 +1323,14 @@ function truelch_StratagemFMW:GetTargetArea_Normal(point)
 	local currentMode = _G[self:FM_GetMode(point)]
     
 	--Okay this is very experimental
-	local isOk = Pawn:GetId() <= 2 --respawned mechs aren't allowed to use stratagems!
+	--Oh it actually causes sometimes a little error at the beginning of a game
+	--This function is called just at the start of the player's turn
+	local isOk = true
+	if Pawn == nil then
+		isOk = false
+	else
+		isOk = Pawn:GetId() <= 2 --respawned mechs aren't allowed to use stratagems!
+	end
 
 	if self:FM_CurrentModeReady(point) and isOk then
 		local points = currentMode:targeting(point)
