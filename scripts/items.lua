@@ -17,7 +17,7 @@ local function isGame()
         and GAME ~= nil
 end
 
-local function isMission()
+local function isMission(msg)
     local mission = GetCurrentMission()
 
     return true
@@ -26,8 +26,13 @@ local function isMission()
         and mission ~= Mission_Test
 end
 
-local function missionData()
+local function missionData(msg)
     local mission = GetCurrentMission()
+
+    if mission == nil then
+        LOG("items.lua -> mission is nil! -> msg: "..tostring(msg))
+        return nil
+    end
 
     if mission.truelch_MechDivers == nil then
         mission.truelch_MechDivers = {}
@@ -44,30 +49,8 @@ local function missionData()
         mission.truelch_MechDivers.beforeItemRecov = {}
     end
 
-    --[1] Pawn id   [2] Weapon index (of the stratagem weapon to remove)
-    --if mission.truelch_MechDivers.stratWeapsToRemove == nil then
-	--	mission.truelch_MechDivers.stratWeapsToRemove = {}
-    --end
-
     return mission.truelch_MechDivers
 end
-
---Debug test
---[[
-local beforeItemRecov = {}
-beforeItemRecov[42] = {"A", "B"}
-beforeItemRecov[43] = {"C", "D"}
-
-LOG("beforeItemRecov count: "..tostring(#beforeItemRecov))
-LOG("beforeItemRecov: "..tostring(beforeItemRecov))
-LOG("beforeItemRecov[42]: "..tostring(beforeItemRecov[42]))
-
-for _, elem in pairs(beforeItemRecov) do
-	LOG("elem: "..tostring(elem))
-	LOG("elem[0]: "..tostring(elem[0])) --nil (yes lua is weird)
-	LOG("elem[1]: "..tostring(elem[1])) --"A"
-end
-]]
 
 -------------------- MISC FUNCTIONS --------------------
 
@@ -260,6 +243,13 @@ end)
 -------------------- HOOKS / EVENTS --------------------
 
 local HOOK_pawnUndoMove = function(mission, pawn, undonePosition)
+	if missionData() ~= nil then
+		missionData().beforeItemRecov = {}
+	else
+		LOG("HOOK_pawnUndoMove() -> missionData() is nil!")
+		return
+	end
+
 	local item = Board:GetItem(undonePosition)
 	if item == "truelch_Item_ResupplyPod" then
 		local weapons = pawn:GetPoweredWeapons()
@@ -285,8 +275,13 @@ local HOOK_pawnUndoMove = function(mission, pawn, undonePosition)
 	end
 end
 
-local function HOOK_onNextTurnHook()	
-	missionData().beforeItemRecov = {}
+local function HOOK_onNextTurnHook()
+	if missionData() ~= nil then
+		missionData().beforeItemRecov = {}
+	else
+		LOG("HOOK_onNextTurnHook() -> missionData() is nil!")
+		return
+	end
 end
 
 local function EVENT_onModsLoaded()

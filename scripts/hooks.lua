@@ -23,8 +23,13 @@ local function isMission()
         and mission ~= Mission_Test
 end
 
-local function missionData()
+local function missionData(msg)
     local mission = GetCurrentMission()
+
+    if mission == nil then
+        LOG("hooks.lua -> mission is nil -> msg: "..tostring(msg))
+        return nil
+    end
 
     if mission.truelch_MechDivers == nil then
         mission.truelch_MechDivers = {}
@@ -100,14 +105,10 @@ end
 ----------------------------------------------- HOOKS -----------------------------------------------
 
 local function HOOK_onNextTurnHook()
-    --LOG("HOOK_onNextTurnHook() -> secPartCheck: "..tostring(gameData().secPartCheck))
-
     if gameData().secPartCheck then
-        --LOG("HOOK_onNextTurnHook - missionData().secPartCheck")
         for _, id in ipairs(extract_table(Board:GetPawns(TEAM_PLAYER))) do
             local pawn = Board:GetPawn(id)
             if pawn ~= nil and pawn:IsMech() then
-                --LOG(string.format("mech: %s, at: %s, id: %s", pawn:GetType(), pawn:GetSpace():GetString(), tostring(pawn:GetId())))
                 if pawn:GetSpace() == Point(-1, -1) then
                     --Get one of the second phase deploy points. If it's not available, get a random pos
 
@@ -123,7 +124,6 @@ local function HOOK_onNextTurnHook()
                         newPos = GetRandomPoint() --safety, but should NEVER happen
                     end
 
-                    --LOG(" -> relocated to: "..newPos:GetString())
                     pawn:SetSpace(newPos)
                 end
             end
@@ -146,7 +146,7 @@ local function HOOK_onNextTurnHook()
                 if pawn ~= nil then
                     --LOG(string.format(" -> Pawn: %s", pawn:GetMechName()))
                     if pawn:IsMech() and pawn:IsDead() then
-                        if not missionData().isRespawnUsed then
+                        if not missionData("HOOK_onNextTurnHook - A").isRespawnUsed then
                             local pawnType = pawn:GetType()
                             --LOG(string.format(" ---> Found a dead pawn: %s", pawn:GetMechName()))
 
@@ -162,7 +162,7 @@ local function HOOK_onNextTurnHook()
                             computeRespawn(newMech)
 
                             --New: respawn limited to 1 per mission
-                            missionData().isRespawnUsed = true
+                            missionData("HOOK_onNextTurnHook - B").isRespawnUsed = true
                         else
                             --TODO: some feedback here?
                         end
@@ -172,7 +172,7 @@ local function HOOK_onNextTurnHook()
         end
 
         --For pawns that dies in a chasm
-        for _, pawn in pairs(missionData().deadMechs) do
+        for _, pawn in pairs(missionData("HOOK_onNextTurnHook - C").deadMechs) do
             local randPoint = GetRandomPoint()
             pawn:SetSpace(randPoint) --this doesn't do a cool drop anim though
             computeRespawn(pawn)
@@ -218,7 +218,7 @@ local HOOK_onPawnKilled = function(mission, pawn)
 
                 computeRespawn(spawned)
 
-                table.insert(missionData().deadMechs, spawned)
+                table.insert(missionData("HOOK_onPawnKilled").deadMechs, spawned)
                 spawned:SetSpace(Point(-1, -1))
 
                 Board:RemovePawn(pawn) --if this happens last turn, it might cause a problem?
