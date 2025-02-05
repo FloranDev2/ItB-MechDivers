@@ -170,7 +170,7 @@ local function applyProtecc(weaponId)
             --Apply damage
             local redir = SpaceDamage(pwn:GetSpace(), dmg)
             effect:AddScript([[Board:AddAlert(]]..pwn:GetSpace():GetString()..[[, "Patriotism")]])
-            effect:AddScript(string.format("Board:AddAlert(%s, Patriotism", pwn:GetSpace():GetString()))
+            --effect:AddScript(string.format("Board:AddAlert(%s, Patriotism)", pwn:GetSpace():GetString()))
             effect:AddDamage(redir)
         end
 

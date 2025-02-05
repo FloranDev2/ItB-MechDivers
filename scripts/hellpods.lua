@@ -21,8 +21,13 @@ local function isMission()
         and mission ~= Mission_Test
 end
 
-local function missionData()
+local function missionData(msg)
     local mission = GetCurrentMission()
+
+    if mission == nil then
+        LOG("hellpods.lua -> mission is nil -> msg: "..tostring(msg))
+        return nil
+    end
 
     if mission.truelch_MechDivers == nil then
         mission.truelch_MechDivers = {}
@@ -106,20 +111,26 @@ end
 
 local function HOOK_onNextTurnHook()
     if Game:GetTeamTurn() == TEAM_PLAYER then
-        missionData().items = {}
-        computeDrops(missionData().hellPods)
+        missionData("HOOK_onNextTurnHook - items reset").items = {}
+        computeDrops(missionData("HOOK_onNextTurnHook - compute drops").hellPods)
 
-        for _, data in pairs(missionData().hellPods) do
-            table.insert(missionData().items, data)
+        for _, data in pairs(missionData("HOOK_onNextTurnHook - for hell pods").hellPods) do
+            table.insert(missionData("HOOK_onNextTurnHook - insert").items, data)
         end
 
-        missionData().hellPods = {}    
+        missionData("HOOK_onNextTurnHook").hellPods = {}    
     end
 end
 
 local HOOK_onTurnReset = function(mission)
-    modApi:runLater(function()
-        computeDrops(missionData().items)
+    LOG("HOOK_onTurnReset")
+
+    modApi:scheduleHook(550, function()
+        if missionData("HOOK_onTurnReset - check") == nil then
+            LOG("HOOK_onTurnReset -> mission data is nil!")
+            return
+        end
+        computeDrops(missionData("HOOK_onTurnReset").items)
     end)
 end
 
@@ -127,7 +138,7 @@ local truelch_delay = 0
 local HOOK_onPawnKilled = function(mission, pawn)
     --LOG("HOOK_onPawnKilled -> "..pawn:GetMechName().." was killed. Loop: ("..tostring(#missionData().items)..")")
 
-    for _, hellPod in pairs(missionData().items) do --test
+    for _, hellPod in pairs(missionData("HOOK_onPawnKilled - for").items) do --test
         local loc  = hellPod[1]
         local item = hellPod[2]
 
@@ -139,7 +150,7 @@ local HOOK_onPawnKilled = function(mission, pawn)
                 truelch_completeDropKill()
             end
 
-            table.insert(missionData().afterKill, hellPod)
+            table.insert(missionData("HOOK_onPawnKilled - insert").afterKill, hellPod)
             truelch_delay = 500 --it... works?
         end
     end
@@ -154,9 +165,9 @@ local HOOK_onMissionUpdate = function(mission)
         --LOG("truelch_delay: "..tostring(truelch_delay)..", is board busy: "..tostring(Board:IsBusy()))
     end 
 
-    if #missionData().afterKill > 0 and truelch_delay == 0 then
+    if #missionData("HOOK_onMissionUpdate - if afterkill > 0").afterKill > 0 and truelch_delay == 0 then
         local index = 1 --or maybe I could just treat one per frame, the first in the list
-        for _, hellPod in pairs(missionData().afterKill) do
+        for _, hellPod in pairs(missionData("HOOK_onMissionUpdate - for").afterKill) do
 
             local loc  = hellPod[1]
             local item = hellPod[2]

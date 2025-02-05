@@ -52,6 +52,9 @@ Unfortunately, I couldn't pinpoint these errors yet.
 
 ## Versions
 
+### v1.1.3
+Some attempts to fix the continue bug. I hope it's enough.
+
 ### v1.1.2
 Added more bots to the achievement: mostly deployable bots, but also mission bots.
 Cleaned up unused image files.
