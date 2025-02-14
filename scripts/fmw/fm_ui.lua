@@ -84,7 +84,13 @@ function this:openModePanel()
 	local activeAmount = 0
 	for i, mode in ipairs(weapon.aFM_ModeList) do
 		--if this:isActiveMode(mode) then
-		if weapon:FM_IsActive(owner:GetId(), mode) then	
+
+		if weapon.FM_IsActive == nil then
+			LOG("--------------- weapon:FM_IsActive == nil")
+		end
+
+		if weapon.FM_IsActive == nil or weapon:FM_IsActive(owner:GetId(), mode) then
+			--If FM_IsActive doesn't exist, we aren't using it(?) so it might be a regular FMWeapon
 			activeAmount = activeAmount + 1
 		end
 	end
@@ -119,7 +125,7 @@ function this:openModePanel()
 	--Create a new modes' list (with only active ones)
 	local afmActiveModeList = {}
 	for _, mode in ipairs(weapon.aFM_ModeList) do
-		if weapon:FM_IsActive(owner:GetId(), mode) then
+		if weapon.FM_IsActive == nil or weapon:FM_IsActive(owner:GetId(), mode) then
 			afmActiveModeList[#afmActiveModeList+1] = mode
 		end
 	end
