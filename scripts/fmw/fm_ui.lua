@@ -85,9 +85,11 @@ function this:openModePanel()
 	for i, mode in ipairs(weapon.aFM_ModeList) do
 		--if this:isActiveMode(mode) then
 
+		--[[
 		if weapon.FM_IsActive == nil then
 			LOG("--------------- weapon:FM_IsActive == nil")
 		end
+		]]
 
 		if weapon.FM_IsActive == nil or weapon:FM_IsActive(owner:GetId(), mode) then
 			--If FM_IsActive doesn't exist, we aren't using it(?) so it might be a regular FMWeapon
